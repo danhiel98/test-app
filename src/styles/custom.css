@@ -1,0 +1,22 @@
+.ant-layout-sider-trigger {
+	background: #fff;
+}
+
+.ant-layout-sider-trigger > .anticon {
+	color: #001529;
+}
+
+.ant-layout-header {
+	margin: "0px" !important;
+	background: #fff !important;
+}
+
+#components-layout-demo-side .logo {
+	height: 1532px;
+	background: rgba(255, 255, 255, 0.2);
+	margin: 16px;
+}
+
+.site-layout .site-layout-background {
+    background: #fff;
+}
