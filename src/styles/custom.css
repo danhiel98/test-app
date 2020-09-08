@@ -11,11 +11,19 @@
 	background: #fff !important;
 }
 
-#components-layout-demo-side .logo {
+/* #components-layout-demo-side .logo {
 	height: 1532px;
 	background: rgba(255, 255, 255, 0.2);
 	margin: 16px;
-}
+} */
+
+#components-layout-demo-top .logo {
+    width: 120px !important;
+    height: 31px;
+    background: rgba(255, 255, 255, 0.2);
+    margin: 16px 24px 16px 0;
+    float: left;
+  }
 
 .site-layout .site-layout-background {
     background: #fff;
