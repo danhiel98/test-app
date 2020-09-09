@@ -1,13 +1,12 @@
 import React, { Component, Fragment } from 'react';
 
-import { Card, Row, Col, Avatar, Space } from 'antd';
+import { Card, Row, Col, Space } from 'antd';
 import {
     FileTextOutlined,
     DollarOutlined,
     SmileOutlined,
     ToolOutlined
 } from '@ant-design/icons';
-import { ThumbsUpIcon } from 'react-line-awesome'
 
 const { Meta } = Card;
 

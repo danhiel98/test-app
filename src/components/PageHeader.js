@@ -1,8 +1,8 @@
 import React, { Component, Fragment } from 'react';
 
 import { Layout, Menu, Avatar } from "antd";
-import { Row, Col, Divider } from 'antd';
-import { UserOutlined, SettingOutlined } from '@ant-design/icons';
+import { Row, Col } from 'antd';
+import { UserOutlined } from '@ant-design/icons';
 
 const { Header } = Layout;
 const { SubMenu } = Menu;

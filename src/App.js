@@ -12,9 +12,9 @@ const { Content } = Layout;
 
 class App extends Component
 {
-    constructor(props) {
-		super(props);
-    }
+    // constructor(props) {
+	// 	super(props);
+    // }
 
     render(){
         return (
@@ -34,6 +34,7 @@ class App extends Component
                             >
                                 { this.props.children }
                             </div> */}
+                            Hola
                             { this.props.children }
                         </Content>
                     </Layout>
