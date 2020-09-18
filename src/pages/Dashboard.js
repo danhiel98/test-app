@@ -1,4 +1,5 @@
 import React, { Component, Fragment } from 'react';
+import { connect } from 'react-redux';
 
 import { Card, Row, Col, Space } from 'antd';
 import {
@@ -10,8 +11,12 @@ import {
 
 const { Meta } = Card;
 
-export default class Dashboard extends Component
+class Dashboard extends Component
 {
+    constructor(props){
+        super(props);
+    }
+
     render()
     {
         return (
@@ -105,3 +110,5 @@ export default class Dashboard extends Component
         );
     }
 }
+
+export default Dashboard;

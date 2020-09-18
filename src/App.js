@@ -4,7 +4,7 @@ import "./styles/custom.css";
 import "./styles/line-awesome.min.css";
 
 import Sidebar from './components/Sidebar';
-import PageHeader from './components/PageHeader';
+import Navigation from './components/navigation/Navigation';
 
 import { Layout } from "antd";
 
@@ -12,15 +12,15 @@ const { Content } = Layout;
 
 class App extends Component
 {
-    // constructor(props) {
-	// 	super(props);
-    // }
+    constructor(props) {
+        super(props);
+    }
 
     render(){
         return (
             <>
                 <Layout style={{ minHeight: "100vh" }}>
-                    <PageHeader />
+                    <Navigation />
                     <Layout className="site-layout">
                         <Sidebar />
                         <Content style={{ margin: "75px 16px" }}>
@@ -34,7 +34,6 @@ class App extends Component
                             >
                                 { this.props.children }
                             </div> */}
-                            Hola
                             { this.props.children }
                         </Content>
                     </Layout>

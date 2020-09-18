@@ -1,4 +1,5 @@
 import React, { Component, Fragment } from 'react';
+import { connect } from 'react-redux';
 
 import { Layout, Menu, Avatar } from "antd";
 import { Row, Col } from 'antd';
@@ -7,10 +8,11 @@ import { UserOutlined } from '@ant-design/icons';
 const { Header } = Layout;
 const { SubMenu } = Menu;
 
-export default class PageHeader extends Component
+class PageHeader extends Component
 {
     render()
     {
+        console.log(this.props);
         return (
             <>
                 <Header style={{ position: 'fixed', zIndex: 1, width: '100%' }}>
@@ -31,7 +33,7 @@ export default class PageHeader extends Component
                                         <Avatar style={{ marginLeft: 8 }} icon={<UserOutlined />} />
                                     </Fragment>
                                 }>
-                                    <Menu.Item key="user:1">Cerrar sesión</Menu.Item>
+                                    <Menu.Item onClick={this.props.logOut} key="user:1">Cerrar sesión</Menu.Item>
                                 </SubMenu>
                             </Menu>
                         </Col>
@@ -41,3 +43,11 @@ export default class PageHeader extends Component
         );
     }
 }
+
+function mapStateToProps(state, ownState){
+    return {
+        user: state.user
+    }
+}
+
+export default connect(mapStateToProps)(PageHeader);
