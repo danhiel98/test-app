@@ -10,12 +10,12 @@ const { Title } = Typography;
 
 class Login extends Component
 {
-    constructor(props){
-        super(props);
+    // constructor(props){
+    //     super(props);
 
-        // console.log(app);
-        // console.log(props.user);
-    }
+    //     console.log(app);
+    //     console.log(props.user);
+    // }
 
     signIn = async (values) => {
         const { usuario, clave } = values;

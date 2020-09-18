@@ -2,27 +2,27 @@ import React, { Component } from "react";
 import "antd/dist/antd.css";
 import "./styles/custom.css";
 import "./styles/line-awesome.min.css";
-
-import Sidebar from './components/Sidebar';
-import Navigation from './components/navigation/Navigation';
-
 import { Layout } from "antd";
+
+
+import HeaderNavigation from './components/navigation/HeaderNavigation';
+import SidebarNavigation from "./components/navigation/SidebarNavigation";
 
 const { Content } = Layout;
 
 class App extends Component
 {
-    constructor(props) {
-        super(props);
-    }
+    // constructor(props) {
+    //     super(props);
+    // }
 
     render(){
         return (
             <>
                 <Layout style={{ minHeight: "100vh" }}>
-                    <Navigation />
+                    <HeaderNavigation />
                     <Layout className="site-layout">
-                        <Sidebar />
+                        <SidebarNavigation />
                         <Content style={{ margin: "75px 16px" }}>
                             {/* <Breadcrumb style={{ margin: "10px 0" }}>
                                 <Breadcrumb.Item>User</Breadcrumb.Item>

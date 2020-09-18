@@ -12,13 +12,12 @@ class PageHeader extends Component
 {
     render()
     {
-        console.log(this.props);
         return (
             <>
                 <Header style={{ position: 'fixed', zIndex: 1, width: '100%' }}>
                     <Row>
 
-                        <Col span={2}>
+                        <Col span={2} style={ { cursor: 'pointer' } } onClick={ this.props.goHome }>
                             <img src={ process.env.PUBLIC_URL + "/logo.png" } alt="Logo" width="40px" />
                         </Col>
                         <Col span={4} offset={18}>
@@ -29,7 +28,7 @@ class PageHeader extends Component
                                 </Menu.Item> */}
                                 <SubMenu title={
                                     <Fragment>
-                                        <span> Nombre de usuario </span>
+                                        <span> { this.props.user.user.displayName ? this.props.user.user.displayName : this.props.user.user.email } </span>
                                         <Avatar style={{ marginLeft: 8 }} icon={<UserOutlined />} />
                                     </Fragment>
                                 }>

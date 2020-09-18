@@ -4,12 +4,15 @@ import PageHeader from '../PageHeader';
 import { push } from 'connected-react-router';
 import app from "../../firebaseConfig";
 
-class Navigation extends React.Component {
+class HeaderNavigation extends React.Component {
     constructor(props){
         super(props);
 
+        this.goHome = this.goHome.bind(this);
         this.logOut = this.logOut.bind(this);
     }
+
+    goHome = () => this.props.dispatch(push('/'));
 
     async logOut(){
         await app
@@ -27,7 +30,12 @@ class Navigation extends React.Component {
     }
 
     render(){
-        return <PageHeader logOut={this.logOut} />
+        return (
+            <PageHeader
+                goHome={this.goHome}
+                logOut={this.logOut}
+            />
+        );
     }
 }
 
@@ -37,4 +45,4 @@ function mapStateToProps(state, ownProps){
     }
 }
 
-export default connect(mapStateToProps)(Navigation);
+export default connect(mapStateToProps)(HeaderNavigation);

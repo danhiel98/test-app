@@ -1,100 +1,19 @@
-import React, { Component, Fragment } from 'react';
-import { connect } from 'react-redux';
+import React, { Component } from 'react';
 
-import { Card, Row, Col, Space } from 'antd';
-import {
-    FileTextOutlined,
-    DollarOutlined,
-    SmileOutlined,
-    ToolOutlined
-} from '@ant-design/icons';
-
-const { Meta } = Card;
+import { Card, Row, Col } from 'antd';
+import DashboardNavigation from '../components/navigation/DashboardNavigation';
 
 class Dashboard extends Component
 {
-    constructor(props){
-        super(props);
-    }
+    // constructor(props){
+    //     super(props);
+    // }
 
     render()
     {
         return (
             <>
-                <Row gutter={24}>
-                    <Col lg={6}>
-                        <Card
-                            bordered={false}
-                            bodyStyle={{
-                                padding: '45px 40px',
-                            }}
-                        >
-                            <Space>
-                                <FileTextOutlined style={ { fontSize: "64px" } } />
-                                <Meta title={
-                                    <Fragment>
-                                        <span style={ { fontSize: "20px" } }> Contratos </span>
-                                    </Fragment>
-                                }
-                                description="Lista de contratos" />
-                            </Space>
-                        </Card>
-                    </Col>
-                    <Col lg={6}>
-                        <Card
-                            bordered={false}
-                            bodyStyle={{
-                                padding: '45px 40px',
-                            }}
-                        >
-                            <Space>
-                                <DollarOutlined  style={ { fontSize: "64px" } } />
-                                <Meta title={
-                                    <Fragment>
-                                        <span style={ { fontSize: "20px" } }> Pagos </span>
-                                    </Fragment>
-                                }
-                                description="Pagos de clientes" />
-                            </Space>
-                        </Card>
-                    </Col>
-                    <Col lg={6}>
-                        <Card
-                            bordered={false}
-                            bodyStyle={{
-                                padding: '45px 40px',
-                            }}
-                        >
-                            <Space>
-                                <SmileOutlined  style={ { fontSize: "64px" } } />
-                                <Meta title={
-                                    <Fragment>
-                                        <span style={ { fontSize: "20px" } }> Clientes </span>
-                                    </Fragment>
-                                }
-                                description="Lista de clientes" />
-                            </Space>
-                        </Card>
-                    </Col>
-                    <Col lg={6}>
-                        <Card
-                            bordered={false}
-                            bodyStyle={{
-                                padding: '45px 40px',
-                            }}
-                        >
-                            <Space>
-                                <ToolOutlined  style={ { fontSize: "64px" } } />
-                                <Meta title={
-                                    <Fragment>
-                                        <span style={ { fontSize: "20px" } }> Mantenimientos </span>
-                                    </Fragment>
-                                }
-                                description="Mantenimientos realizados" />
-                            </Space>
-                        </Card>
-                    </Col>
-                </Row>
+                <DashboardNavigation />
                 <Row style={ { marginTop: "10px" } } gutter={24}>
                     <Col lg={24}>
                         <Card

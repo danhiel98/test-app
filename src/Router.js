@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import {
     // BrowserRouter as ReactRouter,
-    HashRouter,
     Route,
     Switch,
     Redirect
@@ -12,6 +11,7 @@ import './App.css';
 import App from './App';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
+import Clientes from './components/clientes/Clientes';
 import { connect } from 'react-redux';
 import app from './firebaseConfig';
 import { ConnectedRouter } from 'connected-react-router';
@@ -40,6 +40,7 @@ class Router extends Component
                     { this.signedIn() ? null : <Redirect to="/login" />}
                     <App>
                         <Route exact path="/" component={Dashboard} />
+                        <Route path="/clientes" component={Clientes} />
                     </App>
                 </Switch>
             </ConnectedRouter>
