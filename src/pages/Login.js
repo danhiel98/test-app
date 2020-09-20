@@ -5,6 +5,7 @@ import * as actions from '../actions/userActions';
 
 import { Form, Input, Button, Checkbox, Row, Col, Card, Layout, Typography } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
+import { push } from 'connected-react-router';
 
 const { Title } = Typography;
 
@@ -24,7 +25,7 @@ class Login extends Component
             .signInWithEmailAndPassword(usuario, clave)
             .then(result => {
                 this.props.dispatch(actions.login(result.user)); // Asignar el usuario en el state
-                this.props.push('/');
+                this.props.dispatch(push('/'));
             })
             .catch(error => {
                 console.log(error.message);

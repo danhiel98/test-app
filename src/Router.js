@@ -15,20 +15,21 @@ import Clientes from './components/clientes/Clientes';
 import { connect } from 'react-redux';
 import app from './firebaseConfig';
 import { ConnectedRouter } from 'connected-react-router';
+import * as actions from './actions/userActions';
 
 class Router extends Component
 {
     constructor(props){
         super(props);
 
-        // console.log("El usuario activo es: ");
-        app.auth().onAuthStateChanged(function(user) {
-            // console.log(user);
+        console.log("El usuario activo es: ");
+        app.auth().onAuthStateChanged(user => {
+            this.props.dispatch(actions.login(user));
         });
     }
 
     signedIn(){
-        return this.props.user;
+        return this.props.user.user;
     }
 
     render()

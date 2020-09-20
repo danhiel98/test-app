@@ -14,7 +14,7 @@ class Tabla extends React.Component
             bordered: false,
             loading: false,
             size: 'default',
-            title: () => "Título",
+            title: () => this.props.titulo,
             showHeader: true,
             top: 'none',
             bottom: 'bottonRight'

@@ -19,14 +19,11 @@ class HeaderNavigation extends React.Component {
             .auth()
             .signOut()
             .then( result => {
-                console.log(result);
-                // this.props.dispatch();
                 this.props.dispatch(push('/login'))
             })
             .catch(error => {
                 console.log(error);
             });
-
     }
 
     render(){
