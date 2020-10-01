@@ -22,7 +22,6 @@ class Router extends Component
     constructor(props){
         super(props);
 
-        console.log("El usuario activo es: ");
         app.auth().onAuthStateChanged(user => {
             this.props.dispatch(actions.login(user));
         });

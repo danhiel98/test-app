@@ -5,7 +5,7 @@ import Router from './Router';
 import * as serviceWorker from './serviceWorker';
 import configureStore from "./store/configureStore";
 import { Provider } from 'react-redux';
-import { createBrowserHistory, createHashHistory } from 'history';
+import { createHashHistory } from 'history';
 
 const history = createHashHistory();
 

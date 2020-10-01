@@ -15,7 +15,7 @@ const rootReducer = (history) => combineReducers({
 });
 
 export default function configureStore(history){
-    console.log(history)
+    // console.log(history)
     return createStore(
         rootReducer(history),
         compose(
