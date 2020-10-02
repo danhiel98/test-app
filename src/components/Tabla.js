@@ -12,13 +12,27 @@ class Tabla extends React.Component
             data: this.props.datos,
 
             bordered: false,
-            loading: false,
+            loading: this.props.loading,
             size: 'default',
             title: () => this.props.titulo,
             showHeader: true,
             top: 'none',
             bottom: 'bottonRight'
         }
+    }
+
+    static getDerivedStateFromProps(props, state) {
+        let update = {};
+
+        if (props.loading !== state.loading) {
+            update.loading = props.loading;
+        }
+
+        if (props.data !== state.data) {
+            update.data = props.data
+        }
+
+        return update;
     }
 
     render() {

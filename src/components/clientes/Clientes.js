@@ -1,20 +1,51 @@
-import React from 'react';
+import React, { Component } from 'react';
 import Tabla from '../Tabla';
 import { Space, Button } from 'antd';
 import ModalDatos from './ModalDatos';
+// eslint-disable-next-line
+import app from '../../firebaseConfig';
 
-class Clientes extends React.Component
+class Clientes extends Component
 {
-    state = {
-        visible: false,
-        registro: null
+    constructor(props){
+        super(props);
+
+        this.ref = app.firestore().collection('clientes');
+        this.unsubscribe = null;
+        this.state = {
+            loading: true,
+            clientes: [],
+            visible: false,
+            registro: null
+        };
+
+    }
+
+    obtenerClientes = (querySnapshot) => {
+        const clientes = [];
+        this.setState({ loading: true })
+
+        querySnapshot.forEach((doc) => {
+            const { dui, nombre, apellido, departamento, municipio, direccion } = doc.data();
+            clientes.push({
+                key: doc.id,
+                nombre: `${nombre} ${apellido}`,
+                dui: dui,
+                direccion: `${direccion}, ${municipio || ''}, ${departamento || ''}`
+            });
+        });
+
+        this.setState({
+            clientes,
+            loading: false
+        });
     }
 
     componentDidMount() {
+        this.unsubscribe = this.ref.onSnapshot(this.obtenerClientes);
     }
 
     columnas = this.asignarColumnas();
-    datos = this.asignarDatos();
 
     asignarColumnas() {
         return [
@@ -47,20 +78,6 @@ class Clientes extends React.Component
         ]
     }
 
-    asignarDatos() {
-        let data = [];
-        for (let i = 0; i <= 20; i++){
-            data.push({
-                key: i,
-                nombre: "Juan Perez",
-                dui: `${i}5714580-3`,
-                direccion: `${i} San Salvador Mejicanos`,
-            });
-        }
-
-        return data;
-    }
-
     modalData = (record) => {
         this.setState({
             visible: true,
@@ -76,7 +93,7 @@ class Clientes extends React.Component
     }
 
     render(){
-        const { visible, registro } = this.state;
+        const { visible, registro, clientes, loading } = this.state;
 
         return (
             <div>
@@ -85,6 +102,7 @@ class Clientes extends React.Component
                     title={registro ? 'Editar información' : 'Agregar cliente'}
                     handleCancel={this.handleCancel}
                     record={registro}
+                    fireRef={this.ref}
                 />
                 <Tabla
                     titulo={
@@ -96,7 +114,8 @@ class Clientes extends React.Component
                         </>
                     }
                     columnas={this.columnas}
-                    datos={this.datos}
+                    data={clientes}
+                    loading={loading}
                 />
             </div>
         );
