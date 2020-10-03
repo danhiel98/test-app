@@ -12,6 +12,7 @@ import App from './App';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Clientes from './components/clientes/Clientes';
+import Contratos from './components/contratos/Contratos';
 import { connect } from 'react-redux';
 import app from './firebaseConfig';
 import { ConnectedRouter } from 'connected-react-router';
@@ -41,6 +42,7 @@ class Router extends Component
                     <App>
                         <Route exact path="/" component={Dashboard} />
                         <Route path="/clientes" component={Clientes} />
+                        <Route path="/contratos" component={Contratos} />
                     </App>
                 </Switch>
             </ConnectedRouter>
