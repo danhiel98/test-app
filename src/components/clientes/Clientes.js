@@ -1,37 +1,46 @@
 import React, { Component } from 'react';
 import Tabla from '../Tabla';
-import { Space, Button } from 'antd';
+import { Space, Button, Input } from 'antd';
 import ModalDatos from './ModalDatos';
 // eslint-disable-next-line
 import app from '../../firebaseConfig';
+const { Search } = Input;
 
 class Clientes extends Component
 {
-    constructor(props){
+    constructor(props) {
         super(props);
 
         this.ref = app.firestore().collection('clientes');
-        this.unsubscribe = null;
+        // this.unsubscribe = null;
         this.state = {
+            busqueda: '',
             loading: true,
             clientes: [],
             visible: false,
             registro: null
         };
-
     }
 
     obtenerClientes = (querySnapshot) => {
         const clientes = [];
+        const { busqueda } = this.state;
         this.setState({ loading: true })
 
         querySnapshot.forEach((doc) => {
-            const { dui, nombre, apellido, departamento, municipio, direccion } = doc.data();
+            const { dui, nombre, apellido, direccion } = doc.data();
+
+            if (busqueda &&
+                nombre.toLowerCase().indexOf(busqueda) === -1 &&
+                dui.indexOf(busqueda) === -1) {
+                return;
+            }
+
             clientes.push({
                 key: doc.id,
                 nombre: `${nombre} ${apellido}`,
                 dui: dui,
-                direccion: `${direccion}, ${municipio || ''}, ${departamento || ''}`
+                direccion
             });
         });
 
@@ -42,7 +51,16 @@ class Clientes extends Component
     }
 
     componentDidMount() {
-        this.unsubscribe = this.ref.onSnapshot(this.obtenerClientes);
+        this.ref.onSnapshot(this.obtenerClientes);
+    }
+
+    buscar(valor) {
+        if (valor !== this.state.busqueda) {
+            this.setState({ busqueda: valor })
+            this.ref
+            .get()
+            .then(querySnapshot => this.obtenerClientes(querySnapshot));
+        }
     }
 
     columnas = this.asignarColumnas();
@@ -52,12 +70,13 @@ class Clientes extends Component
             {
                 title: 'Nombre',
                 dataIndex: 'nombre',
-                sorter: true
+                sorter: (a, b) => a.nombre.length - b.nombre.length,
+                sortDirections: ['ascend'],
             },
             {
                 title: 'DUI',
                 dataIndex: 'dui',
-                sorter: true
+                sorter: (a, b) => a.dui.length - b.dui.length,
             },
             {
                 title: 'Dirección',
@@ -110,6 +129,11 @@ class Clientes extends Component
                             <Space>
                                 <strong>Lista de clientes</strong>
                                 <Button size="small" type="primary" ghost onClick={() => this.modalData()}>Nuevo</Button>
+                                <Search
+                                    placeholder="Buscar"
+                                    onSearch={value => this.buscar(value) }
+                                    style={{ width: 200 }}
+                                />
                             </Space>
                         </>
                     }

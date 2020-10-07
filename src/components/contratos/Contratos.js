@@ -25,10 +25,9 @@ class Contratos extends Component
         querySnapshot.forEach( async (doc) => {
             const { cliente, activo, codigo, fecha_inicio, fecha_fin, velocidad } = doc.data();
 
-            // let x = await cliente.get();
-
             contratos.push({
                 key: doc.id,
+                cliente,
                 codigo,
                 activo,
                 fecha_inicio: new Date(fecha_inicio.seconds * 1000).toLocaleDateString("es-SV"),
@@ -58,7 +57,7 @@ class Contratos extends Component
             <div>
                 <Row gutter={16}>
                     { this.state.contratos.map(contrato =>
-                    <Col span={5} key={contrato.key}>
+                    <Col span={6} key={contrato.key}>
                         <Card
                             style={{ width: 300, marginTop: 16 }}
                             actions={[
@@ -80,7 +79,7 @@ class Contratos extends Component
                             }
                             description={
                                 <div>
-                                    <strong>Cliente:</strong><br />
+                                    <strong>Cliente:</strong><br /> {contrato.cliente}
                                     <strong>Fecha inicio:</strong> {contrato.fecha_inicio}<br />
                                     <strong>Fecha fin:</strong> {contrato.fecha_fin}<br />
                                 </div>
