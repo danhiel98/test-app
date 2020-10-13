@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Avatar, Skeleton, Card, Space, Row, Col, PageHeader, Input } from 'antd';
+import { Pagination, Card, Space, Row, Col, PageHeader, Input } from 'antd';
 import { EditOutlined, EllipsisOutlined, SettingOutlined, FileTextOutlined } from '@ant-design/icons';
 import app from '../../firebaseConfig';
 
@@ -16,7 +16,11 @@ class Contratos extends Component
         this.unsubscribe = null;
         this.state = {
             loading: true,
-            contratos: []
+            contratos: [],
+            contratosActuales: [],
+            totalItems: 0,
+            currentPage: 1,
+            limit: 8
         };
     }
 
@@ -24,6 +28,7 @@ class Contratos extends Component
         const contratos = [];
         const { busqueda } = this.state;
         this.setState({ loading: true })
+        let totalItems = querySnapshot.docs.length;
 
         querySnapshot.forEach( async (doc) => {
             const { cliente, activo, codigo, fecha_inicio, fecha_fin, velocidad } = doc.data();
@@ -49,16 +54,30 @@ class Contratos extends Component
 
         this.setState({
             contratos,
-            loading: false
+            loading: false,
+            totalItems
+        });
+
+        this.contratosPaginados();
+    }
+
+    contratosPaginados(page = 1) {
+        let { contratos, limit } = this.state;
+
+        let data = contratos.slice((limit * page) - limit, limit * page);
+
+        this.setState({ 
+            currentPage: page,
+            contratosActuales: data 
         });
     }
 
     componentDidMount() {
-        this.ref.onSnapshot(this.obtenerContratos);
+        this.ref.orderBy('fecha_ingreso', 'desc').onSnapshot(this.obtenerContratos);
     }
 
-    componentDidUpdate() {
-
+    componentDidUpdate(prevState, newState) {
+        
     }
 
     buscar(valor) {
@@ -70,8 +89,14 @@ class Contratos extends Component
         }
     }
 
+    changePage(page) {
+        if (page === this.state.currentPage) return
+
+        this.contratosPaginados(page);
+    }
+
     render(){
-        const { loading } = this.state;
+        const { loading, currentPage, totalItems, limit } = this.state;
         return (
             <div>
                 
@@ -91,6 +116,19 @@ class Contratos extends Component
                         ]
                     }
                 />
+                <Row gutter={16} style={{ marginTop: 20 }}>
+                    <Col span={16}>
+                        {
+                            !loading && 
+                            <Pagination 
+                                defaultCurrent={currentPage} 
+                                defaultPageSize={limit}
+                                total={totalItems} 
+                                onChange={value => this.changePage(value)}
+                            />
+                        }
+                    </Col>
+                </Row>
                 <Row gutter={16}>
                     {
                         loading && 
@@ -101,7 +139,7 @@ class Contratos extends Component
                         )
                     }
 
-                    { this.state.contratos.map(contrato =>
+                    { this.state.contratosActuales.map(contrato =>
                     <Col span={6} key={contrato.key}>
                         <Card
                             style={{ marginTop: 16 }}
