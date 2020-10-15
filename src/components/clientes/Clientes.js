@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import Tabla from '../Tabla';
-import { Space, Button, Input } from 'antd';
+import { Space, Button, Input, Row, Col } from 'antd';
 import ModalDatos from './ModalDatos';
 // eslint-disable-next-line
 import app from '../../firebaseConfig';
@@ -126,15 +126,21 @@ class Clientes extends Component
                 <Tabla
                     titulo={
                         <>
-                            <Space>
-                                <strong>Lista de clientes</strong>
-                                <Button size="small" type="primary" ghost onClick={() => this.modalData()}>Nuevo</Button>
-                                <Search
-                                    placeholder="Buscar"
-                                    onSearch={value => this.buscar(value) }
-                                    style={{ width: 200 }}
-                                />
-                            </Space>
+                            <Row justify="space-between">
+                                <Col span={4}>
+                                    <strong>Lista de clientes</strong>
+                                </Col>
+                                <Col span={6} offset={4}>
+                                    <Space>
+                                        <Search
+                                            placeholder="Buscar"
+                                            onSearch={value => this.buscar(value) }
+                                            style={{ width: 200 }}
+                                        />
+                                        <Button type="primary" ghost onClick={() => this.modalData()}>Nuevo</Button>
+                                    </Space>
+                                </Col>
+                            </Row>
                         </>
                     }
                     columnas={this.columnas}

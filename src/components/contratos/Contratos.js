@@ -1,11 +1,9 @@
 import React, { Component } from 'react';
-import { Pagination, Card, Space, Row, Col, PageHeader, Input } from 'antd';
+import { Badge, Pagination, Card, Space, Row, Col, PageHeader, Input, Button, Empty } from 'antd';
 import { EditOutlined, EllipsisOutlined, SettingOutlined, FileTextOutlined } from '@ant-design/icons';
 import app from '../../firebaseConfig';
 
 const { Search } = Input;
-
-const { Meta } = Card;
 
 class Contratos extends Component
 {
@@ -27,7 +25,7 @@ class Contratos extends Component
     obtenerContratos = (querySnapshot) => {
         const contratos = [];
         const { busqueda } = this.state;
-        this.setState({ loading: true })
+        
         let totalItems = querySnapshot.docs.length;
 
         querySnapshot.forEach( async (doc) => {
@@ -82,6 +80,7 @@ class Contratos extends Component
 
     buscar(valor) {
         if (valor.toLowerCase() !== this.state.busqueda) {
+            this.setState({ loading: true })
             this.setState({ busqueda: valor.toLowerCase() })
             this.ref
             .get()
@@ -96,7 +95,7 @@ class Contratos extends Component
     }
 
     render(){
-        const { loading, currentPage, totalItems, limit } = this.state;
+        const { loading, currentPage, totalItems, limit, contratosActuales, busqueda } = this.state;
         return (
             <div>
                 
@@ -112,12 +111,15 @@ class Contratos extends Component
                                 placeholder="Buscar"
                                 onSearch={value => this.buscar(value) }
                                 style={{ width: 200 }}
-                            />
+                            />,
+                            <Button key="2" type="primary" ghost>
+                                Nuevo
+                            </Button>
                         ]
                     }
                 />
-                <Row gutter={16} style={{ marginTop: 20 }}>
-                    <Col span={16}>
+                <Row style={{ marginTop: 20 }} justify="end">
+                    <Col>
                         {
                             !loading && 
                             <Pagination 
@@ -129,7 +131,7 @@ class Contratos extends Component
                         }
                     </Col>
                 </Row>
-                <Row gutter={16}>
+                <Row gutter={16} style={{ padding: '10px' }}>
                     {
                         loading && 
                         [1,2,3,4,5,6,7,8].map(n => 
@@ -139,38 +141,53 @@ class Contratos extends Component
                         )
                     }
 
-                    { this.state.contratosActuales.map(contrato =>
+                    { !loading && contratosActuales.map(contrato =>
                     <Col span={6} key={contrato.key}>
                         <Card
-                            style={{ marginTop: 16 }}
+                            style={{ marginTop: 16, boxShadow: '-3px 3px 10px gray', borderRadius: '10px 10px 0px 0px' }}
                             actions={[
                                 <SettingOutlined key="setting" />,
                                 <EditOutlined key="edit" />,
                                 <EllipsisOutlined key="ellipsis" />,
                             ]}
+                            title={
+                                <Space size="middle">
+                                    <FileTextOutlined style={{ fontSize: '25px'}} />
+                                    <strong>{ contrato.codigo }</strong>
+                                </Space>
+                            }
                         >
-                            <Meta
-                                avatar={
-                                    <FileTextOutlined style={{ fontSize: '32px'}} />
-                                }
-                                title={
-                                    <Space size="middle">
-                                        <strong>{ contrato.codigo }</strong>
-                                    </Space>
-                                }
-                                description={
-                                    <div>
-                                        <strong>Cliente:</strong> {contrato.cliente} <br />
-                                        <strong>Fecha inicio:</strong> {contrato.fecha_inicio}<br />
-                                        <strong>Fecha fin:</strong> {contrato.fecha_fin}<br />
-                                        <strong>Velocidad: <span color='green'>{contrato.velocidad}Mb</span> </strong>
-                                    </div>
-                                }
-                            />
+                            <div>
+                                <strong>Cliente:</strong> {contrato.cliente} <br />
+                                <strong>Fecha inicio:</strong> {contrato.fecha_inicio}<br />
+                                <strong>Fecha fin:</strong> {contrato.fecha_fin}<br />
+                                <strong>Velocidad (MB):</strong> <Badge count={contrato.velocidad} style={{ backgroundColor: '#52c41a' }} />
+                            </div>
                         </Card>
                     </Col>
                     )}
                 </Row>
+                {
+                    (!loading && contratosActuales.length === 0) &&
+                        <Empty
+                            imageStyle={{
+                                height: 100,
+                            }}
+                            description={
+                            <span>
+                                No hay datos
+                            </span>
+                            }
+                        >
+                            {
+                                busqueda
+                                ?
+                                <Button type="primary" ghost onClick={() => this.buscar('')}>Restablecer búsqueda</Button>
+                                :
+                                <Button type="primary" ghost>Registrar un nuevo contrato</Button>
+                            }
+                        </Empty>
+                }
             </div>
         );
     }
