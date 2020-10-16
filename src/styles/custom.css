@@ -51,3 +51,15 @@
 .site-page-header {
     background-color: #fff !important;
 }
+
+.ant-card-body {
+    padding: 12px 20px;
+}
+
+.contract-card {
+    box-shadow: -0px 0px 20px -10px gray;
+}
+
+/* .contract-card:hover {
+    box-shadow: -7px 10px 20px -10px gray;
+} */

@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
-import { Badge, Pagination, Card, Space, Row, Col, PageHeader, Input, Button, Empty } from 'antd';
-import { EditOutlined, EllipsisOutlined, SettingOutlined, FileTextOutlined } from '@ant-design/icons';
+import { Tooltip, Badge, Pagination, Card, Space, Row, Col, PageHeader, Input, Button, Empty } from 'antd';
+import { EditOutlined, StopOutlined, CloudDownloadOutlined, FileTextOutlined } from '@ant-design/icons';
 import app from '../../firebaseConfig';
+import DatosContrato from './DatosContrato';
 
 const { Search } = Input;
 
@@ -11,6 +12,8 @@ class Contratos extends Component
         super(props);
 
         this.ref = app.firestore().collection('contratos');
+        this.opcFecha = { year: 'numeric', month: 'short' };
+
         this.unsubscribe = null;
         this.state = {
             loading: true,
@@ -18,7 +21,9 @@ class Contratos extends Component
             contratosActuales: [],
             totalItems: 0,
             currentPage: 1,
-            limit: 8
+            limit: 8,
+            visible: false,
+            registro: null
         };
     }
 
@@ -27,15 +32,20 @@ class Contratos extends Component
         const { busqueda } = this.state;
         
         let totalItems = querySnapshot.docs.length;
-
+        
         querySnapshot.forEach( async (doc) => {
-            const { cliente, activo, codigo, fecha_inicio, fecha_fin, velocidad } = doc.data();
+            let { cliente, activo, codigo, fecha_inicio, fecha_fin, velocidad, precio_cuota } = doc.data();
+
+            fecha_inicio = this.capitalize(new Date(fecha_inicio.seconds * 1000).toLocaleDateString("es-SV", this.opcFecha));
+            fecha_fin = this.capitalize(new Date(fecha_fin.seconds * 1000).toLocaleDateString("es-SV", this.opcFecha));
 
             if 
             (
                 busqueda &&
                 cliente.toLowerCase().indexOf(busqueda) === -1 &&
-                codigo.toLowerCase().indexOf(busqueda) === -1
+                codigo.toLowerCase().indexOf(busqueda) === -1 && 
+                fecha_inicio.toLowerCase().indexOf(busqueda) === -1 &&
+                fecha_fin.toLowerCase().indexOf(busqueda) === -1
             ) 
                 return;
 
@@ -44,9 +54,10 @@ class Contratos extends Component
                 cliente,
                 codigo,
                 activo,
-                fecha_inicio: new Date(fecha_inicio.seconds * 1000).toLocaleDateString("es-SV"),
-                fecha_fin: new Date(fecha_fin.seconds * 1000).toLocaleDateString("es-SV"),
-                velocidad
+                fecha_inicio,
+                fecha_fin,
+                velocidad,
+                precio_cuota
             });
         });
 
@@ -94,11 +105,47 @@ class Contratos extends Component
         this.contratosPaginados(page);
     }
 
+    modalData = (record) => {
+        this.setState({
+            visible: true,
+            registro: record
+        })
+    }
+
+    handleCancel = () => {
+        this.setState({
+            visible: false,
+            registro: null
+        })
+    }
+
+    capitalize = s => {
+        if (typeof s !== 'string') return s
+        return s.charAt(0).toUpperCase() + s.slice(1)
+    }
+
     render(){
-        const { loading, currentPage, totalItems, limit, contratosActuales, busqueda } = this.state;
+        const { 
+            loading, 
+            currentPage, 
+            totalItems, 
+            limit, 
+            contratosActuales, 
+            busqueda,
+            visible,
+            registro
+        } = this.state;
+        
         return (
             <div>
-                
+                {
+                    visible && 
+                    <DatosContrato
+                        visible={visible}
+                        handleCancel={this.handleCancel}
+                        contrato={registro}
+                    />
+                }
                 <PageHeader
                     className="site-page-header"
                     // onBack={() => null}
@@ -131,7 +178,7 @@ class Contratos extends Component
                         }
                     </Col>
                 </Row>
-                <Row gutter={16} style={{ padding: '10px' }}>
+                <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 24 }} style={{ padding: '5px 15px' }}>
                     {
                         loading && 
                         [1,2,3,4,5,6,7,8].map(n => 
@@ -142,13 +189,24 @@ class Contratos extends Component
                     }
 
                     { !loading && contratosActuales.map(contrato =>
-                    <Col span={6} key={contrato.key}>
+                    <Col xs={24} sm={12} md={8} lg={6} key={contrato.key}>
                         <Card
-                            style={{ marginTop: 16, boxShadow: '-3px 3px 10px gray', borderRadius: '10px 10px 0px 0px' }}
+                            className="contract-card"
+                            style={{ 
+                                marginTop: 16, 
+                                boxShadow: '', 
+                                borderRadius: '10px 10px 0px 0px',
+                            }}
                             actions={[
-                                <SettingOutlined key="setting" />,
-                                <EditOutlined key="edit" />,
-                                <EllipsisOutlined key="ellipsis" />,
+                                <Tooltip title="Descargar">
+                                    <CloudDownloadOutlined key="download" />
+                                </Tooltip>,
+                                <Tooltip title="Editar">
+                                    <EditOutlined onClick={() => this.modalData(contrato)} key="edit" />
+                                </Tooltip>,
+                                <Tooltip title="Cancelar">
+                                    <StopOutlined key="cancel" />
+                                </Tooltip>
                             ]}
                             title={
                                 <Space size="middle">
@@ -158,10 +216,12 @@ class Contratos extends Component
                             }
                         >
                             <div>
-                                <strong>Cliente:</strong> {contrato.cliente} <br />
-                                <strong>Fecha inicio:</strong> {contrato.fecha_inicio}<br />
-                                <strong>Fecha fin:</strong> {contrato.fecha_fin}<br />
-                                <strong>Velocidad (MB):</strong> <Badge count={contrato.velocidad} style={{ backgroundColor: '#52c41a' }} />
+                                <strong>Cliente:</strong> <a href="#">{contrato.cliente}</a> <br />
+                                <strong>Inicio:</strong> {contrato.fecha_inicio}<br />
+                                <strong>Fin:</strong> {contrato.fecha_fin}<br />
+                                <strong>Velocidad:</strong> <Badge count={`${contrato.velocidad} MB`} style={{ backgroundColor: '#52c41a' }} /> <br />
+                                <strong>Precio cuota: <span style={{ color: '#089D6C', fontSize: '1.2em' }}>${contrato.precio_cuota}</span></strong> <br />
+                                <strong><a>Ver cuotas</a></strong>
                             </div>
                         </Card>
                     </Col>
