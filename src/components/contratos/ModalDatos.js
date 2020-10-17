@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { DatePicker, Select, Form, Input, Modal, Button, Tooltip } from "antd";
+import { Row, Col, DatePicker, Select, Form, Input, Modal, Button, Tooltip, InputNumber } from "antd";
 import { MinusCircleOutlined } from '@ant-design/icons';
 import "moment/locale/es";
 import locale from "antd/es/date-picker/locale/es_ES";
@@ -99,12 +99,61 @@ const ModalDatos = (props) => {
                         <Option value="other">other</Option>
                     </Select>
                     <Tooltip title="Useful information">
-                        <a href="#API" style={{ margin: "0 8px" }}>
+                        <a href="#/clientes" target="_blank" style={{ margin: "0 8px" }}>
                             Registrar cliente
                         </a>
                     </Tooltip>
                 </Form.Item>
-                
+
+                <Row>
+                    <Col span={10}>
+                        <Form.Item
+                            name="velocidad"
+                            label="Velocidad"
+                            rules={[
+                                {
+                                    required: true,
+                                    message: 'Requerido',
+                                },
+                            ]}
+                            requiredMark="optional"
+                        >
+                            <InputNumber 
+                                min={1} 
+                                max={100} 
+                                step={1} 
+                                placeholder="Velocidad"
+                                // formatter={value => `${value}Mb`}
+                                // parser={value => value.replace('Mb', '')}
+                                formatter={value => `${value}Mb`}
+                                parser={value => value.replace(/(M|b)/g, '')}
+                            />
+                        </Form.Item>
+                    </Col>
+                    <Col span={10} offset={1}>
+                        <Form.Item
+                            name="cuota"
+                            label="Cuota"
+                            rules={[
+                                {
+                                    required: true,
+                                    message: 'Requerido',
+                                },
+                            ]}
+                            requiredMark="optional"
+                        >
+                            <InputNumber 
+                                step={0.01} 
+                                min={15} 
+                                max={100} 
+                                placeholder="Cuota" 
+                                formatter={value => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                                parser={value => value.replace(/\$\s?|(,*)/g, '')}
+                            />
+                        </Form.Item>
+                    </Col>
+                </Row>
+
                 <Form.Item label="Red/IP">
                     <Input.Group compact>
                         <Form.Item
@@ -139,6 +188,7 @@ const ModalDatos = (props) => {
                         </Form.Item>
                     </Input.Group>
                 </Form.Item>
+
                 <Form.Item label="Fecha">
                     <Input.Group compact>
                         <Form.Item name="fecha-inicio" {...config}>
