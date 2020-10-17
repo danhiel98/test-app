@@ -2,7 +2,9 @@ import React, { Component } from 'react';
 import { Tooltip, Badge, Pagination, Card, Space, Row, Col, PageHeader, Input, Button, Empty } from 'antd';
 import { EditOutlined, StopOutlined, CloudDownloadOutlined, FileTextOutlined } from '@ant-design/icons';
 import app from '../../firebaseConfig';
-import DatosContrato from './DatosContrato';
+import { connect } from 'react-redux';
+import { push } from 'connected-react-router';
+import ModalDatos from './ModalDatos';
 
 const { Search } = Input;
 
@@ -82,7 +84,7 @@ class Contratos extends Component
     }
 
     componentDidMount() {
-        this.ref.orderBy('fecha_ingreso', 'desc').onSnapshot(this.obtenerContratos);
+        this.unsubscribe = this.ref.orderBy('fecha_ingreso', 'desc').onSnapshot(this.obtenerContratos);
     }
 
     componentDidUpdate(prevState, newState) {
@@ -124,6 +126,11 @@ class Contratos extends Component
         return s.charAt(0).toUpperCase() + s.slice(1)
     }
 
+    irA = ruta => {
+        this.unsubscribe();
+        this.props.dispatch(push(`contratos/${ruta}`));
+    }
+
     render(){
         const { 
             loading, 
@@ -140,8 +147,9 @@ class Contratos extends Component
             <div>
                 {
                     visible && 
-                    <DatosContrato
+                    <ModalDatos
                         visible={visible}
+                        title={registro ? 'Editar información' : 'Nuevo contrato'}
                         handleCancel={this.handleCancel}
                         contrato={registro}
                     />
@@ -159,7 +167,7 @@ class Contratos extends Component
                                 onSearch={value => this.buscar(value) }
                                 style={{ width: 200 }}
                             />,
-                            <Button key="2" type="primary" ghost>
+                            <Button key="2" type="primary" ghost onClick={() => this.modalData()}>
                                 Nuevo
                             </Button>
                         ]
@@ -253,4 +261,10 @@ class Contratos extends Component
     }
 }
 
-export default Contratos;
+function mapStateToProps(state, ownProps) {
+    return {
+        user: state.user
+    }
+}
+
+export default connect(mapStateToProps)(Contratos);
