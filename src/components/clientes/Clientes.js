@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import Tabla from '../Tabla';
 import { Space, Button, Input, Row, Col } from 'antd';
 import ModalDatos from './ModalDatos';
-// eslint-disable-next-line
 import app from '../../firebaseConfig';
 const { Search } = Input;
 

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { Row, Col, DatePicker, Select, Form, Input, Modal, Button, Tooltip, InputNumber } from "antd";
-import { MinusCircleOutlined } from '@ant-design/icons';
 import "moment/locale/es";
 import locale from "antd/es/date-picker/locale/es_ES";
 
@@ -94,9 +93,11 @@ const ModalDatos = (props) => {
                         style={{ width: 260 }}
                         allowClear
                     >
-                        <Option value="male">male</Option>
-                        <Option value="female">female</Option>
-                        <Option value="other">other</Option>
+                        {
+                            props.clientes.map(cliente => 
+                                <Option value={cliente.key}>{ `${cliente.nombre} ${cliente.apellido}` }</Option>
+                            )
+                        }
                     </Select>
                     <Tooltip title="Useful information">
                         <a href="#/clientes" target="_blank" style={{ margin: "0 8px" }}>
@@ -123,8 +124,6 @@ const ModalDatos = (props) => {
                                 max={100} 
                                 step={1} 
                                 placeholder="Velocidad"
-                                // formatter={value => `${value}Mb`}
-                                // parser={value => value.replace('Mb', '')}
                                 formatter={value => `${value}Mb`}
                                 parser={value => value.replace(/(M|b)/g, '')}
                             />

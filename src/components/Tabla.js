@@ -21,6 +21,7 @@ class Tabla extends React.Component
         }
     }
 
+    // Permite que la información se actualice cuando cambia en el componente padre
     static getDerivedStateFromProps(props, state) {
         let update = {};
 

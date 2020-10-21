@@ -13,13 +13,15 @@ class Contratos extends Component
     constructor(props){
         super(props);
 
-        this.ref = app.firestore().collection('contratos');
+        this.refContratos = app.firestore().collection('contratos');
+        this.refClientes = app.firestore().collection('clientes');
         this.opcFecha = { year: 'numeric', month: 'short' };
 
         this.unsubscribe = null;
         this.state = {
             loading: true,
             contratos: [],
+            clientes: [],
             contratosActuales: [],
             totalItems: 0,
             currentPage: 1,
@@ -83,8 +85,28 @@ class Contratos extends Component
         });
     }
 
+    obtenerClientes = (querySnapshot) => {
+        const clientes = [];
+        
+        querySnapshot.forEach(doc => {
+            let { dui, nombre, apellido } = doc.data();
+
+            clientes.push({
+                key: doc.id,
+                dui,
+                nombre,
+                apellido
+            });
+        });
+
+        this.setState({
+            clientes
+        });
+    }
+
     componentDidMount() {
-        this.unsubscribe = this.ref.orderBy('fecha_ingreso', 'desc').onSnapshot(this.obtenerContratos);
+        this.unsubscribe = this.refContratos.orderBy('fecha_ingreso', 'desc').onSnapshot(this.obtenerContratos);
+        this.refClientes.orderBy('fecha_creacion', 'desc').onSnapshot(this.obtenerClientes);
     }
 
     componentDidUpdate(prevState, newState) {
@@ -95,7 +117,7 @@ class Contratos extends Component
         if (valor.toLowerCase() !== this.state.busqueda) {
             this.setState({ loading: true })
             this.setState({ busqueda: valor.toLowerCase() })
-            this.ref
+            this.refContratos
             .get()
             .then(querySnapshot => this.obtenerContratos(querySnapshot));
         }
@@ -140,7 +162,8 @@ class Contratos extends Component
             contratosActuales, 
             busqueda,
             visible,
-            registro
+            registro,
+            clientes
         } = this.state;
         
         return (
@@ -150,6 +173,7 @@ class Contratos extends Component
                     <ModalDatos
                         visible={visible}
                         title={registro ? 'Editar información' : 'Nuevo contrato'}
+                        clientes={clientes}
                         handleCancel={this.handleCancel}
                         contrato={registro}
                     />
@@ -224,12 +248,12 @@ class Contratos extends Component
                             }
                         >
                             <div>
-                                <strong>Cliente:</strong> <a href="#">{contrato.cliente}</a> <br />
+                                <strong>Cliente:</strong> <a href="/">{contrato.cliente}</a> <br />
                                 <strong>Inicio:</strong> {contrato.fecha_inicio}<br />
                                 <strong>Fin:</strong> {contrato.fecha_fin}<br />
                                 <strong>Velocidad:</strong> <Badge count={`${contrato.velocidad} MB`} style={{ backgroundColor: '#52c41a' }} /> <br />
                                 <strong>Precio cuota: <span style={{ color: '#089D6C', fontSize: '1.2em' }}>${contrato.precio_cuota}</span></strong> <br />
-                                <strong><a>Ver cuotas</a></strong>
+                                <strong><a href="/">Ver cuotas</a></strong>
                             </div>
                         </Card>
                     </Col>

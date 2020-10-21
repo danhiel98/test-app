@@ -13,7 +13,8 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Clientes from './components/clientes/Clientes';
 import Contratos from './components/contratos/Contratos';
-import NotFound from './components/result/NotFound'
+// import NotFound from './components/result/NotFound'
+import Seed from './seeds/Seed';
 import { connect } from 'react-redux';
 import app from './firebaseConfig';
 import { ConnectedRouter } from 'connected-react-router';
@@ -38,6 +39,7 @@ class Router extends Component
         return (
             <ConnectedRouter history={ this.props.history }>
                 <Switch>
+                    <Route exact path="/seed" component={Seed} />
                     <Route exact path="/login" component={Login} />
                     { this.signedIn() ? null : <Redirect to="/login" />}
                     <App>
