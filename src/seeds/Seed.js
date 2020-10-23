@@ -4,7 +4,7 @@ import app from '../firebaseConfig';
 import firebase from 'firebase';
 // faker.locale = 'es_MX';
 
-class Seed extends Component 
+class Seed extends Component
 {
     constructor(props) {
         super(props);
@@ -28,7 +28,7 @@ class Seed extends Component
     }
 
     componentDidMount() {
-        console.log('Componente cargado');    
+        console.log('Componente cargado');
     }
 
     makeData = () => {
@@ -37,6 +37,8 @@ class Seed extends Component
         // this.seedCientes();
         this.seedContratos();
     }
+
+    zeroPad = (num, places) => String(num).padStart(places, '0');
 
     seedRedes = () => {
         console.log('Agregando redes');
@@ -163,39 +165,52 @@ class Seed extends Component
                     dui: data.dui,
                     nombre: data.nombre,
                     apellido: data.apellido,
+                    ref: doc.ref
                 });
             });
         });
 
-        console.log(redes);
-        console.log(ips);
-        console.log(clientes);
-
-        console.log('Agregando contratos');
         return new Promise((resolve, reject) => {
             for (let i = 1; i <= 25; i++){
-                let red = redes[faker.random.number(0, redes.length)];
-                let ip = ips[faker.random.number(0, ips.length)]
-                let cliente = clientes[faker.random.number(0, clientes.length)];
+                let red = redes[faker.random.number({min: 0, max: redes.length - 1})];
+                let ip = ips[faker.random.number({min: 0, max: ips.length - 1})]
+                let cliente = clientes[faker.random.number({min: 0, max: clientes.length - 1})];
+                let fecha_inicio = faker.date.past(faker.random.number({min: 0, max: 5}), new Date());
+                let fecha_fin = new Date(fecha_inicio);
+                fecha_fin.setMonth(fecha_fin.getMonth() + 16)
+
+                let mes_inicio = fecha_inicio.getMonth() + 1;
+                let mes_fin = fecha_fin.getMonth() + 1;
+
+                let f_inicio = `${this.zeroPad(mes_inicio, 2)}${fecha_inicio.getFullYear().toString().substr(-2)}`;
+                let f_fin = `${this.zeroPad(mes_fin, 2)}${fecha_fin.getFullYear().toString().substr(-2)}`;
 
                 let contrato = {
                     activo: true,
-                    cliente: '',
-                    codigo: '',
-                    red: '',
-                    ip: '',
-                    fecha_ingreso: '',
-                    fecha_inicio: '',
-                    fecha_fin: '',
-                    precio_cuota: '',
-                    velocidad: '',
-                    ref_cliente: ''
+                    cliente: `${cliente.nombre} ${cliente.apellido}`,
+                    codigo: `R${red.numero}-${ip.numero}-${f_inicio}-${f_fin}`,
+                    red: red.numero,
+                    ip: ip.numero,
+                    fecha_ingreso: firebase.firestore.FieldValue.serverTimestamp(),
+                    fecha_inicio,
+                    fecha_fin,
+                    precio_cuota: faker.random.float({min: 15, max: 60}),
+                    velocidad: faker.random.number({min: 1, max: 50}),
+                    ref_cliente: cliente.ref,
                 }
 
-                this.refContratos.add(contrato)
-                .then(doc => {
-                    if (i === 25) {
-                        resolve('contratos insertados');
+                this.refContratos.doc(`${contrato.codigo}`).set(contrato)
+                .then(() => {
+                    let fecha_pago = new Date(fecha_inicio);
+                    for (let i = 1; i <= 18; i++) {
+                        let cuota = {
+                            codigo: `${contrato.codigo}-${this.zeroPad(i, 2)}`,
+                            cantidad: contrato.precio_cuota,
+                            fecha_pago: new Date(fecha_pago.setMonth(fecha_pago.getMonth() + i === 1 ? 0 : 1)),
+                            cancelado: false
+                        }
+
+                        this.refContratos.doc(`${contrato.codigo}`).collection('cuotas').doc(`${this.zeroPad(i, 2)}`).set(cuota);
                     }
                 })
                 .catch((error) => {
@@ -215,7 +230,7 @@ class Seed extends Component
         let pClientes = this.rollback(this.refClientes);
         let pContratos = this.rollback(this.refContratos);
         let pPagos = this.rollback(this.refPagos);
-        
+
         console.log('Estamos eliminando la info');
         return new Promise((resolve, reject) => {
             Promise.all([pRedes, pIps, pClientes, pContratos, pPagos])
@@ -237,7 +252,7 @@ class Seed extends Component
                 querySnapshot.forEach(function(doc) {
                     ref.doc(doc.id).delete(); // Eliminar el elemento encontrado
                 });
-                
+
                 resolve('Ok');
             });
         })
