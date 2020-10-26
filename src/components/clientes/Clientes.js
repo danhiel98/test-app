@@ -31,6 +31,7 @@ class Clientes extends Component
 
             if (busqueda &&
                 nombre.toLowerCase().indexOf(busqueda) === -1 &&
+                apellido.toLowerCase().indexOf(busqueda) === -1 &&
                 dui.indexOf(busqueda) === -1) {
                 return;
             }

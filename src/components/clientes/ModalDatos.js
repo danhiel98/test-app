@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {Form, Input, Modal, Button } from 'antd';
 import TextArea from 'antd/lib/input/TextArea';
+import firebase from 'firebase';
 
 const ModalDatos = (props) => {
     const [form] = Form.useForm();
@@ -22,7 +23,7 @@ const ModalDatos = (props) => {
                     dui: cli.dui,
                     nombre: cli.nombre,
                     apellido: cli.apellido,
-                    direccion: cli.direccion
+                    direccion: cli.direccion,
                 });
             } else {
                 console.log(`No se puede obtener el registro`);
@@ -67,9 +68,8 @@ const ModalDatos = (props) => {
             nombre: val.nombre,
             apellido: val.apellido,
             dui: val.dui,
-            // departamento: val.departamento,
-            // municipio: val.municipio,
-            direccion: val.direccion
+            direccion: val.direccion,
+            fecha_creacion: firebase.firestore.FieldValue.serverTimestamp()
         }).then((docRef) => {
             console.log(`¡Todo bien!`)
         })

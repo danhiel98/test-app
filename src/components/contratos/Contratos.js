@@ -15,6 +15,7 @@ class Contratos extends Component
 
         this.refContratos = app.firestore().collection('contratos');
         this.refClientes = app.firestore().collection('clientes');
+        this.refRedes = app.firestore().collection('redes');
         this.opcFecha = { year: 'numeric', month: 'short' };
 
         this.unsubscribe = null;
@@ -22,6 +23,7 @@ class Contratos extends Component
             loading: true,
             contratos: [],
             clientes: [],
+            redes: [],
             contratosActuales: [],
             totalItems: 0,
             currentPage: 1,
@@ -34,23 +36,23 @@ class Contratos extends Component
     obtenerContratos = (querySnapshot) => {
         const contratos = [];
         const { busqueda } = this.state;
-        
+
         let totalItems = querySnapshot.docs.length;
-        
+
         querySnapshot.forEach( async (doc) => {
             let { cliente, activo, codigo, fecha_inicio, fecha_fin, velocidad, precio_cuota } = doc.data();
 
             fecha_inicio = this.capitalize(new Date(fecha_inicio.seconds * 1000).toLocaleDateString("es-SV", this.opcFecha));
             fecha_fin = this.capitalize(new Date(fecha_fin.seconds * 1000).toLocaleDateString("es-SV", this.opcFecha));
 
-            if 
+            if
             (
                 busqueda &&
                 cliente.toLowerCase().indexOf(busqueda) === -1 &&
-                codigo.toLowerCase().indexOf(busqueda) === -1 && 
+                codigo.toLowerCase().indexOf(busqueda) === -1 &&
                 fecha_inicio.toLowerCase().indexOf(busqueda) === -1 &&
                 fecha_fin.toLowerCase().indexOf(busqueda) === -1
-            ) 
+            )
                 return;
 
             contratos.push({
@@ -79,15 +81,32 @@ class Contratos extends Component
 
         let data = contratos.slice((limit * page) - limit, limit * page);
 
-        this.setState({ 
+        this.setState({
             currentPage: page,
-            contratosActuales: data 
+            contratosActuales: data
         });
     }
 
-    obtenerClientes = (querySnapshot) => {
+    obtenerRedes = querySnapshot => {
+        const redes = [];
+
+        querySnapshot.forEach(doc => {
+            let { numero } = doc.data();
+
+            redes.push({
+                key: doc.id,
+                numero: numero
+            });
+        });
+
+        this.setState({
+            redes
+        });
+    }
+
+    obtenerClientes = querySnapshot => {
         const clientes = [];
-        
+
         querySnapshot.forEach(doc => {
             let { dui, nombre, apellido } = doc.data();
 
@@ -107,10 +126,11 @@ class Contratos extends Component
     componentDidMount() {
         this.unsubscribe = this.refContratos.orderBy('fecha_ingreso', 'desc').onSnapshot(this.obtenerContratos);
         this.refClientes.orderBy('fecha_creacion', 'desc').onSnapshot(this.obtenerClientes);
+        this.refRedes.orderBy('numero').onSnapshot(this.obtenerRedes);
     }
 
     componentDidUpdate(prevState, newState) {
-        
+
     }
 
     buscar(valor) {
@@ -154,26 +174,28 @@ class Contratos extends Component
     }
 
     render(){
-        const { 
-            loading, 
-            currentPage, 
-            totalItems, 
-            limit, 
-            contratosActuales, 
+        const {
+            loading,
+            currentPage,
+            totalItems,
+            limit,
+            contratosActuales,
             busqueda,
             visible,
             registro,
-            clientes
+            clientes,
+            redes
         } = this.state;
-        
+
         return (
             <div>
                 {
-                    visible && 
+                    visible &&
                     <ModalDatos
                         visible={visible}
                         title={registro ? 'Editar información' : 'Nuevo contrato'}
                         clientes={clientes}
+                        redes={redes}
                         handleCancel={this.handleCancel}
                         contrato={registro}
                     />
@@ -200,11 +222,11 @@ class Contratos extends Component
                 <Row style={{ marginTop: 20 }} justify="end">
                     <Col>
                         {
-                            !loading && 
-                            <Pagination 
-                                defaultCurrent={currentPage} 
+                            !loading &&
+                            <Pagination
+                                defaultCurrent={currentPage}
                                 defaultPageSize={limit}
-                                total={totalItems} 
+                                total={totalItems}
                                 onChange={value => this.changePage(value)}
                             />
                         }
@@ -212,8 +234,8 @@ class Contratos extends Component
                 </Row>
                 <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 24 }} style={{ padding: '5px 15px' }}>
                     {
-                        loading && 
-                        [1,2,3,4,5,6,7,8].map(n => 
+                        loading &&
+                        [1,2,3,4,5,6,7,8].map(n =>
                             <Col span={6} key={n}>
                                 <Card style={{ marginTop: 16 }} loading={loading} />
                             </Col>
@@ -224,9 +246,9 @@ class Contratos extends Component
                     <Col xs={24} sm={12} md={8} lg={6} key={contrato.key}>
                         <Card
                             className="contract-card"
-                            style={{ 
-                                marginTop: 16, 
-                                boxShadow: '', 
+                            style={{
+                                marginTop: 16,
+                                boxShadow: '',
                                 borderRadius: '10px 10px 0px 0px',
                             }}
                             actions={[

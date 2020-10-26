@@ -35,7 +35,7 @@ class Seed extends Component
         // this.seedRedes();
         // this.seedIps();
         // this.seedCientes();
-        this.seedContratos();
+        // this.seedContratos();
     }
 
     zeroPad = (num, places) => String(num).padStart(places, '0');
@@ -70,7 +70,7 @@ class Seed extends Component
 
                 redes.push({
                     id: doc.id,
-                    numero: data.numero
+                    numero: data.numero,
                 });
             });
         })
@@ -83,9 +83,10 @@ class Seed extends Component
         return new Promise((resolve, reject) => {
             for (let i = 0; i < redes.length; i++) {
                 for (let j = 1; j < 254; j++) {
-                    this.refIps.add({
+                    this.refIps.doc(`${redes[i].numero}-${j}`).set({
                         red: redes[i].numero,
-                        numero: j
+                        numero: j,
+                        libre: faker.random.boolean()
                     })
                     .then(doc => {
                         if (redes.length === 2) {
@@ -104,15 +105,16 @@ class Seed extends Component
         console.log('Agregando clientes');
         return new Promise((resolve, reject) => {
             for (let i = 1; i <= 25; i++){
+                let dui = faker.random.word();
                 let cliente = {
-                    dui: faker.random.word(),
+                    dui,
                     nombre: faker.name.firstName(),
                     apellido: faker.name.lastName(),
                     direccion: `${faker.address.city()} ${faker.address.direction()}`,
                     fecha_creacion: firebase.firestore.FieldValue.serverTimestamp()
                 }
 
-                this.refClientes.add(cliente)
+                this.refClientes.doc(dui).set(cliente)
                 .then(doc => {
                     if (i === 25) {
                         resolve('Clientes insertados');
