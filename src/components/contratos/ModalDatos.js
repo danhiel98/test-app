@@ -15,7 +15,9 @@ const ModalDatos = (props) => {
     const [red, setRed] = useState(null);
     const [ip, setIP] = useState(null);
     const [stValidacionIP, setStValidacionIP] = useState(null);
-    const [msgValidacionIP, setMsgValidacionIP] = useState('');
+    const [msgValidacionIP, setMsgValidacionIP] = useState(null);
+    const [cantCuotas, setCantCuotas] = useState(16);
+    const [fechaInicio, setFechaInicio] = useState(null);
     const [fechaFin, setFechaFin] = useState(null);
 
     useEffect(() => {
@@ -84,6 +86,7 @@ const ModalDatos = (props) => {
     );
 
     const validarIP = async () => {
+        // console.log(fechaFin);
         setStValidacionIP('validating');
         setMsgValidacionIP(null);
 
@@ -117,18 +120,11 @@ const ModalDatos = (props) => {
         }
     }
 
-    const selectFechaInicio = date => {
-        // if (!date) return;
-
-        // let fecha = date.get();
-        // fecha.add(16, 'M');
-
-        // setIP(50);
-        // setLoading(true);
-        // setFechaFin(fecha);
-        // console.log(ip);
-        // console.log(loading);
-        // console.log(fechaFin);
+    const verFechaFin = () => {
+        console.log(cantCuotas)
+        console.log(fechaInicio)
+        // let fecha = moment(date.get());
+        // setFechaFin(fecha.add(cantCuotas, 'M'));
     }
 
     return (
@@ -241,29 +237,62 @@ const ModalDatos = (props) => {
                     <Input addonBefore={selectRedes} onChange={ev => setIP(ev.target.value)} style={{ width: 200 }} placeholder="IP" onBlur={validarIP} />
                 </Form.Item>
 
-                <Form.Item label="Fecha">
-                    <Input.Group compact>
-                        <Form.Item name="fecha_inicio" {...config}>
+                <Form.Item
+                    name="cuotas"
+                    label="# Cuotas"
+                    rules={[
+                        {
+                            required: true,
+                            message: 'Requerido',
+                        },
+                    ]}
+                    requiredMark="optional"
+                >
+                    <InputNumber
+                        min={1}
+                        max={100}
+                        step={1}
+                        placeholder="# de cuotas"
+                        defaultValue={16}
+                        onBlur={ev => {
+                            let cnt = ev.target.value;
+                            setFechaFin(null);
+                            if (!fechaInicio || !cnt) return;
+
+                            setCantCuotas(cnt)
+                            let fecha = moment(fechaInicio.get());
+                            setFechaFin(fecha.add(cnt, 'M'));
+                        }}
+                    />
+                </Form.Item>
+                <Row>
+                    <Col span={12}>
+                        <Form.Item label="Fecha de inicio" name="fecha_inicio">
                             <DatePicker
                                 placeholder="Fecha de inicio"
                                 picker="month"
                                 format="MMMM-YYYY"
                                 locale={locale}
-                                onChange={(date, dateString) => selectFechaInicio(date)}
+                                disabledDate={current => {
+                                    return current && current < moment().subtract(1, 'y')
+                                }}
+                                onChange={date => {
+                                    setFechaFin(null);
+                                    if (!date) return;
+
+                                    setFechaInicio(date)
+                                    let fecha = moment(date.get());
+                                    setFechaFin(fecha.add(cantCuotas, 'M'));
+                                }}
                             />
                         </Form.Item>
-                        <Form.Item name="fecha_fin" {...config}>
-                            <DatePicker
-                                placeholder="Fecha fin (auto)"
-                                picker="month"
-                                format="MMMM-YYYY"
-                                locale={locale}
-                                value={new Date()}
-                                // disabled
-                            />
-                        </Form.Item>
-                    </Input.Group>
-                </Form.Item>
+                    </Col>
+                    <Col span={10} offset={1}>
+                        {
+                            fechaFin && <span>Fecha fin: <strong >{fechaFin.format('MMMM-YYYY')}</strong></span>
+                        }
+                    </Col>
+                </Row>
             </Form>
         </Modal>
     );
