@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Row, Col, DatePicker, Select, Form, Input, Modal, Button, Tooltip, InputNumber } from "antd";
+import { Space, Row, Col, DatePicker, Select, Form, Input, Modal, Button, Tooltip, InputNumber } from "antd";
 import "moment/locale/es";
 import moment from 'moment';
 import locale from "antd/es/date-picker/locale/es_ES";
@@ -16,7 +16,7 @@ const ModalDatos = (props) => {
     const [ip, setIP] = useState(null);
     const [stValidacionIP, setStValidacionIP] = useState(null);
     const [msgValidacionIP, setMsgValidacionIP] = useState(null);
-    const [cantCuotas, setCantCuotas] = useState(16);
+    const [cantCuotas, setCantCuotas] = useState(null);
     const [fechaInicio, setFechaInicio] = useState(null);
     const [fechaFin, setFechaFin] = useState(null);
 
@@ -44,6 +44,8 @@ const ModalDatos = (props) => {
 
     const handleOk = () => {
         setLoading(true);
+
+        validarIP();
         form.validateFields()
             .then((val) => {
                 console.log(val);
@@ -120,13 +122,6 @@ const ModalDatos = (props) => {
         }
     }
 
-    const verFechaFin = () => {
-        console.log(cantCuotas)
-        console.log(fechaInicio)
-        // let fecha = moment(date.get());
-        // setFechaFin(fecha.add(cantCuotas, 'M'));
-    }
-
     return (
         <Modal
             key="data-modal"
@@ -150,33 +145,48 @@ const ModalDatos = (props) => {
                 </div>,
             ]}
         >
-            <Form form={form}>
-                <Form.Item
-                    label="Cliente"
-                    rules={[{ required: true }]}
-                >
-                    <Select
-                        placeholder="Seleccione un cliente"
-                        style={{ width: 260 }}
-                        allowClear
-                        showSearch
-                        optionFilterProp="children"
-                        filterOption={(input, option) =>
-                            option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                        }
-                    >
-                        {
-                            props.clientes.map(cliente =>
-                                <Option key={cliente.key} value={cliente.key}>{ `${cliente.nombre} ${cliente.apellido}` }</Option>
-                            )
-                        }
-                    </Select>
-                    <Tooltip title="Useful information">
-                        <a href="#/clientes" target="_blank" style={{ margin: "0 8px" }}>
-                            Registrar cliente
-                        </a>
-                    </Tooltip>
-                </Form.Item>
+            <Form form={form} initialValues={{
+                ['cuotas']: 16
+            }}>
+                 <Row>
+                    <Col span={17}>
+                        <Form.Item
+                            name="cliente"
+                            label="Cliente"
+                            rules={[
+                                {
+                                    required: true,
+                                    message: 'Seleccione un cliente',
+                                }
+                            ]}
+                            requiredMark="optional"
+                        >
+                            <Select
+                                placeholder="Seleccione un cliente"
+                                style={{ width: 245 }}
+                                allowClear
+                                showSearch
+                                optionFilterProp="children"
+                                filterOption={(input, option) =>
+                                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                                }
+                            >
+                                {
+                                    props.clientes.map(cliente =>
+                                        <Option key={cliente.key} value={cliente.key}>{ `${cliente.nombre} ${cliente.apellido}` }</Option>
+                                    )
+                                }
+                            </Select>
+                        </Form.Item>
+                    </Col>
+                    <Col span={7}>
+                        <Tooltip title="Useful information">
+                            <a href="#/clientes" target="_blank" style={{ margin: "0 8px" }}>
+                                Registrar cliente
+                            </a>
+                        </Tooltip>
+                    </Col>
+                </Row>
 
                 <Row>
                     <Col span={10}>
@@ -203,8 +213,8 @@ const ModalDatos = (props) => {
                     </Col>
                     <Col span={10} offset={1}>
                         <Form.Item
-                            name="cuota"
-                            label="Cuota"
+                            name="precio_cuota"
+                            label="$ Cuota"
                             rules={[
                                 {
                                     required: true,
@@ -218,7 +228,7 @@ const ModalDatos = (props) => {
                                 min={15}
                                 max={100}
                                 placeholder="Cuota"
-                                formatter={value => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                                formatter={value => `$ ${value}${String.fromCharCode(160)}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                                 parser={value => value.replace(/\$\s?|(,*)/g, '')}
                             />
                         </Form.Item>
@@ -252,8 +262,7 @@ const ModalDatos = (props) => {
                         min={1}
                         max={100}
                         step={1}
-                        placeholder="# de cuotas"
-                        defaultValue={16}
+                        placeholder="Cant. cuotas"
                         onBlur={ev => {
                             let cnt = ev.target.value;
                             setFechaFin(null);
@@ -267,7 +276,18 @@ const ModalDatos = (props) => {
                 </Form.Item>
                 <Row>
                     <Col span={12}>
-                        <Form.Item label="Fecha de inicio" name="fecha_inicio">
+                        <Form.Item
+                            name="fecha_inicio"
+                            label="Fecha de inicio"
+                            rules={[
+                                {
+                                    required: true,
+                                    message: 'Fecha requerida'
+                                }
+                            ]}
+
+                            requiredMark="optional"
+                        >
                             <DatePicker
                                 placeholder="Fecha de inicio"
                                 picker="month"
@@ -280,6 +300,7 @@ const ModalDatos = (props) => {
                                     setFechaFin(null);
                                     if (!date) return;
 
+                                    date.set('date', 3);
                                     setFechaInicio(date)
                                     let fecha = moment(date.get());
                                     setFechaFin(fecha.add(cantCuotas, 'M'));
