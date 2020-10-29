@@ -222,7 +222,7 @@ class Contratos extends Component
                 <Row style={{ marginTop: 20 }} justify="end">
                     <Col>
                         {
-                            !loading &&
+                            !loading && totalItems > 0 &&
                             <Pagination
                                 defaultCurrent={currentPage}
                                 defaultPageSize={limit}
@@ -298,7 +298,7 @@ class Contratos extends Component
                                 ?
                                 <Button type="primary" ghost onClick={() => this.buscar('')}>Restablecer búsqueda</Button>
                                 :
-                                <Button type="primary" ghost>Registrar un nuevo contrato</Button>
+                                <Button type="primary" ghost onClick={() => this.modalData()}>Registrar un nuevo contrato</Button>
                             }
                         </Empty>
                 }

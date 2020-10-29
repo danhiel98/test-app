@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { Space, Row, Col, DatePicker, Select, Form, Input, Modal, Button, Tooltip, InputNumber } from "antd";
+import { message, Row, Col, DatePicker, Select, Form, Input, Modal, Button, Tooltip, InputNumber } from "antd";
 import "moment/locale/es";
 import moment from 'moment';
 import locale from "antd/es/date-picker/locale/es_ES";
 import app from '../../firebaseConfig';
+import firebase from 'firebase';
 
 const { Option } = Select;
 
@@ -16,7 +17,7 @@ const ModalDatos = (props) => {
     const [ip, setIP] = useState(null);
     const [stValidacionIP, setStValidacionIP] = useState(null);
     const [msgValidacionIP, setMsgValidacionIP] = useState(null);
-    const [cantCuotas, setCantCuotas] = useState(null);
+    const [cantCuotas, setCantCuotas] = useState(16);
     const [fechaInicio, setFechaInicio] = useState(null);
     const [fechaFin, setFechaFin] = useState(null);
 
@@ -42,34 +43,94 @@ const ModalDatos = (props) => {
         });
     }, [record, form, fireRef]);
 
-    const handleOk = () => {
+    const zeroPad = (num, places) => String(num).padStart(places, '0');
+
+    const handleOk = async () => {
         setLoading(true);
 
-        validarIP();
-        form.validateFields()
-            .then((val) => {
+        if (!validarIP()) {
+            setLoading(false);
+            return;
+        }
+
+        await form.validateFields()
+            .then(async val => {
                 console.log(val);
+                let cliente = '';
+                let refCliente = app.firestore().collection('clientes').doc(val.id_cliente);
+                let refIP = app.firestore().collection('ips').doc(`${val.red}-${val.ip}`);
+                let refContratos = app.firestore().collection('contratos');
+
+                await refCliente
+                .get()
+                .then(doc => {
+                    let data = doc.data();
+                    cliente = {
+                        id: doc.id,
+                        dui: data.dui,
+                        nombre: data.nombre,
+                        apellido: data.apellido,
+                        ref: doc.ref
+                    };
+                })
+                .catch(error => {
+                    throw error;
+                });
+
+                await refIP
+                .update({
+                    libre: false
+                })
+                .catch(error => {
+                    throw error;
+                })
+
+                let contrato = {
+                    activo: true,
+                    cliente: `${cliente.nombre} ${cliente.apellido}`,
+                    codigo: `R${val.red}-${val.ip}-${fechaInicio.format('MM-YY')}-${fechaFin.format('MM-YY')}`,
+                    red: val.red,
+                    ip: val.ip,
+                    fecha_ingreso: firebase.firestore.FieldValue.serverTimestamp(),
+                    fecha_inicio: new Date(fechaInicio),
+                    fecha_fin: new Date(fechaFin),
+                    cant_cuotas: val.cuotas,
+                    precio_cuota: val.precio_cuota,
+                    velocidad: val.velocidad,
+                    ref_cliente: cliente.ref,
+                }
+
+                refContratos.doc(`${contrato.codigo}`).set(contrato)
+                .then(() => {
+                    let fechaPago = new Date(fechaInicio);
+                    for (let i = 1; i <= cantCuotas; i++) {
+                        let cuota = {
+                            codigo: `${contrato.codigo}-${zeroPad(i, 2)}`,
+                            cantidad: contrato.precio_cuota,
+                            fecha_pago: new Date(fechaPago.setMonth(fechaPago.getMonth() + i === 1 ? 0 : 1)),
+                            cancelado: false
+                        }
+
+                        refContratos.doc(`${contrato.codigo}`).collection('cuotas').doc(`${zeroPad(i, 2)}`).set(cuota);
+                    }
+                    message.success('¡Se agregó el contrato correctamente!');
+                    props.handleCancel();
+
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
             })
             .catch((info) => {
-                console.log("Validate Failed:", info);
+                message.success('¡Verifique la información ingresada');
             })
             .finally(() => {
                 setLoading(false);
             });
     };
 
-    const config = {
-        rules: [
-            {
-                type: "object",
-                required: true,
-                message: "Debe seleccionar una fecha",
-            },
-        ],
-    };
-
     const selectRedes = (
-        <Form.Item name="prefix" noStyle>
+        <Form.Item name="red" noStyle>
             <Select
                 style={{ width: 70 }}
                 placeholder="Red"
@@ -88,7 +149,6 @@ const ModalDatos = (props) => {
     );
 
     const validarIP = async () => {
-        // console.log(fechaFin);
         setStValidacionIP('validating');
         setMsgValidacionIP(null);
 
@@ -97,15 +157,16 @@ const ModalDatos = (props) => {
             if (!ip) throw new Error('Introduzca la direccion IP')
             if (ip <= 0 || ip >= 255 || isNaN(ip)) throw new Error('La IP ingresada no es válida')
 
-            let refIPs = app.firestore().collection('ips').doc(`${red}-${ip}`);
+            let refIP = app.firestore().collection('ips').doc(`${red}-${ip}`);
 
-            await refIPs
+            await refIP
             .get()
             .then(function(doc) {
                 if (doc.exists) {
                     if (doc.data().libre) {
                         setStValidacionIP('success');
                         setMsgValidacionIP(null);
+                        return true;
                     } else {
                         throw new Error('La IP ya está en uso')
                     }
@@ -120,6 +181,7 @@ const ModalDatos = (props) => {
             setStValidacionIP('error');
             setMsgValidacionIP(error.message);
         }
+        return false;
     }
 
     return (
@@ -140,18 +202,19 @@ const ModalDatos = (props) => {
                         loading={loading}
                         onClick={handleOk}
                     >
-                        Enviar
+                        Guardar
                     </Button>
                 </div>,
             ]}
         >
             <Form form={form} initialValues={{
-                ['cuotas']: 16
+                // eslint-disable-next-line
+                ['cuotas']: cantCuotas
             }}>
                  <Row>
                     <Col span={17}>
                         <Form.Item
-                            name="cliente"
+                            name="id_cliente"
                             label="Cliente"
                             rules={[
                                 {
@@ -228,8 +291,8 @@ const ModalDatos = (props) => {
                                 min={15}
                                 max={100}
                                 placeholder="Cuota"
-                                formatter={value => `$ ${value}${String.fromCharCode(160)}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                                parser={value => value.replace(/\$\s?|(,*)/g, '')}
+                                formatter={value => `$ ${value} `.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                                parser={value => value.replace(/\$\s?|\s|(,*)/g, '')}
                             />
                         </Form.Item>
                     </Col>
@@ -266,11 +329,12 @@ const ModalDatos = (props) => {
                         onBlur={ev => {
                             let cnt = ev.target.value;
                             setFechaFin(null);
+                            setCantCuotas(cnt)
+
                             if (!fechaInicio || !cnt) return;
 
-                            setCantCuotas(cnt)
                             let fecha = moment(fechaInicio.get());
-                            setFechaFin(fecha.add(cnt, 'M'));
+                            setFechaFin(fecha.add(cnt - 1, 'M'));
                         }}
                     />
                 </Form.Item>
@@ -297,13 +361,15 @@ const ModalDatos = (props) => {
                                     return current && current < moment().subtract(1, 'y')
                                 }}
                                 onChange={date => {
+                                    setFechaInicio(null)
                                     setFechaFin(null);
-                                    if (!date) return;
+
+                                    if (!date || !cantCuotas) return;
 
                                     date.set('date', 3);
                                     setFechaInicio(date)
                                     let fecha = moment(date.get());
-                                    setFechaFin(fecha.add(cantCuotas, 'M'));
+                                    setFechaFin(fecha.add(cantCuotas - 1, 'M'));
                                 }}
                             />
                         </Form.Item>
