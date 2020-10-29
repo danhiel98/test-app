@@ -37,7 +37,7 @@ class Login extends Component
             <>
                 <Layout className="layout">
                     <Row justify="space-around" align="middle">
-                        <Col span={5} style={ { marginTop: "25vh" } }>
+                        <Col xs={20} sm={10} md={10} lg={6} xl={5} style={ { marginTop: "25vh" } }>
                             <Row>
                                 <Col span={24}>
                                     <Title style={ { textAlign: "center" } }>Turbo Mega</Title>
