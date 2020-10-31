@@ -9,15 +9,15 @@ import ModalDatos from './ModalDatos';
 
 const { Search } = Input;
 
-class Contratos extends Component
-{
-    constructor(props){
+class Contratos extends Component {
+    constructor(props) {
         super(props);
 
         this.refContratos = app.firestore().collection('contratos');
         this.refClientes = app.firestore().collection('clientes');
         this.refRedes = app.firestore().collection('redes');
         this.opcFecha = { year: 'numeric', month: 'short' };
+        this.networks = [];
 
         this.unsubscribe = null;
         this.state = {
@@ -40,14 +40,14 @@ class Contratos extends Component
 
         let totalItems = querySnapshot.docs.length;
 
-        querySnapshot.forEach( async (doc) => {
+        querySnapshot.forEach(async (doc) => {
             let { cliente, activo, codigo, fecha_inicio, fecha_fin, velocidad, precio_cuota } = doc.data();
 
             fecha_inicio = this.capitalize(new Date(fecha_inicio.seconds * 1000).toLocaleDateString("es-SV", this.opcFecha));
             fecha_fin = this.capitalize(new Date(fecha_fin.seconds * 1000).toLocaleDateString("es-SV", this.opcFecha));
 
             if
-            (
+                (
                 busqueda &&
                 cliente.toLowerCase().indexOf(busqueda) === -1 &&
                 codigo.toLowerCase().indexOf(busqueda) === -1 &&
@@ -100,6 +100,7 @@ class Contratos extends Component
             });
         });
 
+        this.networks = redes;
         this.setState({
             redes
         });
@@ -139,8 +140,8 @@ class Contratos extends Component
             this.setState({ loading: true })
             this.setState({ busqueda: valor.toLowerCase() })
             this.refContratos
-            .get()
-            .then(querySnapshot => this.obtenerContratos(querySnapshot));
+                .get()
+                .then(querySnapshot => this.obtenerContratos(querySnapshot));
         }
     }
 
@@ -182,7 +183,15 @@ class Contratos extends Component
                 title: 'Código',
                 dataIndex: 'codigo',
                 sorter: (a, b) => a.length - b.length,
+                filters: [],
+                onFilter: (value, record) => record.codigo.indexOf(value) === 0,
+                sorter: (a, b) => a.codigo.length - b.codigo.length,
                 sortDirections: ['ascend'],
+                render: codigo => (
+                    <strong>
+                        { codigo }
+                    </strong>
+                )
             },
             {
                 title: 'Cliente',
@@ -193,9 +202,11 @@ class Contratos extends Component
                 title: 'Velocidad',
                 dataIndex: 'velocidad',
                 sorter: true,
+                filters: [],
+                onFilter: (value, record) => record.velocidad === value,
                 render: velocidad => (
                     <>
-                        <Badge count={`${velocidad} MB`} style={{ backgroundColor: '#52c41a' }} />
+                        <Badge count={`${velocidad} Mb`} style={{ backgroundColor: '#52c41a' }} />
                     </>
                 )
             },
@@ -233,23 +244,16 @@ class Contratos extends Component
                         <Tooltip title="Cancelar">
                             <StopOutlined key="cancel" onClick={() => console.log('cancel')} style={{ color: '#f5222d' }} />
                         </Tooltip>
-                        {/* <a href="#" onClick={ () => { this.modalInfo(record); } }>Detalle</a> */}
-                        {/* <Button type="link" onClick={ () => { this.modalData(record); } }>Editar</Button> */}
-                        {/* <a href="#">Dar de baja</a> */}
                     </Space>
                 )
             }
         ]
     }
 
-    render(){
+    render() {
         const {
             loading,
-            currentPage,
-            totalItems,
-            limit,
             contratosActuales,
-            busqueda,
             visible,
             registro,
             clientes,
@@ -271,7 +275,6 @@ class Contratos extends Component
                 }
                 <PageHeader
                     className="site-page-header"
-                    // onBack={() => null}
                     title="Contratos"
                     subTitle="Lista de contratos"
                     extra={
@@ -279,7 +282,7 @@ class Contratos extends Component
                             <Search
                                 key="1"
                                 placeholder="Buscar"
-                                onSearch={value => this.buscar(value) }
+                                onSearch={value => this.buscar(value)}
                                 style={{ width: 200 }}
                             />,
                             <Button key="2" type="primary" ghost onClick={() => this.modalData()}>
@@ -288,113 +291,32 @@ class Contratos extends Component
                         ]
                     }
                 />
+                {
+                    redes.map(red => {
+                        this.columnas[0].filters.push(
+                            {
+                                text: `Red ${red.numero}`,
+                                value: `R${red.numero}`,
+                            },
+                        );
+                    })
+                }
+                {
+                    !this.columnas[2].filters.length &&
+                    contratosActuales.map(contrato => contrato.velocidad)
+                    .filter((value, index, self) => self.indexOf(value) == index)
+                    .map(velocidad => {
+                        this.columnas[2].filters.push({
+                            text: `${velocidad} Mb`,
+                            value: velocidad
+                        });
+                    })
+                }
                 <Tabla
-                    // titulo={
-                    //     <>
-                    //         <Row justify="space-between">
-                    //             <Col span={4}>
-                    //                 <strong>Lista de clientes</strong>
-                    //             </Col>
-                    //             <Col span={6} offset={4}>
-                    //                 <Space>
-                    //                     <Search
-                    //                         placeholder="Buscar"
-                    //                         onSearch={value => this.buscar(value) }
-                    //                         style={{ width: 200 }}
-                    //                     />
-                    //                     <Button type="primary" ghost onClick={() => this.modalData()}>Nuevo</Button>
-                    //                 </Space>
-                    //             </Col>
-                    //         </Row>
-                    //     </>
-                    // }
                     columnas={this.columnas}
                     data={contratosActuales}
                     loading={loading}
                 />
-                {/* <Row style={{ marginTop: 20 }} justify="end">
-                    <Col>
-                        {
-                            !loading && totalItems > 0 &&
-                            <Pagination
-                                defaultCurrent={currentPage}
-                                defaultPageSize={limit}
-                                total={totalItems}
-                                onChange={value => this.changePage(value)}
-                            />
-                        }
-                    </Col>
-                </Row>
-                <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 24 }} style={{ padding: '5px 15px' }}>
-                    {
-                        loading &&
-                        [1,2,3,4,5,6,7,8].map(n =>
-                            <Col span={6} key={n}>
-                                <Card style={{ marginTop: 16 }} loading={loading} />
-                            </Col>
-                        )
-                    }
-
-                    { !loading && contratosActuales.map(contrato =>
-                    <Col xs={24} sm={12} md={8} lg={6} key={contrato.key}>
-                        <Card
-                            className="contract-card"
-                            style={{
-                                marginTop: 16,
-                                boxShadow: '',
-                                borderRadius: '10px 10px 0px 0px',
-                            }}
-                            actions={[
-                                <Tooltip title="Descargar">
-                                    <CloudDownloadOutlined key="download" />
-                                </Tooltip>,
-                                <Tooltip title="Editar">
-                                    <EditOutlined onClick={() => this.modalData(contrato)} key="edit" />
-                                </Tooltip>,
-                                <Tooltip title="Cancelar">
-                                    <StopOutlined key="cancel" />
-                                </Tooltip>
-                            ]}
-                            title={
-                                <Space size="middle">
-                                    <FileTextOutlined style={{ fontSize: '25px'}} />
-                                    <strong>{ contrato.codigo }</strong>
-                                </Space>
-                            }
-                        >
-                            <div>
-                                <strong>Cliente:</strong> <a href="/">{contrato.cliente}</a> <br />
-                                <strong>Inicio:</strong> {contrato.fecha_inicio}<br />
-                                <strong>Fin:</strong> {contrato.fecha_fin}<br />
-                                <strong>Velocidad:</strong> <Badge count={`${contrato.velocidad} MB`} style={{ backgroundColor: '#52c41a' }} /> <br />
-                                <strong>Precio cuota: <span style={{ color: '#089D6C', fontSize: '1.2em' }}>${contrato.precio_cuota}</span></strong> <br />
-                                <strong><a href="/">Ver cuotas</a></strong>
-                            </div>
-                        </Card>
-                    </Col>
-                    )}
-                </Row>
-                {
-                    (!loading && contratosActuales.length === 0) &&
-                        <Empty
-                            imageStyle={{
-                                height: 100,
-                            }}
-                            description={
-                            <span>
-                                No hay datos
-                            </span>
-                            }
-                        >
-                            {
-                                busqueda
-                                ?
-                                <Button type="primary" ghost onClick={() => this.buscar('')}>Restablecer búsqueda</Button>
-                                :
-                                <Button type="primary" ghost onClick={() => this.modalData()}>Registrar un nuevo contrato</Button>
-                            }
-                        </Empty>
-                } */}
             </div>
         );
     }
