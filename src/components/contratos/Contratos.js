@@ -4,6 +4,7 @@ import { EditOutlined, StopOutlined, CloudDownloadOutlined, FileTextOutlined } f
 import app from '../../firebaseConfig';
 import { connect } from 'react-redux';
 import { push } from 'connected-react-router';
+import Tabla from '../Tabla';
 import ModalDatos from './ModalDatos';
 
 const { Search } = Input;
@@ -173,6 +174,74 @@ class Contratos extends Component
         this.props.dispatch(push(`contratos/${ruta}`));
     }
 
+    columnas = this.asignarColumnas();
+
+    asignarColumnas() {
+        return [
+            {
+                title: 'Código',
+                dataIndex: 'codigo',
+                sorter: (a, b) => a.length - b.length,
+                sortDirections: ['ascend'],
+            },
+            {
+                title: 'Cliente',
+                dataIndex: 'cliente',
+                sorter: (a, b) => a.length - b.length,
+            },
+            {
+                title: 'Velocidad',
+                dataIndex: 'velocidad',
+                sorter: true,
+                render: velocidad => (
+                    <>
+                        <Badge count={`${velocidad} MB`} style={{ backgroundColor: '#52c41a' }} />
+                    </>
+                )
+            },
+            {
+                title: 'Precio',
+                dataIndex: 'precio_cuota',
+                sorter: true,
+                render: precio_cuota => (
+                    <>
+                        <strong>
+                            <span style={{ color: '#089D6C', fontSize: '1.2em' }}>${precio_cuota}</span>
+                        </strong>
+                    </>
+                )
+            },
+            {
+                title: 'Fecha inicio',
+                dataIndex: 'fecha_inicio'
+            },
+            {
+                title: 'Fecha fin',
+                dataIndex: 'fecha_fin'
+            },
+            {
+                title: 'Opciones',
+                key: 'opciones',
+                render: (record) => (
+                    <Space size="middle">
+                        <Tooltip title="Descargar">
+                            <CloudDownloadOutlined key="download" onClick={() => console.log('download')} style={{ color: '#389e0d' }} />
+                        </Tooltip>
+                        <Tooltip title="Editar">
+                            <EditOutlined key="edit" onClick={() => this.modalData(record)} style={{ color: '#fa8c16' }} />
+                        </Tooltip>
+                        <Tooltip title="Cancelar">
+                            <StopOutlined key="cancel" onClick={() => console.log('cancel')} style={{ color: '#f5222d' }} />
+                        </Tooltip>
+                        {/* <a href="#" onClick={ () => { this.modalInfo(record); } }>Detalle</a> */}
+                        {/* <Button type="link" onClick={ () => { this.modalData(record); } }>Editar</Button> */}
+                        {/* <a href="#">Dar de baja</a> */}
+                    </Space>
+                )
+            }
+        ]
+    }
+
     render(){
         const {
             loading,
@@ -219,7 +288,31 @@ class Contratos extends Component
                         ]
                     }
                 />
-                <Row style={{ marginTop: 20 }} justify="end">
+                <Tabla
+                    // titulo={
+                    //     <>
+                    //         <Row justify="space-between">
+                    //             <Col span={4}>
+                    //                 <strong>Lista de clientes</strong>
+                    //             </Col>
+                    //             <Col span={6} offset={4}>
+                    //                 <Space>
+                    //                     <Search
+                    //                         placeholder="Buscar"
+                    //                         onSearch={value => this.buscar(value) }
+                    //                         style={{ width: 200 }}
+                    //                     />
+                    //                     <Button type="primary" ghost onClick={() => this.modalData()}>Nuevo</Button>
+                    //                 </Space>
+                    //             </Col>
+                    //         </Row>
+                    //     </>
+                    // }
+                    columnas={this.columnas}
+                    data={contratosActuales}
+                    loading={loading}
+                />
+                {/* <Row style={{ marginTop: 20 }} justify="end">
                     <Col>
                         {
                             !loading && totalItems > 0 &&
@@ -301,7 +394,7 @@ class Contratos extends Component
                                 <Button type="primary" ghost onClick={() => this.modalData()}>Registrar un nuevo contrato</Button>
                             }
                         </Empty>
-                }
+                } */}
             </div>
         );
     }
