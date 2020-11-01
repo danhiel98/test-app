@@ -25,10 +25,6 @@ class Contratos extends Component {
             contratos: [],
             clientes: [],
             redes: [],
-            contratosActuales: [],
-            totalItems: 0,
-            currentPage: 1,
-            limit: 8,
             visible: false,
             registro: null
         };
@@ -38,16 +34,14 @@ class Contratos extends Component {
         const contratos = [];
         const { busqueda } = this.state;
 
-        let totalItems = querySnapshot.docs.length;
-
         querySnapshot.forEach(async (doc) => {
             let { cliente, activo, codigo, fecha_inicio, fecha_fin, velocidad, precio_cuota } = doc.data();
 
-            fecha_inicio = this.capitalize(new Date(fecha_inicio.seconds * 1000).toLocaleDateString("es-SV", this.opcFecha));
-            fecha_fin = this.capitalize(new Date(fecha_fin.seconds * 1000).toLocaleDateString("es-SV", this.opcFecha));
+            fecha_inicio = this.verFecha(fecha_inicio);
+            fecha_fin = this.verFecha(fecha_fin);
 
             if
-                (
+            (
                 busqueda &&
                 cliente.toLowerCase().indexOf(busqueda) === -1 &&
                 codigo.toLowerCase().indexOf(busqueda) === -1 &&
@@ -67,24 +61,9 @@ class Contratos extends Component {
                 precio_cuota
             });
         });
-
         this.setState({
             contratos,
             loading: false,
-            totalItems
-        });
-
-        this.contratosPaginados();
-    }
-
-    contratosPaginados(page = 1) {
-        let { contratos, limit } = this.state;
-
-        let data = contratos.slice((limit * page) - limit, limit * page);
-
-        this.setState({
-            currentPage: page,
-            contratosActuales: data
         });
     }
 
@@ -145,12 +124,6 @@ class Contratos extends Component {
         }
     }
 
-    changePage(page) {
-        if (page === this.state.currentPage) return
-
-        this.contratosPaginados(page);
-    }
-
     modalData = (record) => {
         this.setState({
             visible: true,
@@ -170,6 +143,10 @@ class Contratos extends Component {
         return s.charAt(0).toUpperCase() + s.slice(1)
     }
 
+    verFecha = fecha => {
+        return this.capitalize(new Date(fecha.seconds * 1000).toLocaleDateString("es-SV", this.opcFecha))
+    }
+
     irA = ruta => {
         this.unsubscribe();
         this.props.dispatch(push(`contratos/${ruta}`));
@@ -182,11 +159,12 @@ class Contratos extends Component {
             {
                 title: 'Código',
                 dataIndex: 'codigo',
-                sorter: (a, b) => a.length - b.length,
+                sorter: {
+                    compare: (a, b) => a.codigo - b.codigo,
+                    multiple: 2,
+                },
                 filters: [],
                 onFilter: (value, record) => record.codigo.indexOf(value) === 0,
-                sorter: (a, b) => a.codigo.length - b.codigo.length,
-                sortDirections: ['ascend'],
                 render: codigo => (
                     <strong>
                         { codigo }
@@ -196,7 +174,10 @@ class Contratos extends Component {
             {
                 title: 'Cliente',
                 dataIndex: 'cliente',
-                sorter: (a, b) => a.length - b.length,
+                sorter: {
+                    compare: (a, b) => a.cliente - b.cliente,
+                    multiple: 1,
+                }
             },
             {
                 title: 'Velocidad',
@@ -252,8 +233,8 @@ class Contratos extends Component {
 
     render() {
         const {
+            contratos,
             loading,
-            contratosActuales,
             visible,
             registro,
             clientes,
@@ -303,8 +284,8 @@ class Contratos extends Component {
                 }
                 {
                     !this.columnas[2].filters.length &&
-                    contratosActuales.map(contrato => contrato.velocidad)
-                    .filter((value, index, self) => self.indexOf(value) == index)
+                    contratos.map(contrato => contrato.velocidad)
+                    .filter((value, index, self) => self.indexOf(value) === index)
                     .map(velocidad => {
                         this.columnas[2].filters.push({
                             text: `${velocidad} Mb`,
@@ -314,7 +295,7 @@ class Contratos extends Component {
                 }
                 <Tabla
                     columnas={this.columnas}
-                    data={contratosActuales}
+                    data={contratos}
                     loading={loading}
                 />
             </div>

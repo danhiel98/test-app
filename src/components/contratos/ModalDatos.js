@@ -88,7 +88,7 @@ const ModalDatos = (props) => {
                 let contrato = {
                     activo: true,
                     cliente: `${cliente.nombre} ${cliente.apellido}`,
-                    codigo: `R${val.red}-${val.ip}-${fechaInicio.format('MM-YY')}-${fechaFin.format('MM-YY')}`,
+                    codigo: `R${val.red}-${val.ip}-${fechaInicio.format('MMYY')}-${fechaFin.format('MMYY')}`,
                     red: val.red,
                     ip: val.ip,
                     fecha_ingreso: firebase.firestore.FieldValue.serverTimestamp(),
