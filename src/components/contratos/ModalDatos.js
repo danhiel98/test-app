@@ -10,7 +10,7 @@ const { Option } = Select;
 
 const ModalDatos = (props) => {
     const [form] = Form.useForm();
-    const { fireRef, record } = props;
+    const { fireRef, record, clientes } = props;
 
     const [loading, setLoading] = useState(false);
     const [red, setRed] = useState(null);
@@ -21,6 +21,10 @@ const ModalDatos = (props) => {
     const [fechaInicio, setFechaInicio] = useState(null);
     const [fechaFin, setFechaFin] = useState(null);
 
+    let refContratos = app.firestore().collection('contratos');
+    let refCliente = app.firestore().collection('clientes');
+    let refIP = app.firestore().collection('ips');
+
     useEffect(() => {
         if (!record) {
             form.resetFields();
@@ -28,38 +32,53 @@ const ModalDatos = (props) => {
         }
 
         const ref = fireRef.doc(record.key);
-        ref.get().then((doc) => {
+        ref.get().then(async (doc) => {
             if (doc.exists) {
-                const cli = doc.data();
+                let doc_cliente;
+                const contrato = doc.data();
+                
+                setRed(contrato.red);
+                setIP(contrato.ip);
+                setFechaInicio(moment(contrato.fecha_inicio.toDate()))
+                setFechaFin(moment(contrato.fecha_fin.toDate()))
+
+                await contrato.ref_cliente.get()
+                .then(doc => {
+                    doc_cliente = doc;
+                })
+
                 form.setFieldsValue({
-                    dui: cli.dui,
-                    nombre: cli.nombre,
-                    apellido: cli.apellido,
-                    direccion: cli.direccion,
+                    id_cliente: doc_cliente.id,
+                    velocidad: contrato.velocidad,
+                    precio_cuota: contrato.precio_cuota,
+                    red: contrato.red,
+                    ip: contrato.ip,
+                    cuotas: contrato.cant_cuotas,
+                    fecha_inicio: moment(contrato.fecha_inicio.toDate())
                 });
+
+
             } else {
                 console.log(`No se puede obtener el registro`);
             }
         });
-    }, [record, form, fireRef]);
+    }, [record, clientes, form, fireRef]);
 
     const zeroPad = (num, places) => String(num).padStart(places, '0');
 
     const handleOk = async () => {
         setLoading(true);
 
-        if (!validarIP()) {
-            setLoading(false);
-            return;
-        }
-
         await form.validateFields()
             .then(async val => {
-                console.log(val);
+                if (!validarIP()) {
+                    setLoading(false);
+                    return;
+                }
+
                 let cliente = '';
-                let refCliente = app.firestore().collection('clientes').doc(val.id_cliente);
-                let refIP = app.firestore().collection('ips').doc(`${val.red}-${val.ip}`);
-                let refContratos = app.firestore().collection('contratos');
+                refCliente = refCliente.doc(val.id_cliente);
+                refIP = refIP.doc(`${val.red}-${val.ip}`);
 
                 await refCliente
                 .get()
@@ -100,35 +119,72 @@ const ModalDatos = (props) => {
                     ref_cliente: cliente.ref,
                 }
 
-                refContratos.doc(`${contrato.codigo}`).set(contrato)
-                .then(() => {
-                    let fechaPago = new Date(fechaInicio);
-                    for (let i = 1; i <= cantCuotas; i++) {
-                        let cuota = {
-                            codigo: `${contrato.codigo}-${zeroPad(i, 2)}`,
-                            cantidad: contrato.precio_cuota,
-                            fecha_pago: new Date(fechaPago.setMonth(fechaPago.getMonth() + i === 1 ? 0 : 1)),
-                            cancelado: false
-                        }
-
-                        refContratos.doc(`${contrato.codigo}`).collection('cuotas').doc(`${zeroPad(i, 2)}`).set(cuota);
-                    }
-                    message.success('¡Se agregó el contrato correctamente!');
-                    props.handleCancel();
-
-                })
-                .catch((error) => {
-                    console.log(error);
-                });
+                if (record) {
+                    editarRegistro(val)
+                    .then(() => {
+                        message.success('¡Registro editado correctamente!');
+                        form.resetFields();
+                        props.handleCancel()
+                    })
+                    .catch(error => {
+                        console.log(`Hubo un error al editar el registro: ${error}`)
+                    })
+                } else {
+                    console.log('No hay contrato')
+                    agregarRegistro(contrato)
+                    .then(() => {
+                        message.success('¡Se agregó el contrato correctamente!');
+                        form.resetFields();
+                        props.handleCancel()
+                    })
+                    .catch(error => {
+                        console.log(`Hubo un error al agregar el registro: ${error}`)
+                    })
+                }
             })
             .catch((info) => {
-                message.success('¡Verifique la información ingresada');
+                console.log(info);
+                message.warning('¡Verifique la información ingresada');
             })
             .finally(() => {
                 setLoading(false);
             });
     };
 
+    const agregarRegistro = async (contrato) => {
+        refContratos.doc(`${contrato.codigo}`).set(contrato)
+        .then(() => {
+            let fechaPago = new Date(fechaInicio);
+            for (let i = 1; i <= cantCuotas; i++) {
+                let cuota = {
+                    codigo: `${contrato.codigo}-${zeroPad(i, 2)}`,
+                    cantidad: contrato.precio_cuota,
+                    fecha_pago: new Date(fechaPago.setMonth(fechaPago.getMonth() + i === 1 ? 0 : 1)),
+                    cancelado: false
+                }
+
+                refContratos.doc(`${contrato.codigo}`).collection('cuotas').doc(`${zeroPad(i, 2)}`).set(cuota);
+            }
+        })
+        .then(doc => {
+            console.log('Todo bien');
+        })
+        .catch((error) => {
+            console.log(error);
+        });
+    }
+
+    const editarRegistro = async (contrato) => {
+        const ref = fireRef.doc(contrato.codigo);
+
+        ref.set(contrato).then((docRef) => {
+            console.log(`El registro fue actualizado`)
+        })
+        .catch((error) => {
+            console.error(`No se pudo editar el registro: ${error}`);
+        });
+    }
+    
     const selectRedes = (
         <Form.Item name="red" noStyle>
             <Select
@@ -153,7 +209,7 @@ const ModalDatos = (props) => {
         setMsgValidacionIP(null);
 
         try {
-            if (!red) throw new Error('Selecicone la red')
+            if (!red) throw new Error('Seleccione la red')
             if (!ip) throw new Error('Introduzca la direccion IP')
             if (ip <= 0 || ip >= 255 || isNaN(ip)) throw new Error('La IP ingresada no es válida')
 
@@ -163,7 +219,7 @@ const ModalDatos = (props) => {
             .get()
             .then(function(doc) {
                 if (doc.exists) {
-                    if (doc.data().libre) {
+                    if (doc.data().libre || (record.ip === ip)) {
                         setStValidacionIP('success');
                         setMsgValidacionIP(null);
                         return true;
@@ -243,7 +299,7 @@ const ModalDatos = (props) => {
                         </Form.Item>
                     </Col>
                     <Col span={7}>
-                        <Tooltip title="Useful information">
+                        <Tooltip title="Nuevo cliente">
                             <a href="#/clientes" target="_blank" style={{ margin: "0 8px" }}>
                                 Registrar cliente
                             </a>

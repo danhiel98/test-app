@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import { Tooltip, Badge, Pagination, Card, Space, Row, Col, PageHeader, Input, Button, Empty } from 'antd';
-import { EditOutlined, StopOutlined, CloudDownloadOutlined, FileTextOutlined } from '@ant-design/icons';
+import { Tooltip, Badge, Space, PageHeader, Input, Button } from 'antd';
+import { EditOutlined, StopOutlined, CloudDownloadOutlined } from '@ant-design/icons';
 import app from '../../firebaseConfig';
 import { connect } from 'react-redux';
 import { push } from 'connected-react-router';
@@ -35,7 +35,7 @@ class Contratos extends Component {
         const { busqueda } = this.state;
 
         querySnapshot.forEach(async (doc) => {
-            let { cliente, activo, codigo, fecha_inicio, fecha_fin, velocidad, precio_cuota } = doc.data();
+            let { cliente, activo, codigo, fecha_inicio, fecha_fin, velocidad, precio_cuota, red, ip } = doc.data();
 
             fecha_inicio = this.verFecha(fecha_inicio);
             fecha_fin = this.verFecha(fecha_fin);
@@ -58,7 +58,9 @@ class Contratos extends Component {
                 fecha_inicio,
                 fecha_fin,
                 velocidad,
-                precio_cuota
+                precio_cuota,
+                red,
+                ip
             });
         });
         this.setState({
@@ -251,7 +253,8 @@ class Contratos extends Component {
                         clientes={clientes}
                         redes={redes}
                         handleCancel={this.handleCancel}
-                        contrato={registro}
+                        record={registro}
+                        fireRef={this.refContratos}
                     />
                 }
                 <PageHeader
@@ -273,6 +276,7 @@ class Contratos extends Component {
                     }
                 />
                 {
+                    !this.columnas[0].filters.length && // eslint-disable-next-line
                     redes.map(red => {
                         this.columnas[0].filters.push(
                             {
@@ -286,6 +290,7 @@ class Contratos extends Component {
                     !this.columnas[2].filters.length &&
                     contratos.map(contrato => contrato.velocidad)
                     .filter((value, index, self) => self.indexOf(value) === index)
+                    .sort((a, b) => a - b) // eslint-disable-next-line
                     .map(velocidad => {
                         this.columnas[2].filters.push({
                             text: `${velocidad} Mb`,

@@ -64,7 +64,8 @@ const ModalDatos = (props) => {
 
     // eslint-disable-next-line
     const agregarRegistro = async (val) => {
-        fireRef.add({
+        fireRef.doc(val.dui)
+        .set({
             nombre: val.nombre,
             apellido: val.apellido,
             dui: val.dui,
@@ -86,8 +87,6 @@ const ModalDatos = (props) => {
             nombre: val.nombre,
             apellido: val.apellido,
             dui: val.dui,
-            // departamento: val.departamento,
-            // municipio: val.municipio,
             direccion: val.direccion
         }).then((docRef) => {
             console.log(`El registro fue actualizado`)
