@@ -20,7 +20,6 @@ const ModalDatos = (props) => {
     const [cantCuotas, setCantCuotas] = useState(16);
     const [fechaInicio, setFechaInicio] = useState(null);
     const [fechaFin, setFechaFin] = useState(null);
-    const [visible, setVisible] = useState(props.visible);
 
     let refContratos = app.firestore().collection('contratos');
     let refCliente = app.firestore().collection('clientes');
@@ -125,7 +124,7 @@ const ModalDatos = (props) => {
                     .then(() => {
                         message.success('¡Registro editado correctamente!');
                         form.resetFields();
-                        handleCancel()
+                        props.handleCancel()
                     })
                     .catch(error => {
                         console.log(`Hubo un error al editar el registro: ${error}`)
@@ -136,7 +135,7 @@ const ModalDatos = (props) => {
                     .then(() => {
                         message.success('¡Se agregó el contrato correctamente!');
                         form.resetFields();
-                        handleCancel()
+                        props.handleCancel()
                     })
                     .catch(error => {
                         console.log(`Hubo un error al agregar el registro: ${error}`)
@@ -178,7 +177,10 @@ const ModalDatos = (props) => {
     const editarRegistro = async (contrato) => {
         const ref = fireRef.doc(contrato.codigo);
 
-        ref.set(contrato).then((docRef) => {
+        await ref.set(contrato).then(async (docRef) => {
+            if (contrato.codigo !== record.codigo) {
+                await fireRef.doc(record.codigo).delete();
+            }
             console.log(`El registro fue actualizado`)
         })
         .catch((error) => {
@@ -204,8 +206,6 @@ const ModalDatos = (props) => {
             </Select>
         </Form.Item>
     );
-
-    const handleCancel = () => setVisible(false);
 
     const validarIP = async () => {
         setStValidacionIP('validating');
@@ -246,13 +246,13 @@ const ModalDatos = (props) => {
     return (
         <Modal
             key="data-modal"
-            visible={visible}
+            visible={props.visible}
             title={props.title}
             onOk={handleOk}
-            onCancel={handleCancel}
+            onCancel={props.handleCancel}
             footer={[
                 <div key="footer-options">
-                    <Button key="back" onClick={handleCancel}>
+                    <Button key="back" onClick={props.handleCancel}>
                         Regresar
                     </Button>
                     <Button
