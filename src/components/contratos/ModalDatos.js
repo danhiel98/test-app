@@ -20,6 +20,7 @@ const ModalDatos = (props) => {
     const [cantCuotas, setCantCuotas] = useState(16);
     const [fechaInicio, setFechaInicio] = useState(null);
     const [fechaFin, setFechaFin] = useState(null);
+    const [visible, setVisible] = useState(props.visible);
 
     let refContratos = app.firestore().collection('contratos');
     let refCliente = app.firestore().collection('clientes');
@@ -36,7 +37,7 @@ const ModalDatos = (props) => {
             if (doc.exists) {
                 let doc_cliente;
                 const contrato = doc.data();
-                
+
                 setRed(contrato.red);
                 setIP(contrato.ip);
                 setFechaInicio(moment(contrato.fecha_inicio.toDate()))
@@ -120,11 +121,11 @@ const ModalDatos = (props) => {
                 }
 
                 if (record) {
-                    editarRegistro(val)
+                    editarRegistro(contrato)
                     .then(() => {
                         message.success('¡Registro editado correctamente!');
                         form.resetFields();
-                        props.handleCancel()
+                        handleCancel()
                     })
                     .catch(error => {
                         console.log(`Hubo un error al editar el registro: ${error}`)
@@ -135,7 +136,7 @@ const ModalDatos = (props) => {
                     .then(() => {
                         message.success('¡Se agregó el contrato correctamente!');
                         form.resetFields();
-                        props.handleCancel()
+                        handleCancel()
                     })
                     .catch(error => {
                         console.log(`Hubo un error al agregar el registro: ${error}`)
@@ -184,7 +185,7 @@ const ModalDatos = (props) => {
             console.error(`No se pudo editar el registro: ${error}`);
         });
     }
-    
+
     const selectRedes = (
         <Form.Item name="red" noStyle>
             <Select
@@ -203,6 +204,8 @@ const ModalDatos = (props) => {
             </Select>
         </Form.Item>
     );
+
+    const handleCancel = () => setVisible(false);
 
     const validarIP = async () => {
         setStValidacionIP('validating');
@@ -243,13 +246,13 @@ const ModalDatos = (props) => {
     return (
         <Modal
             key="data-modal"
-            visible={props.visible}
+            visible={visible}
             title={props.title}
             onOk={handleOk}
-            onCancel={props.handleCancel}
+            onCancel={handleCancel}
             footer={[
                 <div key="footer-options">
-                    <Button key="back" onClick={props.handleCancel}>
+                    <Button key="back" onClick={handleCancel}>
                         Regresar
                     </Button>
                     <Button
