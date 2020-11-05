@@ -66,6 +66,14 @@ const ModalDatos = (props) => {
 
     const zeroPad = (num, places) => String(num).padStart(places, '0');
 
+    const statusIP = async (ref_ip, libre) => {
+        await refIP.doc(ref_ip)
+            .update({ libre })
+            .catch(error => {
+                throw error;
+            })
+    }
+
     const handleOk = async () => {
         setLoading(true);
 
@@ -78,7 +86,6 @@ const ModalDatos = (props) => {
 
                 let cliente = '';
                 refCliente = refCliente.doc(val.id_cliente);
-                refIP = refIP.doc(`${val.red}-${val.ip}`);
 
                 await refCliente
                 .get()
@@ -95,14 +102,6 @@ const ModalDatos = (props) => {
                 .catch(error => {
                     throw error;
                 });
-
-                await refIP
-                .update({
-                    libre: false
-                })
-                .catch(error => {
-                    throw error;
-                })
 
                 let contrato = {
                     activo: true,
@@ -130,7 +129,6 @@ const ModalDatos = (props) => {
                         console.log(`Hubo un error al editar el registro: ${error}`)
                     })
                 } else {
-                    console.log('No hay contrato')
                     agregarRegistro(contrato)
                     .then(() => {
                         message.success('¡Se agregó el contrato correctamente!');
@@ -167,6 +165,7 @@ const ModalDatos = (props) => {
             }
         })
         .then(doc => {
+            statusIP(`${contrato.red}-${contrato.ip}`, false);
             console.log('Todo bien');
         })
         .catch((error) => {
@@ -178,8 +177,11 @@ const ModalDatos = (props) => {
         const ref = fireRef.doc(contrato.codigo);
 
         await ref.set(contrato).then(async (docRef) => {
-            if (contrato.codigo !== record.codigo) {
-                await fireRef.doc(record.codigo).delete();
+            if (contrato.codigo !== record.codigo) await fireRef.doc(record.codigo).delete();
+
+            if (contrato.red !== record.red || contrato.ip !== record.ip) {
+                await statusIP(`${record.red}-${record.ip}`, true);
+                await statusIP(`${contrato.red}-${contrato.ip}`, false);
             }
             console.log(`El registro fue actualizado`)
         })
@@ -216,13 +218,11 @@ const ModalDatos = (props) => {
             if (!ip) throw new Error('Introduzca la direccion IP')
             if (ip <= 0 || ip >= 255 || isNaN(ip)) throw new Error('La IP ingresada no es válida')
 
-            let refIP = app.firestore().collection('ips').doc(`${red}-${ip}`);
-
-            await refIP
+            await refIP.doc(`${red}-${ip}`)
             .get()
             .then(function(doc) {
                 if (doc.exists) {
-                    if (doc.data().libre || (record.ip === ip)) {
+                    if (doc.data().libre || (record && record.ip === ip)) {
                         setStValidacionIP('success');
                         setMsgValidacionIP(null);
                         return true;
@@ -247,7 +247,22 @@ const ModalDatos = (props) => {
         <Modal
             key="data-modal"
             visible={props.visible}
-            title={props.title}
+            title={(
+                <>
+                    {props.title}
+                    &nbsp;
+                    {
+                        record &&
+                        <span>
+                            (
+                            <strong>
+                                {record.codigo}
+                            </strong>
+                            )
+                        </span>
+                    }
+                </>
+            )}
             onOk={handleOk}
             onCancel={props.handleCancel}
             footer={[
