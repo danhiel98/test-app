@@ -6,6 +6,7 @@ import { connect } from 'react-redux';
 import { push } from 'connected-react-router';
 import Tabla from '../Tabla';
 import ModalDatos from './ModalDatos';
+import ModalDetalle from './ModalDetalle';
 
 const { Search } = Input;
 
@@ -26,7 +27,8 @@ class Contratos extends Component {
             clientes: [],
             redes: [],
             visible: false,
-            registro: null
+            registro: null,
+            modalDetalle: false
         };
     }
 
@@ -35,7 +37,7 @@ class Contratos extends Component {
         const { busqueda } = this.state;
 
         querySnapshot.forEach(async (doc) => {
-            let { cliente, activo, codigo, fecha_inicio, fecha_fin, velocidad, precio_cuota, red, ip } = doc.data();
+            let { cliente, activo, codigo, fecha_inicio, fecha_fin, velocidad, cant_cuotas, precio_cuota, red, ip } = doc.data();
 
             fecha_inicio = this.verFecha(fecha_inicio);
             fecha_fin = this.verFecha(fecha_fin);
@@ -58,6 +60,7 @@ class Contratos extends Component {
                 fecha_inicio,
                 fecha_fin,
                 velocidad,
+                cant_cuotas,
                 precio_cuota,
                 red,
                 ip
@@ -135,8 +138,9 @@ class Contratos extends Component {
 
     handleCancel = () => {
         this.setState({
-            visible: false,
-            registro: null
+            registro: null,
+            modalDetalle: false,
+            visible: false
         })
     }
 
@@ -154,23 +158,28 @@ class Contratos extends Component {
         this.props.dispatch(push(`contratos/${ruta}`));
     }
 
+    verDetalle = record => {
+        this.setState({ registro: record });
+        this.setState({ modalDetalle: true });
+    }
+
     columnas = this.asignarColumnas();
 
     asignarColumnas() {
         return [
             {
                 title: 'Código',
-                dataIndex: 'codigo',
+                key: 'codigo',
                 sorter: {
                     compare: (a, b) => a.codigo - b.codigo,
                     multiple: 2,
                 },
                 filters: [],
                 onFilter: (value, record) => record.codigo.indexOf(value) === 0,
-                render: codigo => (
-                    <strong>
-                        { codigo }
-                    </strong>
+                render: record => (
+                    <Button type="link" onClick={() => this.verDetalle(record)}>
+                        <strong>{ record.codigo }</strong>
+                    </Button>
                 )
             },
             {
@@ -240,7 +249,8 @@ class Contratos extends Component {
             visible,
             registro,
             clientes,
-            redes
+            redes,
+            modalDetalle
         } = this.state;
 
         return (
@@ -255,6 +265,14 @@ class Contratos extends Component {
                         handleCancel={this.handleCancel}
                         record={registro}
                         fireRef={this.refContratos}
+                    />
+                }
+                {
+                    modalDetalle &&
+                    <ModalDetalle
+                        visible={modalDetalle}
+                        record={registro}
+                        handleCancel={this.handleCancel}
                     />
                 }
                 <PageHeader
