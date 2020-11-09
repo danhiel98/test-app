@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, List, Card, Row, Col, Spin } from 'antd';
+import { Modal, List, Card, Row, Col, Spin, Tooltip, Space } from 'antd';
+import { CloudDownloadOutlined } from '@ant-design/icons';
 import app from '../../firebaseConfig';
 // import firebase from 'firebase';
 
@@ -49,17 +50,27 @@ const ModalDetalle = props => {
             visible={props.visible}
             onCancel={props.handleCancel}
             width={800}
-            title={(
-                <>
+            title={
+                <div>
                     Detalle de Contrato
-                </>
-            )}
+                </div>
+            }
+            footer={
+                <></>
+            }
         >
             <Row>
                 <Col flex={7}>
                     <Card
                         title={
-                            <strong> {record.codigo} </strong>
+                            <Space>
+                                <strong> {record.codigo} </strong>
+                                <Tooltip title="Descargar documento">
+                                    <strong>
+                                        <CloudDownloadOutlined key="download" onClick={() => console.log('download')} style={{ color: '#389e0d' }} />
+                                    </strong>
+                                </Tooltip>
+                            </Space>
                         }
                         bodyStyle={{ height: 260 }}
                     >
@@ -73,7 +84,16 @@ const ModalDetalle = props => {
                 </Col>
                 <Col flex={16} offset={1}>
                     <Card
-                        title={<strong>Cuotas</strong>}
+                        title={
+                            <Space>
+                                <strong>Cuotas</strong>
+                                <Tooltip title="Descargar talonario">
+                                    <strong>
+                                        <CloudDownloadOutlined key="download" onClick={() => console.log('download')} style={{ color: '#389e0d' }} />
+                                    </strong>
+                                </Tooltip>
+                            </Space>
+                        }
                         bodyStyle={{ height: 260, overflowY: 'scroll' }}
                     >
 
@@ -87,11 +107,11 @@ const ModalDetalle = props => {
                                 />
                                 <div>
                                     {
-                                        item.cancelado
-                                        ?
-                                            <span style={{ color: '#089D6C' }}>Cancelado</span>
-                                        :
-                                            <span style={{ color: '#f5222d' }}>Pendiente</span>
+                                    item.cancelado
+                                    ?
+                                        <span style={{ color: '#389e0d' }}>Cancelado</span>
+                                    :
+                                        <span style={{ color: '#f5222d' }}>Pendiente</span>
                                     }
                                 </div>
                             </List.Item>
