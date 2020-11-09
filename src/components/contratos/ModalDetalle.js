@@ -1,27 +1,44 @@
-import React, { useEffect } from 'react';
-import { Modal, Divider, Card, Row, Col } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { Modal, List, Card, Row, Col } from 'antd';
 import app from '../../firebaseConfig';
-import firebase from 'firebase';
+// import firebase from 'firebase';
+
+const capitalize = s => {
+    if (typeof s !== 'string') return s
+    return s.charAt(0).toUpperCase() + s.slice(1)
+}
+
+const verFecha = fecha => {
+    return capitalize(new Date(fecha.seconds * 1000).toLocaleDateString("es-SV", { year: 'numeric', month: 'short' }))
+}
+
+const obtenerCuotas = async ref => {
+    let auxCuotas = [];
+    await ref
+    .get()
+    .then(snapshot => {
+        snapshot.forEach(doc => {
+            auxCuotas.push(doc.data());
+        })
+    })
+    return auxCuotas;
+}
 
 const ModalDetalle = props => {
 
     const { record } = props;
-
-    const ref = app.firestore().collection('contratos');
+    const [loadingCuotas, setLoadingCuotas] = useState(true);
+    const [cuotas, setCuotas] = useState([]);
 
     useEffect(() => {
-        obtenerContrato();
-    }, [record]);
+        setLoadingCuotas(true);
+        let ref = app.firestore().collection('contratos').doc(record.key).collection('cuotas');
 
-    const obtenerContrato = () => {
-        ref.doc(record.key).collection('cuotas')
-        .get()
-        .then(snapshot => {
-            snapshot.forEach(async (doc) => {
-                console.log(doc.data());
-            })
+        obtenerCuotas(ref)
+        .then(res => {
+            setCuotas(res);
         })
-    }
+    }, [record]);
 
     return (
         <Modal
@@ -57,6 +74,25 @@ const ModalDetalle = props => {
                 <Col flex={16} offset={1}>
                     <Card>
                         <h3>Cuotas</h3>
+
+                        <List
+                            dataSource={cuotas}
+                            renderItem={item => (
+                            <List.Item key={item.codigo}>
+                                <List.Item.Meta
+                                    title={<strong>{verFecha(item.fecha_pago)}</strong>}
+                                    description={item.codigo}
+                                />
+                                <div>{ item.cancelado ? 'Cancelado' : 'Pendiente' }</div>
+                            </List.Item>
+                            )}
+                        >
+                            {/* {this.state.loading && this.state.hasMore && (
+                            <div className="demo-loading-container">
+                                <Spin />
+                            </div>
+                            )} */}
+                        </List>
                     </Card>
                 </Col>
             </Row>
