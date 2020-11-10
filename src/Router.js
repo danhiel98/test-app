@@ -13,6 +13,7 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Clientes from './components/clientes/Clientes';
 import Contratos from './components/contratos/Contratos';
+import Talonario from './components/reportes/Talonario';
 // import NotFound from './components/result/NotFound'
 import Seed from './seeds/Seed';
 import { connect } from 'react-redux';
@@ -46,6 +47,7 @@ class Router extends Component
                         <Route exact path="/" component={Dashboard} />
                         <Route exact path="/clientes" component={Clientes} />
                         <Route exact path="/contratos" component={Contratos} />
+                        <Route exact path="/talonario/:contrato" component={Talonario} />
                     </App>
                 </Switch>
             </ConnectedRouter>
