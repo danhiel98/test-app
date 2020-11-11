@@ -89,7 +89,9 @@ const ModalDetalle = props => {
                                 <strong>Cuotas</strong>
                                 <Tooltip title="Descargar talonario">
                                     <strong>
-                                        <CloudDownloadOutlined key="download" onClick={() => console.log('download')} style={{ color: '#389e0d' }} />
+                                        <a href="#/talonario/contrato" target="_blank">
+                                            <CloudDownloadOutlined key="download" onClick={() => console.log('download')} style={{ color: '#389e0d' }} />
+                                        </a>
                                     </strong>
                                 </Tooltip>
                             </Space>
