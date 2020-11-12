@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Modal, List, Card, Row, Col, Spin, Tooltip, Space } from 'antd';
 import { CloudDownloadOutlined } from '@ant-design/icons';
+import { PDFDownloadLink } from '@react-pdf/renderer';
+import Talonario from '../reportes/Talonario';
 import app from '../../firebaseConfig';
-// import firebase from 'firebase';
 
 const capitalize = s => {
     if (typeof s !== 'string') return s
@@ -56,7 +57,9 @@ const ModalDetalle = props => {
                 </div>
             }
             footer={
-                <></>
+                <>
+
+                </>
             }
         >
             <Row>
@@ -75,6 +78,7 @@ const ModalDetalle = props => {
                         bodyStyle={{ height: 260 }}
                     >
                         Cliente: <strong>{record.cliente}</strong><br />
+                        Dui cliente: <strong>DUI</strong> <br />
                         IP: <strong>192.168.{record.red}.{record.ip}</strong><br />
                         Precio de cuota: <strong>$ {record.precio_cuota}</strong><br />
                         Cant. Cuotas: <strong>{record.cant_cuotas}</strong><br />
@@ -87,13 +91,19 @@ const ModalDetalle = props => {
                         title={
                             <Space>
                                 <strong>Cuotas</strong>
-                                <Tooltip title="Descargar talonario">
-                                    <strong>
-                                        <a href="#/talonario/contrato" target="_blank">
-                                            <CloudDownloadOutlined key="download" onClick={() => console.log('download')} style={{ color: '#389e0d' }} />
-                                        </a>
-                                    </strong>
-                                </Tooltip>
+                                {
+                                    !loadingCuotas &&
+                                    <PDFDownloadLink document={<Talonario contrato={record} cuotas={cuotas} />} fileName="Talonario.pdf">
+                                        {
+                                            ({ blob, url, loading, error }) =>
+                                            (
+                                                loading ?
+                                                '...' :
+                                                <CloudDownloadOutlined key="download" style={{ color: '#389e0d' }} />
+                                            )
+                                        }
+                                    </PDFDownloadLink>
+                                }
                             </Space>
                         }
                         bodyStyle={{ height: 260, overflowY: 'scroll' }}

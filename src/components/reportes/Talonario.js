@@ -1,10 +1,17 @@
 import React, { useEffect } from 'react';
-import { PDFViewer, Page, Text, View, Document, StyleSheet, Image } from '@react-pdf/renderer';
-import { useParams } from 'react-router-dom';
-// import Barcode from '../Barcode';
+import { Page, Text, View, Document, StyleSheet, Image } from '@react-pdf/renderer';
 import { useBarcode } from '@createnextapp/react-barcode';
 
 let imgRef = null;
+
+const capitalize = s => {
+    if (typeof s !== 'string') return s
+    return s.charAt(0).toUpperCase() + s.slice(1)
+}
+
+const verFecha = fecha => {
+    return capitalize(new Date(fecha.seconds * 1000).toLocaleDateString("es-SV", { year: 'numeric', month: 'short' }))
+}
 
 const Barcode = props => {
     const { inputRef } = useBarcode({ value: props.value });
@@ -13,16 +20,15 @@ const Barcode = props => {
         imgRef = inputRef;
     }, [inputRef]);
 
-    return <img alt="Código de barras" style={{ display: 'none' }} ref={inputRef} />;
+    return (
+        <img alt="Código de barras" style={{ display: 'none' }} ref={inputRef} />
+    );
 }
 
 // Create styles
 const styles = StyleSheet.create({
-    page: {
-        flexDirection: 'row',
-        size: 'LETTER'
-    },
     entryContainer: {
+        marginTop: 10,
         marginBottom: 10,
         marginLeft: 90,
         marginRight: 10,
@@ -34,23 +40,16 @@ const styles = StyleSheet.create({
     cardContainer: {
         flexDirection: 'row',
         marginBottom: 10,
-        // border: 1,
-        // borderColor: 'red'
     },
     mainContainer: {
         flex: 1,
         paddingTop: 30,
         paddingLeft: 15,
-        // border: '1 solid red',
     },
     section: {
         margin: 10,
         padding: 10,
         flexGrow: 1,
-    },
-    date: {
-        fontSize: 11,
-        // fontFamily: 'Lato Italic',
     },
     leftColumn: {
         display: 'flex',
@@ -69,9 +68,6 @@ const styles = StyleSheet.create({
     rightValues: {
         flexDirection: 'row',
     },
-    logo: {
-        width: 100,
-    },
     barcode: {
         width: 140,
         marginLeft: 123,
@@ -85,7 +81,6 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         marginTop: 2,
         width: 190,
-        // fontFamily: 'Lato Bold',
     },
     subtitle: {
         fontSize: 11,
@@ -93,7 +88,6 @@ const styles = StyleSheet.create({
         lineHeight: 1.2,
         fontWeight: 'bold',
         width: 190,
-        // fontFamily: 'Lato Bold',
     },
     numeroCuota: {
         fontSize: 11,
@@ -183,105 +177,99 @@ const styles = StyleSheet.create({
         height: 65,
         width: 190,
         marginBottom: 3
-    },
-    footer: {
-        fontSize: 8.5,
     }
 });
 
-// Create Document Component
-const MyDocument = props => {
-    let { contrato } = useParams();
-
-    useEffect(() => {
-        console.log(contrato);
-    }, [contrato])
-
+const Entry = props => {
+    const { cuota, cliente } = props;
     return (
-        <>
-            <Barcode value="R14-23-0221-0622" />
-            {
-                imgRef &&
-                <PDFViewer
-                    style={{
-                        width: '100%',
-                        height: '100%',
-                        border: 'none'
-                    }}
-                >
-                    <Document>
-                        <Page size="LETTER" style={styles.page}>
-                            <View style={styles.mainContainer}>
-                                <View style={styles.entryContainer}>
-                                    <View style={styles.cardContainer}>
-                                        <View style={styles.leftColumn}>
-                                            <Image
-                                                src={process.env.PUBLIC_URL + '/turbo-mega.png'}
-                                                style={styles.logo}
-                                            />
-                                            <View style={{ paddingLeft: 5 }}>
-                                                <Text style={styles.title}>Pago de Servicio de Internet Residencial</Text>
-                                                <Text style={styles.subtitle}>Cuenta 10000003012370</Text>
-                                                <Text style={styles.numeroCuota}>N° 0001</Text>
-                                            </View>
-                                        </View>
-                                        <View style={styles.rightColumn}>
-                                            <View style={styles.rightValues}>
-                                                <Text style={styles.datoPago}>Vencimiento: </Text>
-                                                <Text style={styles.fechaVencimiento}>03-agosto-2021</Text>
-                                            </View>
-                                            <View style={styles.rightValues}>
-                                                <Text style={styles.datoPago}>Pago Puntual: </Text>
-                                                <Text style={styles.valorPago}>$26.3 </Text>
-                                            </View>
-                                            <View style={styles.rightValues}>
-                                                <Text style={styles.datoPago}>Pago Tardío: </Text>
-                                                <Text style={styles.valorPago}>$29.3 </Text>
-                                            </View>
-                                        </View>
-                                    </View>
-                                    <View style={styles.customerContainer}>
-                                        <Text style={styles.field}>Nombre del cliente: </Text>
-                                        <Text style={styles.value}>Reynaldo Adiel Herrera Chávez</Text>
-                                    </View>
-                                    <View style={styles.cardContainer}>
-                                        <View style={styles.leftDataColumn}>
-                                            <View>
-                                                <View style={styles.customerContainer}>
-                                                    <Text style={styles.duiField}>DUI: </Text>
-                                                    <Text style={styles.duiValue}>05725690-3</Text>
-                                                </View>
-                                                <View style={styles.customerContainer}>
-                                                    {
-                                                        imgRef &&
-                                                        <Image
-                                                            src={imgRef.current.src}
-                                                            style={styles.barcode}
-                                                        />
-                                                    }
-                                                </View>
-                                            </View>
-                                        </View>
-                                        <View>
-                                            <View style={styles.rightDataColumn} />
-                                            <Text style={{ fontSize: 10, marginLeft: 70, color: 'blue' }}>
-                                                ORIGINAL
-                                            </Text>
-                                        </View>
-                                    </View>
-                                    <View>
-                                        <Text style={styles.footer}>
-                                            Para evitar desconexiones del servicio de internet, has tus pagos en las fechas establecidas, así evitarás pago de reconexión
-                                        </Text>
-                                    </View>
-                                </View>
-                            </View>
-                        </Page>
-                    </Document>
-                </PDFViewer>
-            }
-        </>
+        <View style={styles.entryContainer}>
+            <View style={styles.cardContainer}>
+                <View style={styles.leftColumn}>
+                    <Image
+                        src={process.env.PUBLIC_URL + '/turbo-mega-reporte.png'}
+                        style={{ width: 100 }}
+                    />
+                    <View style={{ paddingLeft: 5 }}>
+                        <Text style={styles.title}>Pago de Servicio de Internet Residencial</Text>
+                        <Text style={styles.subtitle}>Cuenta 10000003012370</Text>
+                        <Text style={styles.numeroCuota}>N° 00{cuota.id}</Text>
+                    </View>
+                </View>
+                <View style={styles.rightColumn}>
+                    <View style={styles.rightValues}>
+                        <Text style={styles.datoPago}>Vencimiento: </Text>
+                        <Text style={styles.fechaVencimiento}>{verFecha(cuota.fecha_pago)}</Text>
+                    </View>
+                    <View style={styles.rightValues}>
+                        <Text style={styles.datoPago}>Pago Puntual: </Text>
+                        <Text style={styles.valorPago}>${cuota.cantidad} </Text>
+                    </View>
+                    <View style={styles.rightValues}>
+                        <Text style={styles.datoPago}>Pago Tardío: </Text>
+                        <Text style={styles.valorPago}>${cuota.cantidad + 3} </Text>
+                    </View>
+                </View>
+            </View>
+            <View style={styles.customerContainer}>
+                <Text style={styles.field}>Nombre del cliente: </Text>
+                <Text style={styles.value}>{ cliente }</Text>
+            </View>
+            <View style={styles.cardContainer}>
+                <View style={styles.leftDataColumn}>
+                    <View>
+                        <View style={styles.customerContainer}>
+                            <Text style={styles.duiField}>DUI: </Text>
+                            <Text style={styles.duiValue}>05725690-3</Text>
+                        </View>
+                        <View style={styles.customerContainer}>
+                            {
+                                imgRef &&
+                                <Image
+                                    src={imgRef.current.src}
+                                    style={styles.barcode}
+                                />
+                            }
+                        </View>
+                    </View>
+                </View>
+                <View>
+                    <View style={styles.rightDataColumn} />
+                    <Text style={{ fontSize: 10, marginLeft: 70, color: 'blue' }}>
+                        ORIGINAL
+                    </Text>
+                </View>
+            </View>
+            <View>
+                <Text style={{ fontSize: 8.5 }}>
+                    Para evitar desconexiones del servicio de internet, has tus pagos en las fechas establecidas, así evitarás pago de reconexión
+                </Text>
+            </View>
+        </View>
     );
 }
 
-export default MyDocument;
+// Create Document Component
+const Talonario = props => {
+    let { contrato, cuotas } = props;
+
+    return (
+        <Document>
+            <Page size="LETTER" style={{ flexDirection: 'row', size: 'LETTER' }} wrap>
+                <View style={styles.mainContainer}>
+                    {
+                        cuotas.map(el =>
+                            <Entry
+                                key={el.id}
+                                cuota={el}
+                                cliente={contrato.cliente}
+                            />
+                        )
+                    }
+                </View>
+            </Page>
+        </Document>
+    );
+}
+
+export default Talonario;

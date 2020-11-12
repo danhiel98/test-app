@@ -42,12 +42,12 @@ class Router extends Component
                 <Switch>
                     <Route exact path="/seed" component={Seed} />
                     <Route exact path="/login" component={Login} />
+                    <Route exact path="/talonario/:contrato" component={Talonario} />
                     { this.signedIn() ? null : <Redirect to="/login" />}
                     <App>
                         <Route exact path="/" component={Dashboard} />
                         <Route exact path="/clientes" component={Clientes} />
                         <Route exact path="/contratos" component={Contratos} />
-                        <Route exact path="/talonario/:contrato" component={Talonario} />
                     </App>
                 </Switch>
             </ConnectedRouter>
