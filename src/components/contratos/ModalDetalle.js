@@ -58,7 +58,6 @@ const ModalDetalle = props => {
             }
             footer={
                 <>
-
                 </>
             }
         >
@@ -93,7 +92,7 @@ const ModalDetalle = props => {
                                 <strong>Cuotas</strong>
                                 {
                                     !loadingCuotas &&
-                                    <PDFDownloadLink document={<Talonario contrato={record} cuotas={cuotas} />} fileName="Talonario.pdf">
+                                    <PDFDownloadLink document={<Talonario contrato={record} cuotas={cuotas} />} fileName={`Talonario ${record.codigo}.pdf`}>
                                         {
                                             ({ blob, url, loading, error }) =>
                                             (

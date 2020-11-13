@@ -1,37 +1,32 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Page, Text, View, Document, StyleSheet, Image } from '@react-pdf/renderer';
-import { useBarcode } from '@createnextapp/react-barcode';
 
-let imgRef = null;
-
-const capitalize = s => {
-    if (typeof s !== 'string') return s
-    return s.charAt(0).toUpperCase() + s.slice(1)
-}
+const months = [
+    'enero',
+    'febrero',
+    'marzo',
+    'abril',
+    'mayo',
+    'junio',
+    'julio',
+    'agosto',
+    'septiembre',
+    'octubre',
+    'noviembre',
+    'diciembre'
+]
 
 const verFecha = fecha => {
-    return capitalize(new Date(fecha.seconds * 1000).toLocaleDateString("es-SV", { year: 'numeric', month: 'short' }))
+    fecha = fecha.toDate();
+    return `${fecha.getDate()}-${months[fecha.getMonth()]}-${fecha.getFullYear()}`;
 }
 
-const Barcode = props => {
-    const { inputRef } = useBarcode({ value: props.value });
-
-    useEffect(() => {
-        imgRef = inputRef;
-    }, [inputRef]);
-
-    return (
-        <img alt="Código de barras" style={{ display: 'none' }} ref={inputRef} />
-    );
-}
-
-// Create styles
 const styles = StyleSheet.create({
     entryContainer: {
-        marginTop: 10,
-        marginBottom: 10,
+        marginTop: 20,
+        marginBottom: 5,
         marginLeft: 90,
-        marginRight: 10,
+        marginRight: 15,
         borderWidth: 1,
         borderColor: '#000',
         borderRadius: 4,
@@ -43,7 +38,6 @@ const styles = StyleSheet.create({
     },
     mainContainer: {
         flex: 1,
-        paddingTop: 30,
         paddingLeft: 15,
     },
     section: {
@@ -58,7 +52,7 @@ const styles = StyleSheet.create({
     },
     rightColumn: {
         flexDirection: 'column',
-        width: 171,
+        width: 165,
         marginTop: -6,
         padding: 3,
         borderLeft: 1,
@@ -69,8 +63,9 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
     },
     barcode: {
-        width: 140,
-        marginLeft: 123,
+        height: 45,
+        width: 145,
+        marginLeft: 115,
         marginTop: 4
     },
     title: {
@@ -115,7 +110,7 @@ const styles = StyleSheet.create({
         borderColor: '#000'
     },
     fechaVencimiento: {
-        fontSize: 10,
+        fontSize: 9,
         color: 'red',
         textDecoration: 'none',
         width: 95,
@@ -182,8 +177,9 @@ const styles = StyleSheet.create({
 
 const Entry = props => {
     const { cuota, cliente } = props;
+
     return (
-        <View style={styles.entryContainer}>
+        <View break={cuota.next} style={styles.entryContainer}>
             <View style={styles.cardContainer}>
                 <View style={styles.leftColumn}>
                     <Image
@@ -213,7 +209,7 @@ const Entry = props => {
             </View>
             <View style={styles.customerContainer}>
                 <Text style={styles.field}>Nombre del cliente: </Text>
-                <Text style={styles.value}>{ cliente }</Text>
+                <Text style={styles.value}>{cliente}</Text>
             </View>
             <View style={styles.cardContainer}>
                 <View style={styles.leftDataColumn}>
@@ -223,13 +219,10 @@ const Entry = props => {
                             <Text style={styles.duiValue}>05725690-3</Text>
                         </View>
                         <View style={styles.customerContainer}>
-                            {
-                                imgRef &&
-                                <Image
-                                    src={imgRef.current.src}
-                                    style={styles.barcode}
-                                />
-                            }
+                            <Image
+                                style={styles.barcode}
+                                src={`https://bwipjs-api.metafloor.com/?bcid=code128&text=${cuota.codigo}&scale=1&includetext`}
+                            />
                         </View>
                     </View>
                 </View>
@@ -249,19 +242,47 @@ const Entry = props => {
     );
 }
 
-// Create Document Component
+const ordenarCuotas = cuotas => {
+    let result = []
+    let chunks = []
+    let next = false;
+    let cntPages = Math.ceil(cuotas.length / 3);
+
+    for (let i = 0; i < cntPages * 3; i += cntPages) {
+        chunks.push(cuotas.slice(i, i + cntPages))
+    }
+
+    for (let i = 0; i < cntPages; i++) {
+        for (let j = 0; j < 3; j++) {
+            if (chunks[j][i]) {
+                result.push({
+                    ...chunks[j][i],
+                    next
+                })
+            }
+            next = false;
+        }
+        next = true;
+    }
+
+    return result;
+}
+
 const Talonario = props => {
     let { contrato, cuotas } = props;
+    let cuotasOrdenadas = [];
+
+    cuotasOrdenadas = ordenarCuotas(cuotas);
 
     return (
         <Document>
             <Page size="LETTER" style={{ flexDirection: 'row', size: 'LETTER' }} wrap>
                 <View style={styles.mainContainer}>
                     {
-                        cuotas.map(el =>
+                        cuotasOrdenadas.map((cuota, idx) =>
                             <Entry
-                                key={el.id}
-                                cuota={el}
+                                key={cuota.id}
+                                cuota={cuota}
                                 cliente={contrato.cliente}
                             />
                         )
