@@ -4,6 +4,7 @@ import { CloudDownloadOutlined } from '@ant-design/icons';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import Talonario from '../reportes/Talonario';
 import app from '../../firebaseConfig';
+import { pdf } from '@react-pdf/renderer';
 
 const capitalize = s => {
     if (typeof s !== 'string') return s
@@ -44,6 +45,20 @@ const ModalDetalle = props => {
         .then(res => setCuotas(res))
         .finally(() => setLoadingCuotas(false));
     }, [record]);
+
+    const download = () => {
+        pdf(Talonario({ contrato: record, cuotas: cuotas })).toBlob()
+        .then(file => {
+            var csvURL = window.URL.createObjectURL(file);
+            let tempLink = document.createElement('a');
+            tempLink.href = csvURL;
+            tempLink.setAttribute('download', `Talonario ${record.codigo}.pdf`);
+            tempLink.click();
+        })
+        .catch(error => {
+            console.log(error);
+        })
+    }
 
     return (
         <Modal
@@ -92,16 +107,7 @@ const ModalDetalle = props => {
                                 <strong>Cuotas</strong>
                                 {
                                     !loadingCuotas &&
-                                    <PDFDownloadLink document={<Talonario contrato={record} cuotas={cuotas} />} fileName={`Talonario ${record.codigo}.pdf`}>
-                                        {
-                                            ({ blob, url, loading, error }) =>
-                                            (
-                                                loading ?
-                                                '...' :
-                                                <CloudDownloadOutlined key="download" style={{ color: '#389e0d' }} />
-                                            )
-                                        }
-                                    </PDFDownloadLink>
+                                    <CloudDownloadOutlined key="download" onClick={download} style={{ color: '#389e0d' }} />
                                 }
                             </Space>
                         }
@@ -128,12 +134,12 @@ const ModalDetalle = props => {
                             </List.Item>
                             )}
                         >
-                            {loadingCuotas && (
-                                <div className="loading-container">
-                                    <Spin />
-                                </div>
-                            )}
                         </List>
+                        {loadingCuotas && (
+                            <div className="loading-container">
+                                <Spin />
+                            </div>
+                        )}
                     </Card>
                 </Col>
             </Row>
