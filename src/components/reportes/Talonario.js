@@ -64,8 +64,8 @@ const styles = StyleSheet.create({
     },
     barcode: {
         height: 45,
-        width: 145,
-        marginLeft: 115,
+        width: 160,
+        marginLeft: 98,
         marginTop: 4
     },
     title: {
@@ -176,7 +176,7 @@ const styles = StyleSheet.create({
 });
 
 const Entry = props => {
-    const { cuota, cliente } = props;
+    const { cuota, cliente, dui } = props;
 
     return (
         <View break={cuota.next} style={styles.entryContainer}>
@@ -216,12 +216,12 @@ const Entry = props => {
                     <View>
                         <View style={styles.customerContainer}>
                             <Text style={styles.duiField}>DUI: </Text>
-                            <Text style={styles.duiValue}>05725690-3</Text>
+                            <Text style={styles.duiValue}>{dui}</Text>
                         </View>
                         <View style={styles.customerContainer}>
                             <Image
                                 style={styles.barcode}
-                                src={`https://bwipjs-api.metafloor.com/?bcid=code128&text=${cuota.codigo}&scale=1&includetext`}
+                                src={`https://bwipjs-api.metafloor.com/?bcid=code128&text=${cuota.codigo}&scale=2&includetext`}
                             />
                         </View>
                     </View>
@@ -279,11 +279,12 @@ const Talonario = props => {
             <Page size="LETTER" style={{ flexDirection: 'row', size: 'LETTER' }} wrap>
                 <View style={styles.mainContainer}>
                     {
-                        cuotasOrdenadas.map((cuota, idx) =>
+                        cuotasOrdenadas.map((cuota) =>
                             <Entry
                                 key={cuota.id}
                                 cuota={cuota}
                                 cliente={contrato.cliente}
+                                dui={contrato.dui_cliente}
                             />
                         )
                     }

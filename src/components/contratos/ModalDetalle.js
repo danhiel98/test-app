@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Modal, List, Card, Row, Col, Spin, Tooltip, Space } from 'antd';
 import { CloudDownloadOutlined } from '@ant-design/icons';
-import { PDFDownloadLink } from '@react-pdf/renderer';
 import Talonario from '../reportes/Talonario';
 import app from '../../firebaseConfig';
 import { pdf } from '@react-pdf/renderer';

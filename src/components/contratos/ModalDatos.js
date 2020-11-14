@@ -105,6 +105,7 @@ const ModalDatos = (props) => {
 
                 let contrato = {
                     activo: true,
+                    dui_cliente: cliente.dui,
                     cliente: `${cliente.nombre} ${cliente.apellido}`,
                     codigo: `R${val.red}-${val.ip}-${fechaInicio.format('MMYY')}-${fechaFin.format('MMYY')}`,
                     red: val.red,

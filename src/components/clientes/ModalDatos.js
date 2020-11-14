@@ -23,6 +23,7 @@ const ModalDatos = (props) => {
                     dui: cli.dui,
                     nombre: cli.nombre,
                     apellido: cli.apellido,
+                    telefono: cli.telefono,
                     direccion: cli.direccion,
                 });
             } else {
@@ -36,7 +37,7 @@ const ModalDatos = (props) => {
         form
         .validateFields()
         .then(val => {
-            if (record) {
+            if (record) { // Hace falta modificaciones cuendo cambia DUI de cliente, nombre y apellido
                 editarRegistro(val).then(() => {
                     form.resetFields();
                     props.handleCancel()
@@ -69,6 +70,7 @@ const ModalDatos = (props) => {
             nombre: val.nombre,
             apellido: val.apellido,
             dui: val.dui,
+            telefono: val.telefono,
             direccion: val.direccion,
             fecha_creacion: firebase.firestore.FieldValue.serverTimestamp()
         }).then((docRef) => {
@@ -87,6 +89,7 @@ const ModalDatos = (props) => {
             nombre: val.nombre,
             apellido: val.apellido,
             dui: val.dui,
+            telefono: val.telefono,
             direccion: val.direccion
         }).then((docRef) => {
             console.log(`El registro fue actualizado`)
@@ -146,6 +149,18 @@ const ModalDatos = (props) => {
                         {
                             required: true,
                             message: 'Introducir el número de DUI'
+                        }
+                    ]}
+                >
+                    <Input />
+                </Form.Item>
+                <Form.Item
+                    name="telefono"
+                    label="Teléfono"
+                    rules={[
+                        {
+                            required: true,
+                            message: 'Introducir el número de teléfono'
                         }
                     ]}
                 >

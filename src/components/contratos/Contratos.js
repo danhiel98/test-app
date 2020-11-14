@@ -37,7 +37,7 @@ class Contratos extends Component {
         const { busqueda } = this.state;
 
         querySnapshot.forEach(async (doc) => {
-            let { cliente, activo, codigo, fecha_inicio, fecha_fin, velocidad, cant_cuotas, precio_cuota, red, ip } = doc.data();
+            let { cliente, dui_cliente, activo, codigo, fecha_inicio, fecha_fin, velocidad, cant_cuotas, precio_cuota, red, ip } = doc.data();
 
             fecha_inicio = this.verFecha(fecha_inicio);
             fecha_fin = this.verFecha(fecha_fin);
@@ -55,6 +55,7 @@ class Contratos extends Component {
             contratos.push({
                 key: doc.id,
                 cliente,
+                dui_cliente,
                 codigo,
                 activo,
                 fecha_inicio,

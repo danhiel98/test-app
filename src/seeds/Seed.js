@@ -35,7 +35,7 @@ class Seed extends Component
         // this.seedRedes();
         // this.seedIps();
         // this.seedCientes();
-        // this.seedContratos();
+        this.seedContratos();
     }
 
     zeroPad = (num, places) => String(num).padStart(places, '0');
@@ -43,7 +43,7 @@ class Seed extends Component
     seedRedes = () => {
         console.log('Agregando redes');
         return new Promise((resolve, reject) => {
-            for (let i = 14; i < 16; i++){
+            for (let i = 14; i < 18; i++){
                 this.refRedes.add({
                     numero: i
                 })
@@ -105,11 +105,12 @@ class Seed extends Component
         console.log('Agregando clientes');
         return new Promise((resolve, reject) => {
             for (let i = 1; i <= 25; i++){
-                let dui = faker.random.word();
+                let dui = faker.phone.phoneNumber('!0#######-#');
                 let cliente = {
                     dui,
                     nombre: faker.name.firstName(),
                     apellido: faker.name.lastName(),
+                    telefono: faker.phone.phoneNumber('!####-####'),
                     direccion: `${faker.address.city()} ${faker.address.direction()}`,
                     fecha_creacion: firebase.firestore.FieldValue.serverTimestamp()
                 }
@@ -177,9 +178,10 @@ class Seed extends Component
                 let red = redes[faker.random.number({min: 0, max: redes.length - 1})];
                 let ip = ips[faker.random.number({min: 0, max: ips.length - 1})]
                 let cliente = clientes[faker.random.number({min: 0, max: clientes.length - 1})];
+                let dui_cliente = cliente.dui;
                 let fecha_inicio = faker.date.past(faker.random.number({min: 0, max: 5}), new Date());
                 let fecha_fin = new Date(fecha_inicio);
-                fecha_fin.setMonth(fecha_fin.getMonth() + 16)
+                fecha_fin.setMonth(fecha_fin.getMonth() + 17)
 
                 let mes_inicio = fecha_inicio.getMonth() + 1;
                 let mes_fin = fecha_fin.getMonth() + 1;
@@ -191,6 +193,7 @@ class Seed extends Component
                     activo: true,
                     cliente: `${cliente.nombre} ${cliente.apellido}`,
                     codigo: `R${red.numero}-${ip.numero}-${f_inicio}-${f_fin}`,
+                    dui_cliente,
                     red: red.numero,
                     ip: ip.numero,
                     fecha_ingreso: firebase.firestore.FieldValue.serverTimestamp(),
@@ -204,11 +207,12 @@ class Seed extends Component
                 this.refContratos.doc(`${contrato.codigo}`).set(contrato)
                 .then(() => {
                     let fecha_pago = new Date(fecha_inicio);
+                    fecha_pago.setMonth(fecha_pago.getMonth() - 1)
                     for (let i = 1; i <= 18; i++) {
                         let cuota = {
                             codigo: `${contrato.codigo}-${this.zeroPad(i, 2)}`,
                             cantidad: contrato.precio_cuota,
-                            fecha_pago: new Date(fecha_pago.setMonth(fecha_pago.getMonth() + i === 1 ? 0 : 1)),
+                            fecha_pago: new Date(fecha_pago.setMonth(fecha_pago.getMonth() + 1)),
                             cancelado: false
                         }
 
@@ -230,7 +234,7 @@ class Seed extends Component
         let pRedes = this.rollback(this.refRedes);
         let pIps = this.rollback(this.refIps);
         let pClientes = this.rollback(this.refClientes);
-        let pContratos = this.rollback(this.refContratos);
+        let pContratos = this.rollback(this.refContratos, 'cuotas');
         let pPagos = this.rollback(this.refPagos);
 
         console.log('Estamos eliminando la info');
@@ -246,12 +250,22 @@ class Seed extends Component
         })
     }
 
-    rollback = ref => {
+    rollback = (ref, subRef) => {
         console.log(`Eliminando ${ref.path}`);
         return new Promise((resolve, reject) => {
             ref.get()
             .then(querySnapshot => {
                 querySnapshot.forEach(function(doc) {
+                    if (subRef) {
+                        ref.doc(doc.id).collection(subRef)
+                        .get()
+                        .then(qs => {
+                            qs.forEach(dc => {
+                                ref.doc(doc.id).collection(subRef).doc(dc.id).delete();
+                            })
+                        })
+                    }
+
                     ref.doc(doc.id).delete(); // Eliminar el elemento encontrado
                 });
 

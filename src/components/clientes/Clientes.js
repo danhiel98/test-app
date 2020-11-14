@@ -27,12 +27,13 @@ class Clientes extends Component
         this.setState({ loading: true })
 
         querySnapshot.forEach((doc) => {
-            const { dui, nombre, apellido, direccion } = doc.data();
+            const { dui, nombre, apellido, direccion, telefono } = doc.data();
 
             if (busqueda &&
                 nombre.toLowerCase().indexOf(busqueda) === -1 &&
                 apellido.toLowerCase().indexOf(busqueda) === -1 &&
                 direccion.toLowerCase().indexOf(busqueda) === -1 &&
+                telefono.toLowerCase().indexOf(busqueda) === -1 &&
                 dui.indexOf(busqueda) === -1) {
                 return;
             }
@@ -41,7 +42,8 @@ class Clientes extends Component
                 key: doc.id,
                 nombre: `${nombre} ${apellido}`,
                 dui: dui,
-                direccion
+                direccion,
+                telefono
             });
         });
 
@@ -80,6 +82,11 @@ class Clientes extends Component
                 sorter: (a, b) => a.dui.length - b.dui.length,
             },
             {
+                title: 'Teléfono',
+                dataIndex: 'telefono',
+                sorter: true
+            },
+            {
                 title: 'Dirección',
                 dataIndex: 'direccion',
                 sorter: true
@@ -89,9 +96,7 @@ class Clientes extends Component
                 key: 'opciones',
                 render: (record) => (
                     <Space size="middle">
-                        {/* <a href="#" onClick={ () => { this.modalInfo(record); } }>Detalle</a> */}
                         <Button type="link" onClick={ () => { this.modalData(record); } }>Editar</Button>
-                        {/* <a href="#">Dar de baja</a> */}
                     </Space>
                 )
             }
