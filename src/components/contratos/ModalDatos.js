@@ -17,7 +17,7 @@ const ModalDatos = (props) => {
     const [ip, setIP] = useState(null);
     const [stValidacionIP, setStValidacionIP] = useState(null);
     const [msgValidacionIP, setMsgValidacionIP] = useState(null);
-    const [cantCuotas, setCantCuotas] = useState(16);
+    const [cantCuotas, setCantCuotas] = useState(18);
     const [fechaInicio, setFechaInicio] = useState(null);
     const [fechaFin, setFechaFin] = useState(null);
 
@@ -154,11 +154,12 @@ const ModalDatos = (props) => {
         refContratos.doc(`${contrato.codigo}`).set(contrato)
         .then(() => {
             let fechaPago = new Date(fechaInicio);
+            fechaPago.setMonth(fechaPago.getMonth() - 1)
             for (let i = 1; i <= cantCuotas; i++) {
                 let cuota = {
                     codigo: `${contrato.codigo}-${zeroPad(i, 2)}`,
                     cantidad: contrato.precio_cuota,
-                    fecha_pago: new Date(fechaPago.setMonth(fechaPago.getMonth() + i === 1 ? 0 : 1)),
+                    fecha_pago: new Date(fechaPago.setMonth(fechaPago.getMonth() + 1)),
                     cancelado: false
                 }
 

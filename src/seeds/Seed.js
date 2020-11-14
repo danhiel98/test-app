@@ -193,6 +193,7 @@ class Seed extends Component
                     activo: true,
                     cliente: `${cliente.nombre} ${cliente.apellido}`,
                     codigo: `R${red.numero}-${ip.numero}-${f_inicio}-${f_fin}`,
+                    cant_cuotas: 18,
                     dui_cliente,
                     red: red.numero,
                     ip: ip.numero,

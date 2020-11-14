@@ -88,10 +88,10 @@ const ModalDetalle = props => {
                                 </Tooltip>
                             </Space>
                         }
-                        bodyStyle={{ height: 260 }}
+                        bodyStyle={{ height: 285 }}
                     >
                         Cliente: <strong>{record.cliente}</strong><br />
-                        Dui cliente: <strong>DUI</strong> <br />
+                        Dui cliente: <strong>{record.dui_cliente}</strong> <br />
                         IP: <strong>192.168.{record.red}.{record.ip}</strong><br />
                         Precio de cuota: <strong>$ {record.precio_cuota}</strong><br />
                         Cant. Cuotas: <strong>{record.cant_cuotas}</strong><br />
@@ -110,7 +110,7 @@ const ModalDetalle = props => {
                                 }
                             </Space>
                         }
-                        bodyStyle={{ height: 260, overflowY: 'scroll' }}
+                        bodyStyle={{ height: 285, overflowY: 'scroll' }}
                     >
 
                         <List
