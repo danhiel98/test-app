@@ -14,7 +14,9 @@ import Dashboard from './pages/Dashboard';
 import Clientes from './components/clientes/Clientes';
 import Contratos from './components/contratos/Contratos';
 import Talonario from './components/reportes/Talonario';
+import Pagos from './components/pagos/Pagos';
 // import NotFound from './components/result/NotFound'
+
 import Seed from './seeds/Seed';
 import { connect } from 'react-redux';
 import app from './firebaseConfig';
@@ -48,6 +50,7 @@ class Router extends Component
                         <Route exact path="/" component={Dashboard} />
                         <Route exact path="/clientes" component={Clientes} />
                         <Route exact path="/contratos" component={Contratos} />
+                        <Route exact path="/pagos" component={Pagos} />
                     </App>
                 </Switch>
             </ConnectedRouter>
