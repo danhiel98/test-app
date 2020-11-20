@@ -34,9 +34,9 @@ export default class Sidebar extends Component {
                     <Menu.Item key="1" icon={<HomeOutlined />} onClick={this.props.goHome}>
                         Inicio
                     </Menu.Item>
-                    <Menu.Item key="2" icon={<FileAddOutlined />} onClick={this.props.goNewPayment}>
+                    {/* <Menu.Item key="2" icon={<FileAddOutlined />} onClick={this.props.goNewPayment}>
                         Registrar Pagos
-                    </Menu.Item>
+                    </Menu.Item> */}
                     <Menu.Item key="3" icon={<FileTextOutlined />} onClick={this.props.goContracts}>
                         Contratos
                     </Menu.Item>

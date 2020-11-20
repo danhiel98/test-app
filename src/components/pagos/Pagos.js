@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import Tabla from '../Tabla';
-import { Tooltip, Space, Button, Input, Row, Col } from 'antd';
-import { StopOutlined } from '@ant-design/icons';
+import { Tooltip, Space, Button, Input, Row, Col, PageHeader } from 'antd';
+import { StopOutlined, BarcodeOutlined } from '@ant-design/icons';
 import app from '../../firebaseConfig';
 const { Search } = Input;
 
@@ -130,6 +130,29 @@ class Pagos extends Component
 
         return (
             <div>
+                <PageHeader
+                    className="site-page-header"
+                    title="Registrar"
+                    extra={
+                        [
+                            <Input
+                                key="1"
+                                addonBefore={<BarcodeOutlined />}
+                                placeholder="Codigo de barras"
+                                style={{ width: 200 }}
+                                onPasteCapture={(ev) => {
+                                    console.log(ev.clipboardData.getData('Text'));
+                                }}
+                                onPaste={(ev) => {
+                                    console.log(ev.clipboardData.getData('Text'));
+                                }}
+                            />,
+                            <Button key="2" type="primary" ghost>
+                                Agregar
+                            </Button>
+                        ]
+                    }
+                />
                 {/* <ModalDatos
                     visible={visible}
                     title={registro ? 'Editar información' : 'Nuevo pago'}
