@@ -7,7 +7,7 @@ import {
     SmileOutlined,
     ToolOutlined,
     HomeOutlined,
-    FileAddOutlined
+    // FileAddOutlined
 } from '@ant-design/icons';
 
 const { Sider } = Layout;

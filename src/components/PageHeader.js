@@ -20,7 +20,7 @@ class PageHeader extends Component
                         <Col span={2} style={ { cursor: 'pointer' } } onClick={ this.props.goHome }>
                             <img src={ process.env.PUBLIC_URL + "/logo.png" } alt="Logo" width="40px" />
                         </Col>
-                        <Col span={4} offset={18}>
+                        <Col span={5} offset={17}>
                             <Menu theme="light" style={ { textAlign: "right" } } mode="horizontal">
                                 {/* <Menu.Item key="1">
                                     Nombre de usuario &nbsp;

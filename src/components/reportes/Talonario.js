@@ -64,8 +64,8 @@ const styles = StyleSheet.create({
     },
     barcode: {
         height: 45,
-        width: 210,
-        marginLeft: 48,
+        width: 180,
+        marginLeft: 80,
         marginTop: 4
     },
     title: {

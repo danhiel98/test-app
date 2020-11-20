@@ -1,8 +1,10 @@
 import React, { Component } from 'react';
 import Tabla from '../Tabla';
-import { Tooltip, Space, Button, Input, Row, Col, PageHeader } from 'antd';
+import { message, Tooltip, Space, Input, Row, Col, PageHeader } from 'antd';
 import { StopOutlined, BarcodeOutlined } from '@ant-design/icons';
 import app from '../../firebaseConfig';
+import firebase from 'firebase';
+
 const { Search } = Input;
 
 class Pagos extends Component
@@ -10,15 +12,16 @@ class Pagos extends Component
     constructor(props) {
         super(props);
 
-        this.ref = app.firestore().collection('pagos');
+        this.refPagos = app.firestore().collection('pagos');
+        this.refContratos = app.firestore().collection('contratos');
         this.unsubscribe = null;
         this.state = {
             busqueda: '',
             loading: true,
             pagos: [],
-            visible: false,
-            registro: null
         };
+
+        this.barcodeRef = React.createRef();
     }
 
     capitalize = s => {
@@ -38,7 +41,9 @@ class Pagos extends Component
         querySnapshot.forEach((doc) => {
             let { cantidad, codigo_contrato, nombre_cliente, numero_cuota, fecha_creacion } = doc.data();
 
-            fecha_creacion = this.verFecha(fecha_creacion);
+            if (fecha_creacion)
+                console.log(fecha_creacion.toDate())
+            fecha_creacion = "UwU";
 
             if (busqueda &&
                 codigo_contrato.toLowerCase().indexOf(busqueda) === -1 &&
@@ -65,13 +70,14 @@ class Pagos extends Component
     }
 
     componentDidMount() {
-        this.ref.onSnapshot(this.obtenerPagos);
+        this.refPagos.onSnapshot(this.obtenerPagos);
+        this.barcodeRef.current.focus();
     }
 
     buscar(valor) {
         if (valor !== this.state.busqueda) {
             this.setState({ busqueda: valor })
-            this.ref
+            this.refPagos
             .get()
             .then(querySnapshot => this.obtenerPagos(querySnapshot));
         }
@@ -111,56 +117,82 @@ class Pagos extends Component
         ]
     }
 
-    modalData = (record) => {
-        this.setState({
-            visible: true,
-            registro: record
-        })
-    }
+    agregarPago = async codigo => {
+        if (/(R[\d]{1,3})(-|')(\d{1,3})(-|')(\d{4})(-|')(\d{4})(-|')\d{2}/.test(codigo))
+        {
+            let exist = false;
+            let codContrato = codigo.substring(0, codigo.length -3);
 
-    handleCancel = () => {
-        this.setState({
-            visible: false,
-            registro: null
-        })
+            await this.refPagos.doc(codigo)
+            .get()
+            .then(pago => {
+                if (pago.exists) {
+                    message.error('¡Esta cuota ya fue cancelada!');
+                    exist = true;
+                }
+            })
+
+            if (exist) return;
+
+            this.refContratos.doc(codContrato)
+            .get()
+            .then(contrato => {
+                if (contrato.exists) {
+                    contrato.ref.collection('cuotas').doc(codigo.substr(-2))
+                    .get()
+                    .then(cuota => {
+                        if (cuota.exists) {
+                            let d_cuota = cuota.data();
+                            let d_contrato = contrato.data();
+
+                            this.refPagos.doc(d_cuota.codigo).set({
+                                cantidad: d_cuota.cantidad,
+                                codigo_contrato: contrato.id,
+                                nombre_cliente: d_contrato.cliente,
+                                numero_cuota: cuota.id,
+                                fecha_creacion: firebase.firestore.FieldValue.serverTimestamp()
+                            }).then(doc => {
+                                cuota.ref.update({ cancelado: true })
+                                .then(() => message.success('Ok, ok, sí existe'))
+                            })
+                        }
+                    })
+                } else {
+                    message.error('La cuota NO existe');
+                }
+            })
+        } else {
+            message.warn('El formato del código no es válido')
+        }
     }
 
     render(){
-        const { visible, registro, pagos, loading } = this.state;
+        const { pagos, loading } = this.state;
 
         return (
             <div>
                 <PageHeader
                     className="site-page-header"
-                    title="Registrar"
-                    extra={
-                        [
-                            <Input
-                                key="1"
-                                addonBefore={<BarcodeOutlined />}
-                                placeholder="Codigo de barras"
-                                style={{ width: 200 }}
-                                onPasteCapture={(ev) => {
-                                    console.log(ev.clipboardData.getData('Text'));
-                                }}
-                                onPaste={(ev) => {
-                                    console.log(ev.clipboardData.getData('Text'));
-                                }}
-                            />,
-                            <Button key="2" type="primary" ghost>
-                                Agregar
-                            </Button>
-                        ]
-                    }
+                    title="Pagos"
+                    subTitle="Agregar pago"
+                    onBack={() => null}
+                    extra={[
+                        <Input
+                            key="1"
+                            addonBefore={<BarcodeOutlined />}
+                            placeholder="Codigo de cuota"
+                            style={{ width: 240 }}
+                            ref={this.barcodeRef}
+                            maxLength={20}
+                            allowClear
+                            onKeyUp={ev => {
+                                if (ev.keyCode === 13) {
+                                    this.agregarPago(ev.target.value);
+                                }
+                            }}
+                        />
+                    ]}
                 />
-                {/* <ModalDatos
-                    visible={visible}
-                    title={registro ? 'Editar información' : 'Nuevo pago'}
-                    handleCancel={this.handleCancel}
-                    record={registro}
-                    fireRef={this.ref}
-                />
-                */}
                 <Tabla
                     titulo={
                         <>
@@ -168,14 +200,13 @@ class Pagos extends Component
                                 <Col span={4}>
                                     <strong>Lista de pagos</strong>
                                 </Col>
-                                <Col span={6} offset={4}>
+                                <Col span={4} offset={5}>
                                     <Space>
                                         <Search
                                             placeholder="Buscar"
                                             onSearch={value => this.buscar(value) }
-                                            style={{ width: 200 }}
+                                            style={{ width: 180 }}
                                         />
-                                        <Button type="primary" ghost onClick={() => this.modalData()}>Nuevo</Button>
                                     </Space>
                                 </Col>
                             </Row>
