@@ -42,8 +42,7 @@ class Pagos extends Component
             let { cantidad, codigo_contrato, nombre_cliente, numero_cuota, fecha_creacion } = doc.data();
 
             if (fecha_creacion)
-                console.log(fecha_creacion.toDate())
-            fecha_creacion = "UwU";
+                fecha_creacion = this.verFecha(fecha_creacion);
 
             if (busqueda &&
                 codigo_contrato.toLowerCase().indexOf(busqueda) === -1 &&

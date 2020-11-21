@@ -22,28 +22,47 @@ const verFecha = fecha => {
 }
 
 const styles = StyleSheet.create({
+    mainContainer: {
+        marginTop: 22,
+        marginLeft: 2,
+        right: -2,
+    },
+    firstBaseContainer: {
+        borderWidth: 0.6,
+        borderColor: '#000',
+        marginTop: 23,
+        paddingTop: 5,
+        paddingBottom: 10,
+    },
+    baseContainer: {
+        borderWidth: 0.6,
+        borderColor: '#000',
+        marginTop: -1,
+        paddingTop: 5,
+        paddingBottom: 10,
+    },
+    absoluteVertical: {
+        position: 'absolute',
+        marginTop: -12,
+        marginLeft: -5,
+        height: 230,
+        borderWidth: 0.5,
+        borderStyle: 'dashed',
+        borderColor: '#000'
+    },
     entryContainer: {
-        marginTop: 20,
-        marginBottom: 5,
-        marginLeft: 90,
-        marginRight: 15,
+        marginTop: 5,
+        marginLeft: 108,
+        marginRight: 7,
         borderWidth: 1,
         borderColor: '#000',
         borderRadius: 4,
         padding: 5,
+        paddingRight: 0
     },
     cardContainer: {
         flexDirection: 'row',
-        marginBottom: 10,
-    },
-    mainContainer: {
-        flex: 1,
-        paddingLeft: 15,
-    },
-    section: {
-        margin: 10,
-        padding: 10,
-        flexGrow: 1,
+        marginBottom: 5,
     },
     leftColumn: {
         display: 'flex',
@@ -52,9 +71,10 @@ const styles = StyleSheet.create({
     },
     rightColumn: {
         flexDirection: 'column',
-        width: 165,
+        width: 157,
         marginTop: -6,
-        padding: 3,
+        padding: 5,
+        paddingTop: 8,
         borderLeft: 1,
         borderBottom: 1,
         borderColor: '#000'
@@ -65,39 +85,37 @@ const styles = StyleSheet.create({
     barcode: {
         height: 45,
         width: 180,
-        marginLeft: 80,
-        marginTop: 4
+        marginLeft: 5,
+        marginTop: 25
     },
     title: {
         fontSize: 10,
-        color: 'black',
         textDecoration: 'none',
         lineHeight: 1.2,
         fontWeight: 'bold',
-        marginTop: 2,
+        marginTop: 5,
         width: 190,
     },
     subtitle: {
         fontSize: 11,
-        color: 'black',
         lineHeight: 1.2,
         fontWeight: 'bold',
         width: 190,
     },
     numeroCuota: {
-        fontSize: 11,
+        fontSize: 12,
         color: 'black',
         lineHeight: 1.2,
         fontWeight: 'bold',
         width: 190,
-        paddingLeft: 40
+        paddingLeft: 45
     },
     datoPago: {
         fontSize: 11,
         color: 'black',
-        lineHeight: 1.3,
+        lineHeight: 1.6,
         textDecoration: 'none',
-        width: 75,
+        width: 72,
     },
     valorPago: {
         fontSize: 10,
@@ -125,7 +143,7 @@ const styles = StyleSheet.create({
         color: 'black',
         lineHeight: 1.3,
         textDecoration: 'none',
-        width: 150,
+        width: 120,
         textAlign: 'right',
         padding: 2,
         paddingRight: 5,
@@ -136,7 +154,7 @@ const styles = StyleSheet.create({
         color: 'black',
         lineHeight: 1.3,
         textDecoration: 'none',
-        width: 150,
+        width: 120,
         textAlign: 'right',
         padding: 2,
         paddingRight: 5,
@@ -144,7 +162,7 @@ const styles = StyleSheet.create({
     value: {
         fontSize: 11,
         padding: 2,
-        width: 310,
+        width: 340,
         height: 20,
         paddingLeft: 5,
         border: 1,
@@ -163,14 +181,13 @@ const styles = StyleSheet.create({
     leftDataColumn: {
         display: 'flex',
         flexDirection: 'row',
-        width: 270,
+        width: 240,
     },
     rightDataColumn: {
         border: 1,
-        color: 'red',
         marginTop: 3,
-        height: 65,
-        width: 190,
+        height: 85,
+        width: 220,
         marginBottom: 3
     }
 });
@@ -179,64 +196,67 @@ const Entry = props => {
     const { cuota, cliente, dui } = props;
 
     return (
-        <View break={cuota.next} style={styles.entryContainer}>
-            <View style={styles.cardContainer}>
-                <View style={styles.leftColumn}>
-                    <Image
-                        src={process.env.PUBLIC_URL + '/turbo-mega-reporte.png'}
-                        style={{ width: 100 }}
-                    />
-                    <View style={{ paddingLeft: 5 }}>
-                        <Text style={styles.title}>Pago de Servicio de Internet Residencial</Text>
-                        <Text style={styles.subtitle}>Cuenta 10000003012370</Text>
-                        <Text style={styles.numeroCuota}>N° 00{cuota.id}</Text>
+        <View break={cuota.next} style={cuota.next ? styles.firstBaseContainer : styles.baseContainer}>
+            <View style={styles.entryContainer}>
+                <View style={styles.absoluteVertical} />
+                <View style={styles.cardContainer}>
+                    <View style={styles.leftColumn}>
+                        <Image
+                            src={process.env.PUBLIC_URL + '/turbo-mega-reporte.png'}
+                            style={{ width: 90, height: 40 }}
+                        />
+                        <View style={{ paddingLeft: 5 }}>
+                            <Text style={styles.title}>Pago de Servicio de Internet Residencial</Text>
+                            <Text style={styles.subtitle}> </Text>
+                            <Text style={styles.numeroCuota}>Cuota N°: 00{cuota.id}</Text>
+                        </View>
+                    </View>
+                    <View style={styles.rightColumn}>
+                        <View style={styles.rightValues}>
+                            <Text style={styles.datoPago}>Vencimiento: </Text>
+                            <Text style={styles.fechaVencimiento}>{verFecha(cuota.fecha_pago)}</Text>
+                        </View>
+                        <View style={styles.rightValues}>
+                            <Text style={styles.datoPago}>Pago Puntual: </Text>
+                            <Text style={styles.valorPago}>${cuota.cantidad} </Text>
+                        </View>
+                        <View style={styles.rightValues}>
+                            <Text style={styles.datoPago}>Pago Tardío: </Text>
+                            <Text style={styles.valorPago}>${cuota.cantidad + 3} </Text>
+                        </View>
                     </View>
                 </View>
-                <View style={styles.rightColumn}>
-                    <View style={styles.rightValues}>
-                        <Text style={styles.datoPago}>Vencimiento: </Text>
-                        <Text style={styles.fechaVencimiento}>{verFecha(cuota.fecha_pago)}</Text>
-                    </View>
-                    <View style={styles.rightValues}>
-                        <Text style={styles.datoPago}>Pago Puntual: </Text>
-                        <Text style={styles.valorPago}>${cuota.cantidad} </Text>
-                    </View>
-                    <View style={styles.rightValues}>
-                        <Text style={styles.datoPago}>Pago Tardío: </Text>
-                        <Text style={styles.valorPago}>${cuota.cantidad + 3} </Text>
-                    </View>
+                <View style={styles.customerContainer}>
+                    <Text style={styles.field}>Nombre del cliente: </Text>
+                    <Text style={styles.value}>{cliente}</Text>
                 </View>
-            </View>
-            <View style={styles.customerContainer}>
-                <Text style={styles.field}>Nombre del cliente: </Text>
-                <Text style={styles.value}>{cliente}</Text>
-            </View>
-            <View style={styles.cardContainer}>
-                <View style={styles.leftDataColumn}>
+                <View style={styles.cardContainer}>
+                    <View style={styles.leftDataColumn}>
+                        <View>
+                            <View style={styles.customerContainer}>
+                                <Text style={styles.duiField}>DUI: </Text>
+                                <Text style={styles.duiValue}>{dui}</Text>
+                            </View>
+                            <View style={styles.customerContainer}>
+                                <Image
+                                    style={styles.barcode}
+                                    src={`https://bwipjs-api.metafloor.com/?bcid=code128&text=${cuota.codigo}&scale=2&includetext`}
+                                />
+                            </View>
+                        </View>
+                    </View>
                     <View>
-                        <View style={styles.customerContainer}>
-                            <Text style={styles.duiField}>DUI: </Text>
-                            <Text style={styles.duiValue}>{dui}</Text>
-                        </View>
-                        <View style={styles.customerContainer}>
-                            <Image
-                                style={styles.barcode}
-                                src={`https://bwipjs-api.metafloor.com/?bcid=code128&text=${cuota.codigo}&scale=2&includetext`}
-                            />
-                        </View>
+                        <View style={styles.rightDataColumn} />
+                        <Text style={{ fontSize: 10, marginLeft: 70, color: 'blue' }}>
+                            ORIGINAL
+                        </Text>
                     </View>
                 </View>
                 <View>
-                    <View style={styles.rightDataColumn} />
-                    <Text style={{ fontSize: 10, marginLeft: 70, color: 'blue' }}>
-                        ORIGINAL
+                    <Text style={{ fontSize: 8.5 }}>
+                        Para evitar desconexiones del servicio de internet, has tus pagos en las fechas establecidas, así evitarás pago de reconexión
                     </Text>
                 </View>
-            </View>
-            <View>
-                <Text style={{ fontSize: 8.5 }}>
-                    Para evitar desconexiones del servicio de internet, has tus pagos en las fechas establecidas, así evitarás pago de reconexión
-                </Text>
             </View>
         </View>
     );
