@@ -70,7 +70,7 @@ class Pagos extends Component
     }
 
     componentDidMount() {
-        this.refPagos.onSnapshot(this.obtenerPagos);
+        this.refPagos.orderBy('fecha_creacion', 'desc').onSnapshot(this.obtenerPagos);
         // this.barcodeRef.current.focus();
     }
 
