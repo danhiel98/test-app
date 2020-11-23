@@ -19,9 +19,10 @@ class Pagos extends Component
             busqueda: '',
             loading: true,
             pagos: [],
+            barcode: ''
         };
 
-        this.barcodeRef = React.createRef();
+        // this.barcodeRef = React.createRef();
     }
 
     capitalize = s => {
@@ -70,7 +71,7 @@ class Pagos extends Component
 
     componentDidMount() {
         this.refPagos.onSnapshot(this.obtenerPagos);
-        this.barcodeRef.current.focus();
+        // this.barcodeRef.current.focus();
     }
 
     buscar(valor) {
@@ -153,6 +154,7 @@ class Pagos extends Component
                             }).then(doc => {
                                 cuota.ref.update({ cancelado: true })
                                 .then(() => {
+                                    this.setState({ barcode: '' })
                                     message.success('Pago registrado');
                                 })
                             })
@@ -208,13 +210,15 @@ class Pagos extends Component
                             addonBefore={<BarcodeOutlined />}
                             placeholder="Codigo de cuota"
                             style={{ width: 240 }}
-                            ref={this.barcodeRef}
+                            autoFocus
+                            // ref={this.barcodeRef}
                             maxLength={20}
                             allowClear
+                            value={this.state.barcode}
+                            onChange={ev => this.setState({ barcode: ev.target.value })}
                             onKeyUp={ev => {
                                 if (ev.keyCode === 13) {
                                     this.agregarPago(ev.target.value);
-                                    ev.target.value = '';
                                 }
                             }}
                         />
