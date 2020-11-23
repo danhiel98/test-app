@@ -108,7 +108,7 @@ class Pagos extends Component
                 render: (record) => (
                     <Space size="middle">
                         <Tooltip title="Cancelar">
-                            <StopOutlined key="cancel" onClick={() => console.log('cancel')} style={{ color: '#f5222d' }} />
+                            <StopOutlined key="cancel" onClick={() => this.cancelarPago(record)} style={{ color: '#f5222d' }} />
                         </Tooltip>
                     </Space>
                 )
@@ -152,7 +152,9 @@ class Pagos extends Component
                                 fecha_creacion: firebase.firestore.FieldValue.serverTimestamp()
                             }).then(doc => {
                                 cuota.ref.update({ cancelado: true })
-                                .then(() => message.success('Ok, ok, sí existe'))
+                                .then(() => {
+                                    message.success('Pago registrado');
+                                })
                             })
                         }
                     })
@@ -163,6 +165,31 @@ class Pagos extends Component
         } else {
             message.warn('El formato del código no es válido')
         }
+    }
+
+    cancelarPago = async record => {
+        await this.refPagos.doc(`${record.key}`)
+        .delete()
+        .then(() => {
+            this.refContratos.doc(record.codigo_contrato)
+            .get()
+            .then(contrato => {
+                if (contrato.exists) {
+                    contrato.ref.collection('cuotas').doc(record.numero_cuota)
+                    .get()
+                    .then(cuota => {
+                        if (cuota.exists) {
+                            cuota.ref.update({ cancelado: false })
+                            .then(() => {
+                                message.success('Pago eliminado');
+                            })
+                        }
+                    })
+                } else {
+                    message.error('La cuota NO existe');
+                }
+            })
+        })
     }
 
     render(){
@@ -187,6 +214,7 @@ class Pagos extends Component
                             onKeyUp={ev => {
                                 if (ev.keyCode === 13) {
                                     this.agregarPago(ev.target.value);
+                                    ev.target.value = '';
                                 }
                             }}
                         />

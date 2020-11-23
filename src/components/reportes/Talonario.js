@@ -28,14 +28,14 @@ const styles = StyleSheet.create({
         right: -2,
     },
     firstBaseContainer: {
-        borderWidth: 0.6,
+        borderWidth: 0.4,
         borderColor: '#000',
         marginTop: 23,
         paddingTop: 5,
         paddingBottom: 10,
     },
     baseContainer: {
-        borderWidth: 0.6,
+        borderWidth: 0.4,
         borderColor: '#000',
         marginTop: -1,
         paddingTop: 5,
@@ -46,7 +46,7 @@ const styles = StyleSheet.create({
         marginTop: -12,
         marginLeft: -5,
         height: 230,
-        borderWidth: 0.5,
+        borderWidth: 0.3,
         borderStyle: 'dashed',
         borderColor: '#000'
     },
@@ -84,9 +84,16 @@ const styles = StyleSheet.create({
     },
     barcode: {
         height: 45,
-        width: 180,
+        width: 200,
         marginLeft: 5,
-        marginTop: 25
+        marginTop: 20
+    },
+    barcodeText: {
+        fontSize: 10,
+        marginLeft: 50,
+        width: 100,
+        marginTop: 66,
+        position: 'absolute'
     },
     title: {
         fontSize: 10,
@@ -240,8 +247,9 @@ const Entry = props => {
                             <View style={styles.customerContainer}>
                                 <Image
                                     style={styles.barcode}
-                                    src={`https://bwipjs-api.metafloor.com/?bcid=code128&text=${cuota.codigo}&scale=2&includetext`}
+                                    src={`https://bwipjs-api.metafloor.com/?bcid=code128&text=${cuota.codigo}&scale=2`}
                                 />
+                                <Text style={styles.barcodeText}>{cuota.codigo}</Text>
                             </View>
                         </View>
                     </View>
