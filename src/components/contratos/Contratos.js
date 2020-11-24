@@ -272,7 +272,7 @@ class Contratos extends Component {
                     modalDetalle &&
                     <ModalDetalle
                         visible={modalDetalle}
-                        record={registro}
+                        codigoContrato={registro.key}
                         handleCancel={this.handleCancel}
                     />
                 }

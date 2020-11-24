@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import Tabla from '../Tabla';
-import { message, Tooltip, Space, Input, Row, Col, PageHeader } from 'antd';
+import ModalDetalle from '../contratos/ModalDetalle';
+import { message, Tooltip, Space, Input, Row, Col, PageHeader, Button } from 'antd';
 import { StopOutlined, BarcodeOutlined } from '@ant-design/icons';
 import app from '../../firebaseConfig';
 import firebase from 'firebase';
@@ -19,10 +20,11 @@ class Pagos extends Component
             busqueda: '',
             loading: true,
             pagos: [],
-            barcode: ''
+            barcode: '',
+            codigoContrato: '',
+            modalDetalleContrato: false
         };
 
-        // this.barcodeRef = React.createRef();
     }
 
     capitalize = s => {
@@ -71,7 +73,6 @@ class Pagos extends Component
 
     componentDidMount() {
         this.refPagos.orderBy('fecha_creacion', 'desc').onSnapshot(this.obtenerPagos);
-        // this.barcodeRef.current.focus();
     }
 
     buscar(valor) {
@@ -85,11 +86,34 @@ class Pagos extends Component
 
     columnas = this.asignarColumnas();
 
+    verDetalleContrato = codigo => {
+        this.setState({ codigoContrato: codigo });
+        this.setState({ modalDetalleContrato: true });
+    }
+
+    handleCancel = () => {
+        this.setState({
+            codigoContrato: '',
+            modalDetalleContrato: false,
+        })
+    }
+
     asignarColumnas() {
         return [
             {
                 title: 'Contrato',
-                dataIndex: 'codigo_contrato',
+                key: 'codigo_contrato',
+                sorter: {
+                    compare: (a, b) => a.codigo - b.codigo,
+                    multiple: 2,
+                },
+                filters: [],
+                onFilter: (value, record) => record.codigo.indexOf(value) === 0,
+                render: record => (
+                    <Button type="link" onClick={() => this.verDetalleContrato(record.codigo_contrato)}>
+                        <strong>{ record.codigo_contrato }</strong>
+                    </Button>
+                )
             },
             {
                 title: 'Cliente',
@@ -195,7 +219,7 @@ class Pagos extends Component
     }
 
     render(){
-        const { pagos, loading } = this.state;
+        const { pagos, loading, modalDetalleContrato, codigoContrato } = this.state;
 
         return (
             <div>
@@ -211,7 +235,6 @@ class Pagos extends Component
                             placeholder="Codigo de cuota"
                             style={{ width: 240 }}
                             autoFocus
-                            // ref={this.barcodeRef}
                             maxLength={20}
                             allowClear
                             value={this.state.barcode}
@@ -224,6 +247,14 @@ class Pagos extends Component
                         />
                     ]}
                 />
+                {
+                    modalDetalleContrato &&
+                    <ModalDetalle
+                        visible={modalDetalleContrato}
+                        codigoContrato={codigoContrato}
+                        handleCancel={this.handleCancel}
+                    />
+                }
                 <Tabla
                     titulo={
                         <>

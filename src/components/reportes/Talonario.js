@@ -1,5 +1,7 @@
 import React from 'react';
-import { Page, Text, View, Document, StyleSheet, Image } from '@react-pdf/renderer';
+import { Page, Text, View, Document, StyleSheet, Image, Font } from '@react-pdf/renderer';
+
+Font.register({ family: 'Courier New', src: `${process.env.PUBLIC_URL}/cour.ttf` });
 
 const months = [
     'enero',
@@ -167,6 +169,7 @@ const styles = StyleSheet.create({
         paddingRight: 5,
     },
     value: {
+        fontFamily: 'Courier New',
         fontSize: 11,
         padding: 2,
         width: 340,
@@ -176,6 +179,7 @@ const styles = StyleSheet.create({
         borderColor: '#000'
     },
     duiValue: {
+        fontFamily: 'Courier New',
         fontSize: 11,
         padding: 2,
         width: 110,
@@ -200,7 +204,7 @@ const styles = StyleSheet.create({
 });
 
 const Entry = props => {
-    const { cuota, cliente, dui } = props;
+    const { cuota, cliente, dui, tipo } = props;
 
     return (
         <View break={cuota.next} style={cuota.next ? styles.firstBaseContainer : styles.baseContainer}>
@@ -255,8 +259,8 @@ const Entry = props => {
                     </View>
                     <View>
                         <View style={styles.rightDataColumn} />
-                        <Text style={{ fontSize: 10, marginLeft: 70, color: 'blue' }}>
-                            ORIGINAL
+                        <Text style={{ fontSize: 10, marginLeft: 90, color: 'blue' }}>
+                            { tipo.toUpperCase() }
                         </Text>
                     </View>
                 </View>
@@ -297,10 +301,13 @@ const ordenarCuotas = cuotas => {
 }
 
 const Talonario = props => {
-    let { contrato, cuotas } = props;
+    let { contrato, cuotas, tipo } = props;
     let cuotasOrdenadas = [];
 
     cuotasOrdenadas = ordenarCuotas(cuotas);
+
+    console.log(process.env.PUBLIC_URL);
+    console.log(__dirname);
 
     return (
         <Document>
@@ -313,6 +320,7 @@ const Talonario = props => {
                                 cuota={cuota}
                                 cliente={contrato.cliente}
                                 dui={contrato.dui_cliente}
+                                tipo={tipo}
                             />
                         )
                     }

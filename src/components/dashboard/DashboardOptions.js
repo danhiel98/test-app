@@ -91,7 +91,7 @@ class DashboardOptions extends Component
                                     <span style={ { fontSize: "20px" } }> Mantenimientos </span>
                                 </Fragment>
                             }
-                            description="Mantenimientos realizados" />
+                            description="Ver mantenimientos" />
                         </Space>
                     </Card>
                 </Col>

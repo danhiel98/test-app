@@ -14,6 +14,18 @@ const verFecha = fecha => {
     return capitalize(new Date(fecha.seconds * 1000).toLocaleDateString("es-SV", { year: 'numeric', month: 'short' }))
 }
 
+const obtenerContrato = async ref => {
+    let auxRecord = null;
+    await ref
+    .get()
+    .then(doc => {
+        if (doc.exists) {
+            auxRecord = doc.data();
+        }
+    })
+    return auxRecord;
+}
+
 const obtenerCuotas = async ref => {
     let auxCuotas = [];
     await ref
@@ -31,27 +43,34 @@ const obtenerCuotas = async ref => {
 
 const ModalDetalle = props => {
 
-    const { record } = props;
+    const { codigoContrato } = props;
+    const [loadingRecord, setLoadingRecord] = useState(true);
     const [loadingCuotas, setLoadingCuotas] = useState(true);
+    const [record, setRecord] = useState({});
     const [cuotas, setCuotas] = useState([]);
 
     useEffect(() => {
         setLoadingCuotas(true);
+        setLoadingRecord(true)
 
-        let ref = app.firestore().collection('contratos').doc(record.key).collection('cuotas');
+        let ref = app.firestore().collection('contratos').doc(codigoContrato);
 
-        obtenerCuotas(ref)
+        obtenerContrato(ref)
+        .then(res => setRecord(res))
+        .finally(() => setLoadingRecord(false));
+
+        obtenerCuotas(ref.collection('cuotas'))
         .then(res => setCuotas(res))
         .finally(() => setLoadingCuotas(false));
-    }, [record]);
+    }, [codigoContrato]);
 
-    const download = () => {
-        pdf(Talonario({ contrato: record, cuotas: cuotas })).toBlob()
+    const download = (tipo) => {
+        pdf(Talonario({ contrato: record, cuotas: cuotas, tipo: tipo })).toBlob()
         .then(file => {
             var csvURL = window.URL.createObjectURL(file);
             let tempLink = document.createElement('a');
             tempLink.href = csvURL;
-            tempLink.setAttribute('download', `Talonario ${record.codigo}.pdf`);
+            tempLink.setAttribute('download', `Talonario ${record.codigo} (${tipo}).pdf`);
             tempLink.click();
         })
         .catch(error => {
@@ -80,7 +99,7 @@ const ModalDetalle = props => {
                     <Card
                         title={
                             <Space>
-                                <strong> {record.codigo} </strong>
+                                <strong> {codigoContrato} </strong>
                                 <Tooltip title="Descargar documento">
                                     <strong>
                                         <CloudDownloadOutlined key="download" onClick={() => console.log('download')} style={{ color: '#389e0d' }} />
@@ -90,13 +109,18 @@ const ModalDetalle = props => {
                         }
                         bodyStyle={{ height: 285 }}
                     >
-                        Cliente: <strong>{record.cliente}</strong><br />
-                        Dui cliente: <strong>{record.dui_cliente}</strong> <br />
-                        IP: <strong>192.168.{record.red}.{record.ip}</strong><br />
-                        Precio de cuota: <strong>$ {record.precio_cuota}</strong><br />
-                        Cant. Cuotas: <strong>{record.cant_cuotas}</strong><br />
-                        Fecha de inicio: <strong>{record.fecha_inicio}</strong><br />
-                        Fecha de fin: <strong>{record.fecha_fin}</strong><br />
+                        {
+                            !loadingRecord &&
+                            <div>
+                                Cliente: <strong>{record.cliente}</strong><br />
+                                Dui cliente: <strong>{record.dui_cliente}</strong> <br />
+                                IP: <strong>192.168.{record.red}.{record.ip}</strong><br />
+                                Precio de cuota: <strong>$ {record.precio_cuota}</strong><br />
+                                Cant. Cuotas: <strong>{record.cant_cuotas}</strong><br />
+                                Fecha de inicio: <strong>{verFecha(record.fecha_inicio)}</strong><br />
+                                Fecha de fin: <strong>{verFecha(record.fecha_fin)}</strong><br />
+                            </div>
+                        }
                     </Card>
                 </Col>
                 <Col flex={16} offset={1}>
@@ -106,7 +130,10 @@ const ModalDetalle = props => {
                                 <strong>Cuotas</strong>
                                 {
                                     !loadingCuotas &&
-                                    <CloudDownloadOutlined key="download" onClick={download} style={{ color: '#389e0d' }} />
+                                    <Space>
+                                        <CloudDownloadOutlined key="downloadOriginal" onClick={() => download('original')} style={{ color: '#389e0d' }} />
+                                        <CloudDownloadOutlined key="downloadCopia" onClick={() => download('copia')} style={{ color: '#e1a61b' }} />
+                                    </Space>
                                 }
                             </Space>
                         }
