@@ -232,7 +232,7 @@ class Contratos extends Component {
                             <CloudDownloadOutlined key="download" onClick={() => console.log('download')} style={{ color: '#389e0d' }} />
                         </Tooltip>
                         <Tooltip title="Editar">
-                            <EditOutlined key="edit" onClick={() => this.modalData(record)} style={{ color: '#fa8c16' }} />
+                            <EditOutlined onClick={() => this.modalData(record)} style={{ color: '#fa8c16' }} />
                         </Tooltip>
                         <Tooltip title="Cancelar">
                             <StopOutlined key="cancel" onClick={() => console.log('cancel')} style={{ color: '#f5222d' }} />

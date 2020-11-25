@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
 import Tabla from '../Tabla';
 import { Space, Button, Input, Row, Col } from 'antd';
+import { InfoCircleOutlined } from '@ant-design/icons';
 import ModalDatos from './ModalDatos';
+import ModalDetalle from './ModalDetalle';
 import app from '../../firebaseConfig';
 const { Search } = Input;
 
@@ -11,13 +13,14 @@ class Clientes extends Component
         super(props);
 
         this.ref = app.firestore().collection('clientes');
-        // this.unsubscribe = null;
+
         this.state = {
             busqueda: '',
             loading: true,
             clientes: [],
             visible: false,
-            registro: null
+            registro: null,
+            modalDetalle: false
         };
     }
 
@@ -72,9 +75,7 @@ class Clientes extends Component
         return [
             {
                 title: 'Nombre',
-                dataIndex: 'nombre',
-                sorter: (a, b) => a.nombre.length - b.nombre.length,
-                sortDirections: ['ascend'],
+                dataIndex: 'nombre'
             },
             {
                 title: 'DUI',
@@ -95,7 +96,8 @@ class Clientes extends Component
                 title: 'Opciones',
                 key: 'opciones',
                 render: (record) => (
-                    <Space size="middle">
+                    <Space size="small">
+                        <InfoCircleOutlined onClick={() => this.verDetalle(record)} style={{ color: '#389e0d' }} />
                         <Button type="link" onClick={ () => { this.modalData(record); } }>Editar</Button>
                     </Space>
                 )
@@ -113,12 +115,18 @@ class Clientes extends Component
     handleCancel = () => {
         this.setState({
             visible: false,
-            registro: null
+            registro: null,
+            modalDetalle: false
         })
     }
 
+    verDetalle = record => {
+        this.setState({ registro: record });
+        this.setState({ modalDetalle: true });
+    }
+
     render(){
-        const { visible, registro, clientes, loading } = this.state;
+        const { visible, registro, clientes, loading, modalDetalle } = this.state;
 
         return (
             <div>
@@ -153,6 +161,14 @@ class Clientes extends Component
                     data={clientes}
                     loading={loading}
                 />
+                {
+                    modalDetalle &&
+                    <ModalDetalle
+                        visible={modalDetalle}
+                        codigoCliente={registro.key}
+                        handleCancel={this.handleCancel}
+                    />
+                }
             </div>
         );
     }
