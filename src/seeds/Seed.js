@@ -192,7 +192,7 @@ class Seed extends Component
                 let contrato = {
                     activo: true,
                     cliente: `${cliente.nombre} ${cliente.apellido}`,
-                    codigo: `R${red.numero}-${ip.numero}-${f_inicio}-${f_fin}`,
+                    codigo: `R${red.numero}-${this.zeroPad(ip.numero, 3)}-${f_inicio}-${f_fin}`,
                     cant_cuotas: 18,
                     dui_cliente,
                     red: red.numero,

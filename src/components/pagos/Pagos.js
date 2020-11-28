@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import Tabla from '../Tabla';
-import ModalDetalle from '../contratos/ModalDetalle';
+import DetalleContrato from '../contratos/ModalDetalle';
+import DetalleCliente from '../clientes/ModalDetalle';
 import { message, Tooltip, Space, Input, Row, Col, PageHeader, Button } from 'antd';
 import { StopOutlined, BarcodeOutlined } from '@ant-design/icons';
 import app from '../../firebaseConfig';
@@ -22,7 +23,9 @@ class Pagos extends Component
             pagos: [],
             barcode: '',
             codigoContrato: '',
-            modalDetalleContrato: false
+            codigoCliente: '',
+            detalleContrato: false,
+            detalleCliente: false
         };
 
     }
@@ -42,7 +45,7 @@ class Pagos extends Component
         this.setState({ loading: true })
 
         querySnapshot.forEach((doc) => {
-            let { cantidad, codigo_contrato, nombre_cliente, numero_cuota, fecha_creacion } = doc.data();
+            let { cantidad, codigo_contrato, nombre_cliente, numero_cuota, fecha_creacion, ref_cliente } = doc.data();
 
             if (fecha_creacion)
                 fecha_creacion = this.verFecha(fecha_creacion);
@@ -61,7 +64,8 @@ class Pagos extends Component
                 codigo_contrato,
                 nombre_cliente,
                 numero_cuota,
-                fecha_creacion
+                fecha_creacion,
+                ref_cliente
             });
         });
 
@@ -88,13 +92,19 @@ class Pagos extends Component
 
     verDetalleContrato = codigo => {
         this.setState({ codigoContrato: codigo });
-        this.setState({ modalDetalleContrato: true });
+        this.setState({ detalleContrato: true });
+    }
+
+    verDetalleCliente = codigo => {
+        this.setState({ codigoCliente: codigo });
+        this.setState({ detalleCliente: true });
     }
 
     handleCancel = () => {
         this.setState({
             codigoContrato: '',
-            modalDetalleContrato: false,
+            detalleContrato: false,
+            detalleCliente: false,
         })
     }
 
@@ -117,7 +127,12 @@ class Pagos extends Component
             },
             {
                 title: 'Cliente',
-                dataIndex: 'nombre_cliente'
+                key: 'nombre_cliente',
+                render: record => (
+                    <Button type="link" onClick={() => this.verDetalleCliente(record.ref_cliente.id)}>
+                        <strong>{ record.nombre_cliente }</strong>
+                    </Button>
+                )
             },
             {
                 title: 'Cuota',
@@ -125,7 +140,12 @@ class Pagos extends Component
             },
             {
                 title: 'Fecha',
-                dataIndex: 'fecha_creacion',
+                key: 'fecha_creacion',
+                render: record => (
+                    <span>
+                        {`${record.numero_cuota} - ${record.fecha_creacion}`}
+                    </span>
+                )
             },
             {
                 title: 'Opciones',
@@ -172,6 +192,7 @@ class Pagos extends Component
                             this.refPagos.doc(d_cuota.codigo).set({
                                 cantidad: d_cuota.cantidad,
                                 codigo_contrato: contrato.id,
+                                ref_cliente: d_contrato.ref_cliente,
                                 nombre_cliente: d_contrato.cliente,
                                 numero_cuota: cuota.id,
                                 fecha_creacion: firebase.firestore.FieldValue.serverTimestamp()
@@ -219,7 +240,7 @@ class Pagos extends Component
     }
 
     render(){
-        const { pagos, loading, modalDetalleContrato, codigoContrato } = this.state;
+        const { pagos, loading, detalleContrato, detalleCliente, codigoContrato, codigoCliente } = this.state;
 
         return (
             <div>
@@ -248,10 +269,18 @@ class Pagos extends Component
                     ]}
                 />
                 {
-                    modalDetalleContrato &&
-                    <ModalDetalle
-                        visible={modalDetalleContrato}
+                    detalleContrato &&
+                    <DetalleContrato
+                        visible={detalleContrato}
                         codigoContrato={codigoContrato}
+                        handleCancel={this.handleCancel}
+                    />
+                }
+                {
+                    detalleCliente &&
+                    <DetalleCliente
+                        visible={detalleCliente}
+                        codigoCliente={codigoCliente}
                         handleCancel={this.handleCancel}
                     />
                 }

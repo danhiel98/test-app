@@ -79,7 +79,7 @@ const ModalDetalle = props => {
             }
         >
             <Row>
-                <Col flex={7}>
+                <Col flex={7} style={{ maxWidth: 395 }}>
                     <Card
                         title={
                             <Space>
