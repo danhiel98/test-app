@@ -38,12 +38,26 @@ class Seed extends Component
         this.seedContratos();
     }
 
+    setAvailableIPs = async () => {
+        await this.refIps.get()
+        .then(querySnapshot => {
+            querySnapshot.forEach(function(doc) {
+                doc.ref.update({
+                    libre: true
+                })
+            });
+        })
+        .catch(function(error) {
+            console.log("Error actualizando las redes: ", error);
+        });
+    }
+
     zeroPad = (num, places) => String(num).padStart(places, '0');
 
     seedRedes = () => {
         console.log('Agregando redes');
         return new Promise((resolve, reject) => {
-            for (let i = 14; i < 18; i++){
+            for (let i = 14; i < 22; i++){
                 this.refRedes.add({
                     numero: i
                 })
@@ -105,12 +119,13 @@ class Seed extends Component
         console.log('Agregando clientes');
         return new Promise((resolve, reject) => {
             for (let i = 1; i <= 25; i++){
-                let dui = faker.phone.phoneNumber('!0#######-#');
+                let dui = faker.phone.phoneNumber('0#######-#');
                 let cliente = {
                     dui,
+                    fecha_eliminado: null,
                     nombre: faker.name.firstName(),
                     apellido: faker.name.lastName(),
-                    telefono: faker.phone.phoneNumber('!####-####'),
+                    telefono: faker.phone.phoneNumber('####-####'),
                     direccion: `${faker.address.city()} ${faker.address.direction()}`,
                     fecha_creacion: firebase.firestore.FieldValue.serverTimestamp()
                 }
@@ -191,6 +206,8 @@ class Seed extends Component
 
                 let contrato = {
                     activo: true,
+                    archivado: false,
+                    fecha_eliminado: null,
                     cliente: `${cliente.nombre} ${cliente.apellido}`,
                     codigo: `R${red.numero}-${this.zeroPad(ip.numero, 3)}-${f_inicio}-${f_fin}`,
                     cant_cuotas: 18,
@@ -280,6 +297,7 @@ class Seed extends Component
             <>
                 <button onClick={this.clearData}>Clear data</button>
                 <button onClick={this.makeData}>Create data</button>
+                <button onClick={this.setAvailableIPs}>Set Available IPs</button>
             </>
         );
     }

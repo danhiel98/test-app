@@ -12,7 +12,9 @@ class Clientes extends Component
     constructor(props) {
         super(props);
 
-        this.ref = app.firestore().collection('clientes');
+        this.refCliente = app.firestore().collection('clientes');
+        this.refContrato = app.firestore().collection('contratos');
+        this.refPago = app.firestore().collection('pagos');
 
         this.state = {
             busqueda: '',
@@ -57,13 +59,13 @@ class Clientes extends Component
     }
 
     componentDidMount() {
-        this.ref.onSnapshot(this.obtenerClientes);
+        this.refCliente.onSnapshot(this.obtenerClientes);
     }
 
     buscar(valor) {
         if (valor !== this.state.busqueda) {
             this.setState({ busqueda: valor })
-            this.ref
+            this.refCliente
             .get()
             .then(querySnapshot => this.obtenerClientes(querySnapshot));
         }
@@ -135,7 +137,9 @@ class Clientes extends Component
                     title={registro ? 'Editar información' : 'Agregar cliente'}
                     handleCancel={this.handleCancel}
                     record={registro}
-                    fireRef={this.ref}
+                    refCliente={this.refCliente}
+                    refContrato={this.refContrato}
+                    refPago={this.refPago}
                 />
                 <Tabla
                     titulo={

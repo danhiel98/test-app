@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, List, Card, Row, Col, Spin, Space } from 'antd';
+import { Tooltip, Modal, List, Card, Row, Col, Spin, Space } from 'antd';
 import app from '../../firebaseConfig';
 
 const capitalize = s => {
@@ -104,6 +104,11 @@ const ModalDetalle = props => {
                         title={
                             <Space>
                                 <strong>Contratos</strong>
+                                <Tooltip title="Registrar contrato">
+                                    <a href="#/contratos" target="_blank" style={{ fontSize: 12, margin: "0 8px" }}>
+                                        Nuevo
+                                    </a>
+                                </Tooltip>
                             </Space>
                         }
                         bodyStyle={{ height: 240, overflowY: 'auto' }}

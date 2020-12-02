@@ -25,7 +25,7 @@ class Pagos extends Component
             codigoContrato: '',
             codigoCliente: '',
             detalleContrato: false,
-            detalleCliente: false
+            detalleCliente: false,
         };
 
     }
@@ -136,14 +136,22 @@ class Pagos extends Component
             },
             {
                 title: 'Cuota',
-                dataIndex: 'numero_cuota',
+                key: 'numero_cuota',
+                render: record => (
+                    <Space>
+                        { record.numero_cuota }
+                        {
+                            record.fecha_pago ? ` - ${record.fecha_pago} ` :  ''
+                        }
+                    </Space>
+                )
             },
             {
                 title: 'Fecha',
                 key: 'fecha_creacion',
                 render: record => (
                     <span>
-                        {`${record.numero_cuota} - ${record.fecha_creacion}`}
+                        {`${record.fecha_creacion}`}
                     </span>
                 )
             },

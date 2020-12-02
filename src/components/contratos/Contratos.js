@@ -7,6 +7,7 @@ import { push } from 'connected-react-router';
 import Tabla from '../Tabla';
 import ModalDatos from './ModalDatos';
 import ModalDetalle from './ModalDetalle';
+import ModalDetalleCliente from '../clientes/ModalDetalle';
 
 const { Search } = Input;
 
@@ -28,7 +29,9 @@ class Contratos extends Component {
             redes: [],
             visible: false,
             registro: null,
-            modalDetalle: false
+            modalDetalle: false,
+            modalDetalleCliente: false,
+            codigoCliente: null
         };
     }
 
@@ -37,7 +40,7 @@ class Contratos extends Component {
         const { busqueda } = this.state;
 
         querySnapshot.forEach(async (doc) => {
-            let { cliente, dui_cliente, activo, codigo, fecha_inicio, fecha_fin, velocidad, cant_cuotas, precio_cuota, red, ip } = doc.data();
+            let { cliente, dui_cliente, activo, codigo, fecha_inicio, fecha_fin, velocidad, cant_cuotas, precio_cuota, red, ip, ref_cliente } = doc.data();
 
             fecha_inicio = this.verFecha(fecha_inicio);
             fecha_fin = this.verFecha(fecha_fin);
@@ -64,7 +67,8 @@ class Contratos extends Component {
                 cant_cuotas,
                 precio_cuota,
                 red,
-                ip
+                ip,
+                ref_cliente
             });
         });
         this.setState({
@@ -141,6 +145,7 @@ class Contratos extends Component {
         this.setState({
             registro: null,
             modalDetalle: false,
+            modalDetalleCliente: false,
             visible: false
         })
     }
@@ -164,6 +169,12 @@ class Contratos extends Component {
         this.setState({ modalDetalle: true });
     }
 
+    verDetalleCliente = codigo => {
+        console.log(codigo);
+        // this.setState({ codigoCliente: codigo });
+        // this.setState({ modalDetalleCliente: true });
+    }
+
     columnas = this.asignarColumnas();
 
     asignarColumnas() {
@@ -185,11 +196,16 @@ class Contratos extends Component {
             },
             {
                 title: 'Cliente',
-                dataIndex: 'cliente',
+                key: 'cliente',
                 sorter: {
                     compare: (a, b) => a.cliente - b.cliente,
                     multiple: 1,
-                }
+                },
+                render: record => (
+                    <Button type="link" onClick={() => this.verDetalleCliente(record)}>
+                        <strong>{ record.cliente }</strong>
+                    </Button>
+                )
             },
             {
                 title: 'Velocidad',
@@ -251,7 +267,9 @@ class Contratos extends Component {
             registro,
             clientes,
             redes,
-            modalDetalle
+            codigoCliente,
+            modalDetalle,
+            modalDetalleCliente
         } = this.state;
 
         return (
@@ -273,6 +291,14 @@ class Contratos extends Component {
                     <ModalDetalle
                         visible={modalDetalle}
                         codigoContrato={registro.key}
+                        handleCancel={this.handleCancel}
+                    />
+                }
+                {
+                    modalDetalleCliente &&
+                    <ModalDetalleCliente
+                        visible={modalDetalleCliente}
+                        codigoCliente={codigoCliente}
                         handleCancel={this.handleCancel}
                     />
                 }

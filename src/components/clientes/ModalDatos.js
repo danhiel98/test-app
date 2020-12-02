@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import {Form, Input, Modal, Button } from 'antd';
+import { message, Form, Input, Modal, Button } from 'antd';
 import TextArea from 'antd/lib/input/TextArea';
 import firebase from 'firebase';
 
 const ModalDatos = (props) => {
     const [form] = Form.useForm();
-    const { fireRef, record } = props;
+    const { refCliente, refContrato, refPago, record } = props;
 
     const [loading, setLoading] = useState(false);
 
@@ -15,7 +15,7 @@ const ModalDatos = (props) => {
             return
         }
 
-        const ref = fireRef.doc(record.key);
+        const ref = refCliente.doc(record.key);
         ref.get().then((doc) => {
             if (doc.exists) {
                 const cli = doc.data();
@@ -30,7 +30,7 @@ const ModalDatos = (props) => {
                 console.log(`No se puede obtener el registro`);
             }
         });
-    }, [record, form, fireRef]);
+    }, [record, form, refCliente]);
 
     const handleOk = () => {
         setLoading(true);
@@ -65,36 +65,61 @@ const ModalDatos = (props) => {
 
     // eslint-disable-next-line
     const agregarRegistro = async (val) => {
-        fireRef.doc(val.dui)
-        .set({
+        refCliente.add({
+            activo: true,
             nombre: val.nombre,
             apellido: val.apellido,
             dui: val.dui,
             telefono: val.telefono,
             direccion: val.direccion,
-            fecha_creacion: firebase.firestore.FieldValue.serverTimestamp()
-        }).then((docRef) => {
-            console.log(`¡Todo bien!`)
+            fecha_eliminado: null,
+            fecha_creacion: firebase.firestore.Timestamp.now()
+        })
+        .then((docRef) => {
+            message.success('¡Registro insertado correctamente!');
         })
         .catch((error) => {
+            message.error('Error al insertar el registro');
             console.error(`No se pudo agregar el registro: ${error}}`);
         });
     }
 
     // eslint-disable-next-line
     const editarRegistro = async (val) => {
-        const ref = fireRef.doc(record.key);
+        const ref = refCliente.doc(record.key);
 
-        ref.set({
+        ref.update({
             nombre: val.nombre,
             apellido: val.apellido,
             dui: val.dui,
             telefono: val.telefono,
             direccion: val.direccion
-        }).then((docRef) => {
-            console.log(`El registro fue actualizado`)
+        }).then(() => {
+            // Actualizar los nombres en contratos del cliente
+            refContrato.where('ref_cliente', '==', ref)
+            .get()
+            .then(qs => {
+                qs.forEach(doc => {
+                    doc.ref.update({
+                        cliente: `${val.nombre} ${val.apellido}`
+                    })
+                });
+            })
+
+            // Actualizar los nombres en pagos del cliente
+            refPago.where('ref_cliente', '==', ref)
+            .get()
+            .then(qs => {
+                qs.forEach(doc => {
+                    doc.ref.update({
+                        nombre_cliente: `${val.nombre} ${val.apellido}`
+                    })
+                });
+            })
+            message.success('¡Registro actualizado correctamente!');
         })
         .catch((error) => {
+            message.error('Error al editar el registro');
             console.error(`No se pudo editar el registro: ${error}`);
         });
     }
