@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { message, Row, Col, DatePicker, Select, Form, Input, Modal, Button, Tooltip, InputNumber } from "antd";
-import "moment/locale/es";
 import moment from 'moment';
+import "moment/locale/es";
 import locale from "antd/es/date-picker/locale/es_ES";
 import app from '../../firebaseConfig';
 import firebase from 'firebase';

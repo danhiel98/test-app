@@ -3,19 +3,48 @@ import Tabla from '../Tabla';
 import DetalleContrato from '../contratos/ModalDetalle';
 import DetalleCliente from '../clientes/ModalDetalle';
 import { Popover, DatePicker, message, Tooltip, Space, Input, Row, Col, PageHeader, Button } from 'antd';
-import { StopOutlined, BarcodeOutlined } from '@ant-design/icons';
+import { StopOutlined, BarcodeOutlined, CalendarOutlined, CheckCircleOutlined } from '@ant-design/icons';
+import locale from "antd/es/date-picker/locale/es_ES";
 import app from '../../firebaseConfig';
 import firebase from 'firebase';
 
 const { Search } = Input;
+let ref = app.firestore();
+
+const SelectFecha = (props)  => {
+    let { record } = props;
+    let fecha = null;
+
+    let selecFechaPago = codigo => {
+        ref.collection('pagos').doc(codigo)
+        .update({
+            fecha_pago: fecha
+        })
+        .then(() => {
+            message.success('¡Fecha establecida correctamente!');
+        })
+    }
+
+    return (
+        <Space>
+            <DatePicker
+                locale={locale}
+                format="DD-MMMM-YYYY"
+                size="small"
+                onChange={ date => { fecha = new Date(date.get()) }}
+            />
+            <CheckCircleOutlined onClick={() => selecFechaPago(record.key)} style={{ color: '#389e0d' }} />
+        </Space>
+    );
+}
 
 class Pagos extends Component
 {
     constructor(props) {
         super(props);
 
-        this.refPagos = app.firestore().collection('pagos');
-        this.refContratos = app.firestore().collection('contratos');
+        this.refPagos = ref.collection('pagos');
+        this.refContratos = ref.collection('contratos');
         this.unsubscribe = null;
         this.state = {
             busqueda: '',
@@ -26,10 +55,20 @@ class Pagos extends Component
             codigoCliente: '',
             detalleContrato: false,
             detalleCliente: false,
-            selecFechaVisible: false,
+            selectFechaVisible: false,
         };
 
     }
+
+    hide = () => {
+        this.setState({
+            selectFechaVisible: false,
+        });
+    };
+
+    handleVisibleChange = selectFechaVisible => {
+        this.setState({ selectFechaVisible });
+    };
 
     capitalize = s => {
         if (typeof s !== 'string') return s
@@ -153,12 +192,26 @@ class Pagos extends Component
                 key: 'fecha_pago',
                 render: record => (
                     <span>
-                        {
-                            console.log('Hola')
-                        }
-                        {
-                            record.fecha_pago ? ` - ${record.fecha_pago} ` :  'Seleccione'
-                        }
+                        <Row justify="center">
+                            <Col>
+                                {
+                                    record.fecha_pago
+                                    ?
+                                    ` ${record.fecha_pago.toDate().toLocaleDateString('es-SV', { year: 'numeric', month: 'numeric', day: 'numeric' })} `
+                                    :
+                                    ''
+                                }
+                                <Popover
+                                    content={
+                                        <SelectFecha record={record} />
+                                    }
+                                    title="Seleccione"
+                                    trigger="click"
+                                >
+                                    <CalendarOutlined style={{ color: '#1c86c6' }} />
+                                </Popover>
+                            </Col>
+                        </Row>
                     </span>
                 )
             },
