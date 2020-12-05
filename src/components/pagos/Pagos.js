@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import Tabla from '../Tabla';
 import DetalleContrato from '../contratos/ModalDetalle';
 import DetalleCliente from '../clientes/ModalDetalle';
-import { message, Tooltip, Space, Input, Row, Col, PageHeader, Button } from 'antd';
+import { Popover, DatePicker, message, Tooltip, Space, Input, Row, Col, PageHeader, Button } from 'antd';
 import { StopOutlined, BarcodeOutlined } from '@ant-design/icons';
 import app from '../../firebaseConfig';
 import firebase from 'firebase';
@@ -26,6 +26,7 @@ class Pagos extends Component
             codigoCliente: '',
             detalleContrato: false,
             detalleCliente: false,
+            selecFechaVisible: false,
         };
 
     }
@@ -45,10 +46,12 @@ class Pagos extends Component
         this.setState({ loading: true })
 
         querySnapshot.forEach((doc) => {
-            let { cantidad, codigo_contrato, nombre_cliente, numero_cuota, fecha_creacion, ref_cliente } = doc.data();
+            let { cantidad, codigo_contrato, nombre_cliente, numero_cuota, fecha_creacion, ref_cliente, fecha_cuota, fecha_pago } = doc.data();
 
             if (fecha_creacion)
                 fecha_creacion = this.verFecha(fecha_creacion);
+
+            fecha_cuota = this.verFecha(fecha_cuota);
 
             if (busqueda &&
                 codigo_contrato.toLowerCase().indexOf(busqueda) === -1 &&
@@ -65,6 +68,8 @@ class Pagos extends Component
                 nombre_cliente,
                 numero_cuota,
                 fecha_creacion,
+                fecha_cuota,
+                fecha_pago,
                 ref_cliente
             });
         });
@@ -139,19 +144,21 @@ class Pagos extends Component
                 key: 'numero_cuota',
                 render: record => (
                     <Space>
-                        { record.numero_cuota }
-                        {
-                            record.fecha_pago ? ` - ${record.fecha_pago} ` :  ''
-                        }
+                        { `${record.numero_cuota} - ${record.fecha_cuota}` }
                     </Space>
                 )
             },
             {
-                title: 'Fecha',
-                key: 'fecha_creacion',
+                title: 'Fecha de pago',
+                key: 'fecha_pago',
                 render: record => (
                     <span>
-                        {`${record.fecha_creacion}`}
+                        {
+                            console.log('Hola')
+                        }
+                        {
+                            record.fecha_pago ? ` - ${record.fecha_pago} ` :  'Seleccione'
+                        }
                     </span>
                 )
             },
@@ -203,6 +210,8 @@ class Pagos extends Component
                                 ref_cliente: d_contrato.ref_cliente,
                                 nombre_cliente: d_contrato.cliente,
                                 numero_cuota: cuota.id,
+                                fecha_cuota: d_cuota.fecha_pago,
+                                fecha_pago: null,
                                 fecha_creacion: firebase.firestore.FieldValue.serverTimestamp()
                             }).then(doc => {
                                 cuota.ref.update({ cancelado: true })

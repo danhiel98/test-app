@@ -169,10 +169,9 @@ class Contratos extends Component {
         this.setState({ modalDetalle: true });
     }
 
-    verDetalleCliente = codigo => {
-        console.log(codigo);
-        // this.setState({ codigoCliente: codigo });
-        // this.setState({ modalDetalleCliente: true });
+    verDetalleCliente = record => {
+        this.setState({ codigoCliente: record.ref_cliente.id });
+        this.setState({ modalDetalleCliente: true });
     }
 
     columnas = this.asignarColumnas();
