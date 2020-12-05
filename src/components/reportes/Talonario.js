@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
     },
     cardContainer: {
         flexDirection: 'row',
-        marginBottom: 5,
+        marginTop: 1,
     },
     leftColumn: {
         display: 'flex',
@@ -88,13 +88,13 @@ const styles = StyleSheet.create({
         height: 45,
         width: 200,
         marginLeft: 5,
-        marginTop: 20
+        marginTop: 10
     },
     barcodeText: {
         fontSize: 10,
         marginLeft: 50,
         width: 100,
-        marginTop: 66,
+        marginTop: 58,
         position: 'absolute'
     },
     title: {
@@ -110,6 +110,7 @@ const styles = StyleSheet.create({
         lineHeight: 1.2,
         fontWeight: 'bold',
         width: 190,
+        textAlign: 'center'
     },
     numeroCuota: {
         fontSize: 12,
@@ -148,14 +149,11 @@ const styles = StyleSheet.create({
     },
     field: {
         fontSize: 11,
-        marginTop: 3,
+        marginTop: 0,
         color: 'black',
-        lineHeight: 1.3,
         textDecoration: 'none',
-        width: 120,
-        textAlign: 'right',
-        padding: 2,
-        paddingRight: 5,
+        width: 45,
+        textAlign: 'left',
     },
     duiField: {
         fontSize: 11,
@@ -163,16 +161,14 @@ const styles = StyleSheet.create({
         color: 'black',
         lineHeight: 1.3,
         textDecoration: 'none',
-        width: 120,
-        textAlign: 'right',
-        padding: 2,
-        paddingRight: 5,
+        width: 25,
+        textAlign: 'left',
     },
     value: {
         fontFamily: 'Courier New',
         fontSize: 11,
         padding: 2,
-        width: 340,
+        width: 230,
         height: 20,
         paddingLeft: 5,
         border: 1,
@@ -196,10 +192,8 @@ const styles = StyleSheet.create({
     },
     rightDataColumn: {
         border: 1,
-        marginTop: 3,
-        height: 85,
-        width: 220,
-        marginBottom: 3
+        height: 140,
+        width: 235,
     }
 });
 
@@ -218,8 +212,8 @@ const Entry = props => {
                         />
                         <View style={{ paddingLeft: 5 }}>
                             <Text style={styles.title}>Pago de Servicio de Internet Residencial</Text>
-                            <Text style={styles.subtitle}> </Text>
                             <Text style={styles.numeroCuota}>Cuota N°: 00{cuota.id}</Text>
+                            <Text style={styles.subtitle}>{ tipo.toUpperCase() }</Text>
                         </View>
                     </View>
                     <View style={styles.rightColumn}>
@@ -237,13 +231,15 @@ const Entry = props => {
                         </View>
                     </View>
                 </View>
-                <View style={styles.customerContainer}>
-                    <Text style={styles.field}>Nombre del cliente: </Text>
-                    <Text style={styles.value}>{cliente}</Text>
-                </View>
                 <View style={styles.cardContainer}>
                     <View style={styles.leftDataColumn}>
                         <View>
+                            <View style={styles.customerContainer}>
+                                <Text style={styles.field}>Cliente: </Text>
+                            </View>
+                            <View style={styles.customerContainer}>
+                                <Text style={styles.value}>{cliente}</Text>
+                            </View>
                             <View style={styles.customerContainer}>
                                 <Text style={styles.duiField}>DUI: </Text>
                                 <Text style={styles.duiValue}>{dui}</Text>
@@ -255,19 +251,16 @@ const Entry = props => {
                                 />
                                 <Text style={styles.barcodeText}>{cuota.codigo}</Text>
                             </View>
+                            <View style={styles.customerContainer}>
+                                <Text style={{ fontSize: 8.2, marginTop: 20 }}>
+                                    Evita recargos haciendo tus pagos dentro de la fecha establecida
+                                </Text>
+                            </View>
                         </View>
                     </View>
                     <View>
                         <View style={styles.rightDataColumn} />
-                        <Text style={{ fontSize: 10, marginLeft: 90, color: 'blue' }}>
-                            { tipo.toUpperCase() }
-                        </Text>
                     </View>
-                </View>
-                <View>
-                    <Text style={{ fontSize: 8.5 }}>
-                        Para evitar desconexiones del servicio de internet, has tus pagos en las fechas establecidas, así evitarás pago de reconexión
-                    </Text>
                 </View>
             </View>
         </View>

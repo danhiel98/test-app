@@ -135,7 +135,7 @@ const ModalDetalle = props => {
                                             <CloudDownloadOutlined key="downloadOriginal" onClick={() => download('original')} style={{ color: '#389e0d' }} />
                                         </Tooltip>
                                         <Tooltip title="Descargar copia">
-                                            <CloudDownloadOutlined key="downloadCopia" onClick={() => download('copia')} style={{ color: '#e1a61b' }} />
+                                            <CloudDownloadOutlined key="downloadCopia" onClick={() => download('copia - cliente')} style={{ color: '#e1a61b' }} />
                                         </Tooltip>
                                     </Space>
                                 }
