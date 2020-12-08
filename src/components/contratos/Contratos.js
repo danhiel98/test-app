@@ -35,6 +35,8 @@ class Contratos extends Component {
         };
     }
 
+    formatoDinero = num => new Intl.NumberFormat("es-SV", {style: "currency", currency: "USD"}).format(num);
+
     obtenerContratos = (querySnapshot) => {
         const contratos = [];
         const { busqueda } = this.state;
@@ -225,7 +227,7 @@ class Contratos extends Component {
                 render: precio_cuota => (
                     <>
                         <strong>
-                            <span style={{ color: '#089D6C', fontSize: '1.2em' }}>${precio_cuota}</span>
+                            <span style={{ color: '#089D6C', fontSize: '1.2em' }}>{this.formatoDinero(precio_cuota)}</span>
                         </strong>
                     </>
                 )

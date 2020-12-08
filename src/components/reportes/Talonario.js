@@ -2,6 +2,7 @@ import React from 'react';
 import { Page, Text, View, Document, StyleSheet, Image, Font } from '@react-pdf/renderer';
 
 Font.register({ family: 'Courier New', src: `${process.env.PUBLIC_URL}/cour.ttf` });
+Font.register({ family: 'Courier New Bold', src: `${process.env.PUBLIC_URL}/courbd.ttf` });
 
 const months = [
     'enero',
@@ -22,6 +23,10 @@ const verFecha = fecha => {
     fecha = fecha.toDate();
     return `${fecha.getDate()}-${months[fecha.getMonth()]}-${fecha.getFullYear()}`;
 }
+
+const zeroPad = (num, places) => String(num).padStart(places, '0');
+
+const formatoDinero = num => new Intl.NumberFormat("es-SV", {style: "currency", currency: "USD"}).format(num);
 
 const styles = StyleSheet.create({
     mainContainer: {
@@ -81,7 +86,7 @@ const styles = StyleSheet.create({
         borderBottom: 1,
         borderColor: '#000'
     },
-    rightValues: {
+    flowFlex: {
         flexDirection: 'row',
     },
     barcode: {
@@ -106,19 +111,26 @@ const styles = StyleSheet.create({
         width: 190,
     },
     subtitle: {
-        fontSize: 11,
-        lineHeight: 1.2,
+        fontSize: 8,
         fontWeight: 'bold',
         width: 190,
         textAlign: 'center'
     },
-    numeroCuota: {
-        fontSize: 12,
+    textNumeroCuota: {
+        fontSize: 11,
         color: 'black',
         lineHeight: 1.2,
         fontWeight: 'bold',
-        width: 190,
-        paddingLeft: 45
+        width: 100,
+        textAlign: 'right',
+    },
+    numeroCuota: {
+        fontSize: 11.5,
+        fontFamily: 'Courier New Bold',
+        color: 'black',
+        lineHeight: 1.2,
+        textAlign: 'center',
+        width: 30,
     },
     datoPago: {
         fontSize: 11,
@@ -212,22 +224,25 @@ const Entry = props => {
                         />
                         <View style={{ paddingLeft: 5 }}>
                             <Text style={styles.title}>Pago de Servicio de Internet Residencial</Text>
-                            <Text style={styles.numeroCuota}>Cuota N°: 00{cuota.id}</Text>
+                            <View style={styles.flowFlex}>
+                                <Text style={styles.textNumeroCuota}>Cuota N°:</Text>
+                                <Text style={styles.numeroCuota}>{zeroPad(cuota.id, 3)}</Text>
+                            </View>
                             <Text style={styles.subtitle}>{ tipo.toUpperCase() }</Text>
                         </View>
                     </View>
                     <View style={styles.rightColumn}>
-                        <View style={styles.rightValues}>
+                        <View style={styles.flowFlex}>
                             <Text style={styles.datoPago}>Vencimiento: </Text>
                             <Text style={styles.fechaVencimiento}>{verFecha(cuota.fecha_pago)}</Text>
                         </View>
-                        <View style={styles.rightValues}>
+                        <View style={styles.flowFlex}>
                             <Text style={styles.datoPago}>Pago Puntual: </Text>
-                            <Text style={styles.valorPago}>${cuota.cantidad} </Text>
+                            <Text style={styles.valorPago}>{formatoDinero(cuota.cantidad)} </Text>
                         </View>
-                        <View style={styles.rightValues}>
+                        <View style={styles.flowFlex}>
                             <Text style={styles.datoPago}>Pago Tardío: </Text>
-                            <Text style={styles.valorPago}>${cuota.cantidad + 3} </Text>
+                            <Text style={styles.valorPago}>{formatoDinero(cuota.cantidad + 3)} </Text>
                         </View>
                     </View>
                 </View>

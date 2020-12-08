@@ -10,6 +10,8 @@ const capitalize = s => {
     return s.charAt(0).toUpperCase() + s.slice(1)
 }
 
+const formatoDinero = num => new Intl.NumberFormat("es-SV", {style: "currency", currency: "USD"}).format(num);
+
 const verFecha = fecha => {
     return capitalize(new Date(fecha.seconds * 1000).toLocaleDateString("es-SV", { year: 'numeric', month: 'short' }))
 }
@@ -115,7 +117,7 @@ const ModalDetalle = props => {
                                 Cliente: <strong>{record.cliente}</strong><br />
                                 Dui cliente: <strong>{record.dui_cliente}</strong> <br />
                                 IP: <strong>192.168.{record.red}.{record.ip}</strong><br />
-                                Precio de cuota: <strong>$ {record.precio_cuota}</strong><br />
+                                Precio de cuota: <strong>{formatoDinero(record.precio_cuota)}</strong><br />
                                 Cant. Cuotas: <strong>{record.cant_cuotas}</strong><br />
                                 Fecha de inicio: <strong>{verFecha(record.fecha_inicio)}</strong><br />
                                 Fecha de fin: <strong>{verFecha(record.fecha_fin)}</strong><br />
