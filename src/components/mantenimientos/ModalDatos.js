@@ -29,6 +29,28 @@ const ModalDatos = (props) => {
             form.resetFields();
             return
         }
+
+        refContrato.doc(record.codigo_contrato)
+        .get()
+        .then(doc => {
+            if (doc.exists) {
+                let d_contrato = doc.data();
+
+                setRed(d_contrato.red);
+                setIP(d_contrato.ip);
+                setContrato(d_contrato);
+                setFecha(new Date(record.fecha));
+
+                form.setFieldsValue({
+                    red: d_contrato.red,
+                    ip: d_contrato.ip,
+                    fecha: moment(record.fecha),
+                    direccion: record.direccion,
+                    motivo: record.motivo,
+                    descripcion: record.descripcion
+                });
+            }
+        })
     }, [record, form, mainRef]);
 
     useEffect(() => {
@@ -45,15 +67,14 @@ const ModalDatos = (props) => {
                 return;
             }
 
-            console.log(val);
             if (record) { // Si se debe editar
-                // editarRegistro(val).then(() => {
-                //     form.resetFields();
-                //     props.handleCancel()
-                // })
-                // .catch(error => {
-                //     console.log(`Hubo un error al editar el registro: ${error}`)
-                // })
+                editarRegistro(val).then(() => {
+                    form.resetFields();
+                    props.handleCancel()
+                })
+                .catch(error => {
+                    console.log(`Hubo un error al editar el registro: ${error}`)
+                })
             } else {
                 agregarRegistro(val).then(() => {
                     form.resetFields();
@@ -94,44 +115,23 @@ const ModalDatos = (props) => {
     }
 
     // // eslint-disable-next-line
-    // const editarRegistro = async (val) => {
-    //     const ref = refCliente.doc(record.key);
-
-    //     ref.update({
-    //         nombre: val.nombre,
-    //         apellido: val.apellido,
-    //         dui: val.dui,
-    //         telefono: val.telefono,
-    //         direccion: val.direccion
-    //     }).then(() => {
-    //         // Actualizar los nombres en contratos del cliente
-    //         refContrato.where('ref_cliente', '==', ref)
-    //         .get()
-    //         .then(qs => {
-    //             qs.forEach(doc => {
-    //                 doc.ref.update({
-    //                     cliente: `${val.nombre} ${val.apellido}`
-    //                 })
-    //             });
-    //         })
-
-    //         // Actualizar los nombres en pagos del cliente
-    //         refPago.where('ref_cliente', '==', ref)
-    //         .get()
-    //         .then(qs => {
-    //             qs.forEach(doc => {
-    //                 doc.ref.update({
-    //                     nombre_cliente: `${val.nombre} ${val.apellido}`
-    //                 })
-    //             });
-    //         })
-    //         message.success('¡Registro actualizado correctamente!');
-    //     })
-    //     .catch((error) => {
-    //         message.error('Error al editar el registro');
-    //         console.error(`No se pudo editar el registro: ${error}`);
-    //     });
-    // }
+    const editarRegistro = async (val) => {
+        refMantenimiento.doc(record.key)
+        .update({
+            fecha: fecha,
+            codigo_contrato: contrato.codigo,
+            nombre_cliente: contrato.cliente,
+            direccion: val.direccion,
+            motivo: val.motivo,
+            descripcion: val.descripcion,
+        }).then(() => {
+            message.success('¡Registro actualizado correctamente!');
+        })
+        .catch((error) => {
+            message.error('Error al editar el registro');
+            console.error(error);
+        });
+    }
 
     const selectRedes = (
         <Form.Item name="red" noStyle>

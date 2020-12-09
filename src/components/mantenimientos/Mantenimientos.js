@@ -9,6 +9,8 @@ import app from '../../firebaseConfig';
 
 const { Search } = Input;
 
+let opcFecha = { year: 'numeric', month: 'numeric', day: 'numeric' };
+
 class Mantenimientos extends Component
 {
     constructor(props) {
@@ -55,7 +57,8 @@ class Mantenimientos extends Component
                 codigo_contrato,
                 direccion,
                 motivo,
-                descripcion
+                descripcion,
+                fecha: fecha.toDate()
             });
         });
 
@@ -99,6 +102,13 @@ class Mantenimientos extends Component
                     <Button type="link" onClick={() => this.verDetalleContrato(record.codigo_contrato)}>
                         <strong>{ record.codigo_contrato }</strong>
                     </Button>
+                )
+            },
+            {
+                title: 'Fecha',
+                key: 'fecha',
+                render: record => (
+                    <strong>{ record.fecha.toLocaleString('es-SV', opcFecha) }</strong>
                 )
             },
             {

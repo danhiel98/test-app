@@ -57,7 +57,6 @@ const ModalDatos = (props) => {
                     fecha_inicio: moment(contrato.fecha_inicio.toDate())
                 });
 
-
             } else {
                 console.log(`No se puede obtener el registro`);
             }

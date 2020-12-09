@@ -11,6 +11,8 @@ import firebase from 'firebase';
 const { Search } = Input;
 let ref = app.firestore();
 
+let opcFecha = { year: 'numeric', month: 'numeric', day: 'numeric' };
+
 const SelectFecha = (props)  => {
     let { record } = props;
     let fecha = null;
@@ -197,7 +199,7 @@ class Pagos extends Component
                                 {
                                     record.fecha_pago
                                     ?
-                                    ` ${record.fecha_pago.toDate().toLocaleDateString('es-SV', { year: 'numeric', month: 'numeric', day: 'numeric' })} `
+                                    ` ${record.fecha_pago.toDate().toLocaleDateString('es-SV', opcFecha)} `
                                     :
                                     ''
                                 }
