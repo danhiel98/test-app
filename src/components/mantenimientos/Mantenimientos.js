@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import Tabla from '../Tabla';
 import { Space, Button, Input, Row, Col, Popover } from 'antd';
 import { InfoCircleOutlined } from '@ant-design/icons';
+import DetalleCliente from '../clientes/ModalDetalle';
+import DetalleContrato from '../contratos/ModalDetalle';
 import ModalDatos from './ModalDatos';
 import app from '../../firebaseConfig';
 
@@ -22,17 +24,20 @@ class Mantenimientos extends Component
             mantenimientos: [],
             visible: false,
             registro: null,
-            modalDetalle: false,
-            redes: []
+            redes: [],
+            codigoContrato: '',
+            codigoCliente: '',
+            detalleContrato: false,
+            detalleCliente: false,
         };
     }
 
-    obtenerMantenimientos = (querySnapshot) => {
+    obtenerMantenimientos = (qs) => {
         const mantenimientos = [];
         const { busqueda } = this.state;
         this.setState({ loading: true })
 
-        querySnapshot.forEach((doc) => {
+        qs.forEach((doc) => {
             const { codigo_contrato, nombre_cliente, fecha, direccion, motivo, descripcion } = doc.data();
 
             if (busqueda &&
@@ -61,7 +66,7 @@ class Mantenimientos extends Component
     }
 
     componentDidMount() {
-        this.refMantenimiento.onSnapshot(this.obtenerMantenimientos);
+        this.refMantenimiento.orderBy('fecha_creacion', 'desc').onSnapshot(this.obtenerMantenimientos);
         this.refRedes.orderBy('numero').onSnapshot(this.obtenerRedes);
     }
 
@@ -70,7 +75,7 @@ class Mantenimientos extends Component
             this.setState({ busqueda: valor.toLowerCase() })
             this.refMantenimiento
             .get()
-            .then(querySnapshot => this.obtenerMantenimientos(querySnapshot));
+            .then(qs => this.obtenerMantenimientos(qs));
         }
     }
 
@@ -91,9 +96,9 @@ class Mantenimientos extends Component
                 title: 'Contrato',
                 key: 'codigo_contrato',
                 render: record => (
-                    <span>
-                        { record.codigo_contrato }
-                    </span>
+                    <Button type="link" onClick={() => this.verDetalleContrato(record.codigo_contrato)}>
+                        <strong>{ record.codigo_contrato }</strong>
+                    </Button>
                 )
             },
             {
@@ -131,19 +136,25 @@ class Mantenimientos extends Component
         this.setState({
             visible: false,
             registro: null,
-            modalDetalle: false
+            detalleContrato: false,
+            detalleCliente: false,
         })
     }
 
-    verDetalle = record => {
-        this.setState({ registro: record });
-        this.setState({ modalDetalle: true });
+    verDetalleContrato = codigo => {
+        this.setState({ codigoContrato: codigo });
+        this.setState({ detalleContrato: true });
     }
 
-    obtenerRedes = querySnapshot => {
+    verDetalleCliente = codigo => {
+        this.setState({ codigoCliente: codigo });
+        this.setState({ detalleCliente: true });
+    }
+
+    obtenerRedes = qs => {
         const redes = [];
 
-        querySnapshot.forEach(doc => {
+        qs.forEach(doc => {
             let { numero } = doc.data();
 
             redes.push({
@@ -156,7 +167,7 @@ class Mantenimientos extends Component
     }
 
     render(){
-        const { visible, registro, mantenimientos, loading, redes, modalDetalle } = this.state;
+        const { visible, registro, mantenimientos, loading, redes, detalleContrato, detalleCliente, codigoContrato, codigoCliente } = this.state;
 
         return (
             <div>
@@ -193,12 +204,20 @@ class Mantenimientos extends Component
                     loading={loading}
                 />
                 {
-                    // modalDetalle &&
-                    // <ModalDetalle
-                    //     visible={modalDetalle}
-                    //     codigoCliente={registro.key}
-                    //     handleCancel={this.handleCancel}
-                    // />
+                    detalleContrato &&
+                    <DetalleContrato
+                        visible={detalleContrato}
+                        codigoContrato={codigoContrato}
+                        handleCancel={this.handleCancel}
+                    />
+                }
+                {
+                    detalleCliente &&
+                    <DetalleCliente
+                        visible={detalleCliente}
+                        codigoCliente={codigoCliente}
+                        handleCancel={this.handleCancel}
+                    />
                 }
             </div>
         );

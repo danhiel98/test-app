@@ -280,6 +280,7 @@ class Seed extends Component
                     fecha_eliminado: null,
                     codigo_contrato: contrato.codigo,
                     nombre_cliente: contrato.cliente,
+                    ref_cliente: contrato.ref_cliente,
                     direccion: `${faker.address.city()} ${faker.address.direction()}`, // Cuando se ingrese el valor verdadero se debe obtener del cliente
                     motivo: faker.lorem.words(),
                     descripcion: faker.lorem.paragraph(),

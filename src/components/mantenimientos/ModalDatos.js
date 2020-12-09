@@ -289,7 +289,7 @@ const ModalDatos = (props) => {
                         }
                     ]}
                 >
-                    <TextArea style={{ width: 295 }} placeholder="Detalles de la visita" />
+                    <TextArea style={{ width: 320 }} placeholder="Detalles de la visita" />
                 </Form.Item>
             </Form>
         </Modal>
