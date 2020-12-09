@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Select, message, Form, Input, Modal, Button } from 'antd';
+import { DatePicker, Divider, Select, message, Form, Input, Modal, Button } from 'antd';
+import moment from 'moment';
+import locale from "antd/es/date-picker/locale/es_ES";
 import TextArea from 'antd/lib/input/TextArea';
 import app from '../../firebaseConfig';
 import firebase from 'firebase';
@@ -8,63 +10,50 @@ const { Option } = Select;
 
 const ModalDatos = (props) => {
     const [form] = Form.useForm();
-    const { refCliente, refContrato, refPago, record } = props;
+    const { mainRef, record, redes } = props;
 
-    let redes = [];
-    const refRedes = app.firestore().collection('redes');
+    const refContrato = mainRef.collection('contratos');
+    const refMantenimiento = mainRef.collection('mantenimientos');
 
     const [red, setRed] = useState(null);
     const [ip, setIP] = useState(null);
     const [stValidacionIP, setStValidacionIP] = useState(null);
     const [msgValidacionIP, setMsgValidacionIP] = useState(null);
+    const [contrato, setContrato] = useState(null);
+    const [fecha, setFecha] = useState(null);
 
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        refRedes.get()
-        .then(qs => {
-            qs.forEach(doc => {
-                let red = doc.data();
-                redes.push(red);
-            })
-            console.log(redes);
-        })
-
         if (!record) {
             form.resetFields();
             return
         }
+    }, [record, form, mainRef]);
 
-        const ref = refCliente.doc(record.key);
-        ref.get().then((doc) => {
-            if (doc.exists) {
-                const cli = doc.data();
-                form.setFieldsValue({
-                    dui: cli.dui,
-                    nombre: cli.nombre,
-                    apellido: cli.apellido,
-                    telefono: cli.telefono,
-                    direccion: cli.direccion,
-                });
-            } else {
-                console.log(`No se puede obtener el registro`);
-            }
-        });
-    }, [record, form, refCliente]);
+    useEffect(() => {
+        if (ip) validarContrato();
+    }, [red]);
 
-    const handleOk = () => {
+    const handleOk = async () => {
         setLoading(true);
-        form
+        await form
         .validateFields()
-        .then(val => {
-            if (record) { // Hace falta modificaciones cuendo cambia DUI de cliente, nombre y apellido
-                editarRegistro(val).then(() => {
-                    form.resetFields();
-                    props.handleCancel()
-                })
-                .catch(error => {
-                    console.log(`Hubo un error al editar el registro: ${error}`)
-                })
+        .then(async val => {
+            if (!(await validarContrato())) {
+                setLoading(false);
+                return;
+            }
+
+            console.log(val);
+            if (record) { // Si se debe editar
+                // editarRegistro(val).then(() => {
+                //     form.resetFields();
+                //     props.handleCancel()
+                // })
+                // .catch(error => {
+                //     console.log(`Hubo un error al editar el registro: ${error}`)
+                // })
             } else {
                 agregarRegistro(val).then(() => {
                     form.resetFields();
@@ -85,14 +74,14 @@ const ModalDatos = (props) => {
 
     // eslint-disable-next-line
     const agregarRegistro = async (val) => {
-        refCliente.add({
-            activo: true,
-            nombre: val.nombre,
-            apellido: val.apellido,
-            dui: val.dui,
-            telefono: val.telefono,
-            direccion: val.direccion,
+        refMantenimiento.add({
             fecha_eliminado: null,
+            fecha: fecha,
+            codigo_contrato: contrato.codigo,
+            nombre_cliente: contrato.cliente,
+            direccion: val.direccion,
+            motivo: val.motivo,
+            descripcion: val.descripcion,
             fecha_creacion: firebase.firestore.Timestamp.now()
         })
         .then((docRef) => {
@@ -100,49 +89,49 @@ const ModalDatos = (props) => {
         })
         .catch((error) => {
             message.error('Error al insertar el registro');
-            console.error(`No se pudo agregar el registro: ${error}}`);
+            console.error(error);
         });
     }
 
-    // eslint-disable-next-line
-    const editarRegistro = async (val) => {
-        const ref = refCliente.doc(record.key);
+    // // eslint-disable-next-line
+    // const editarRegistro = async (val) => {
+    //     const ref = refCliente.doc(record.key);
 
-        ref.update({
-            nombre: val.nombre,
-            apellido: val.apellido,
-            dui: val.dui,
-            telefono: val.telefono,
-            direccion: val.direccion
-        }).then(() => {
-            // Actualizar los nombres en contratos del cliente
-            refContrato.where('ref_cliente', '==', ref)
-            .get()
-            .then(qs => {
-                qs.forEach(doc => {
-                    doc.ref.update({
-                        cliente: `${val.nombre} ${val.apellido}`
-                    })
-                });
-            })
+    //     ref.update({
+    //         nombre: val.nombre,
+    //         apellido: val.apellido,
+    //         dui: val.dui,
+    //         telefono: val.telefono,
+    //         direccion: val.direccion
+    //     }).then(() => {
+    //         // Actualizar los nombres en contratos del cliente
+    //         refContrato.where('ref_cliente', '==', ref)
+    //         .get()
+    //         .then(qs => {
+    //             qs.forEach(doc => {
+    //                 doc.ref.update({
+    //                     cliente: `${val.nombre} ${val.apellido}`
+    //                 })
+    //             });
+    //         })
 
-            // Actualizar los nombres en pagos del cliente
-            refPago.where('ref_cliente', '==', ref)
-            .get()
-            .then(qs => {
-                qs.forEach(doc => {
-                    doc.ref.update({
-                        nombre_cliente: `${val.nombre} ${val.apellido}`
-                    })
-                });
-            })
-            message.success('¡Registro actualizado correctamente!');
-        })
-        .catch((error) => {
-            message.error('Error al editar el registro');
-            console.error(`No se pudo editar el registro: ${error}`);
-        });
-    }
+    //         // Actualizar los nombres en pagos del cliente
+    //         refPago.where('ref_cliente', '==', ref)
+    //         .get()
+    //         .then(qs => {
+    //             qs.forEach(doc => {
+    //                 doc.ref.update({
+    //                     nombre_cliente: `${val.nombre} ${val.apellido}`
+    //                 })
+    //             });
+    //         })
+    //         message.success('¡Registro actualizado correctamente!');
+    //     })
+    //     .catch((error) => {
+    //         message.error('Error al editar el registro');
+    //         console.error(`No se pudo editar el registro: ${error}`);
+    //     });
+    // }
 
     const selectRedes = (
         <Form.Item name="red" noStyle>
@@ -151,7 +140,6 @@ const ModalDatos = (props) => {
                 placeholder="Red"
                 onSelect={val => {
                     setRed(val);
-                    if (ip) validarIP();
                 }}
             >
                 {
@@ -163,19 +151,39 @@ const ModalDatos = (props) => {
         </Form.Item>
     );
 
-    const validarIP = async () => {
+    const validarContrato = async () => {
         setStValidacionIP('validating');
         setMsgValidacionIP(null);
+        let result = false;
 
         try {
             if (!red) throw new Error('Seleccione la red')
             if (!ip) throw new Error('Introduzca la direccion IP')
             if (ip <= 0 || ip >= 255 || isNaN(ip)) throw new Error('La IP ingresada no es válida')
+
+            await refContrato.where('red', '==', red).where('ip', '==', ip).where('activo', '==', true)
+            .get()
+            .then(qs => {
+                setContrato(null);
+                setStValidacionIP(null);
+
+                if (qs.size === 0) throw new Error('No se encontró un contrato con esos datos');
+
+                qs.forEach(doc => {
+                    setContrato(doc.data());
+                    setStValidacionIP('success');
+                    result = true;
+                    return; // Este solo detiene el foreach, no devuelve nada
+                })
+            })
+            .catch(error => {
+                throw error;
+            })
         } catch (error) {
             setStValidacionIP('error');
             setMsgValidacionIP(error.message);
         }
-        return false;
+        return result;
     }
 
     return (
@@ -206,68 +214,83 @@ const ModalDatos = (props) => {
                     validateStatus={stValidacionIP}
                     help={msgValidacionIP}
                 >
-                    <Input addonBefore={selectRedes} onChange={ev => setIP(ev.target.value)} style={{ width: 200 }} placeholder="IP" onBlur={validarIP} />
+                    <Input addonBefore={selectRedes} onChange={ev => setIP(Number(ev.target.value))} style={{ width: 200 }} placeholder="IP" onBlur={validarContrato} />
                 </Form.Item>
-                {/* <Form.Item
-                    name="nombre"
-                    label="Nombres"
-                    rules={[
-                        {
-                            required: true,
-                            message: 'Introducir el nombre del cliente'
-                        }
-                    ]}
-                >
-                    <Input />
-                </Form.Item>
+                <Divider style={{ margin: '7px 0' }} />
+                <span style={{ lineHeight: 2.5 }}>
+                    Contrato: <strong>{contrato ? contrato.codigo : '[Ninguno]'}</strong>
+                </span> <br />
+                <span style={{ lineHeight: 2.5 }}>
+                    Cliente: <strong>{contrato ? contrato.cliente : '[Ninguno]'}</strong>
+                </span> <br />
+
                 <Form.Item
-                    name="apellido"
-                    label="Apellidos"
+                    name="fecha"
+                    label="Fecha"
                     rules={[
                         {
                             required: true,
-                            message: 'Introducir el apellido del cliente'
+                            message: 'Fecha requerida'
                         }
                     ]}
+                    requiredMark="optional"
+                    style={{ marginTop: 15 }}
                 >
-                    <Input />
+                    <DatePicker
+                        placeholder="Fecha"
+                        format="DD-MMMM-YYYY"
+                        locale={locale}
+                        disabledDate={current => {
+                            return current && (current < moment().subtract(1, 'y') || current && current > moment().endOf('day'))
+                        }}
+                        onChange={date => {
+                            setFecha(new Date(date));
+                        }}
+                        style={{ width: 170 }}
+                    />
                 </Form.Item>
-                <Form.Item
-                    name="dui"
-                    label="No. DUI"
-                    rules={[
-                        {
-                            required: true,
-                            message: 'Introducir el número de DUI'
-                        }
-                    ]}
-                >
-                    <Input />
-                </Form.Item>
-                <Form.Item
-                    name="telefono"
-                    label="Teléfono"
-                    rules={[
-                        {
-                            required: true,
-                            message: 'Introducir el número de teléfono'
-                        }
-                    ]}
-                >
-                    <Input />
-                </Form.Item>
+
                 <Form.Item
                     name="direccion"
                     label="Dirección"
+                    requiredMark="optional"
                     rules={[
                         {
                             required: true,
-                            message: 'Introduzca la dirección del cliente'
+                            message: 'Introduzca la dirección'
                         }
                     ]}
                 >
-                    <TextArea></TextArea>
-                </Form.Item> */}
+                    <Input placeholder="Dirección donde se hizo la visita" maxLength="80" style={{ width: 300 }} />
+                </Form.Item>
+
+                <Form.Item
+                    name="motivo"
+                    label="Motivo"
+                    requiredMark="optional"
+                    rules={[
+                        {
+                            required: true,
+                            message: 'Introducir el motivo del mantenimiento'
+                        }
+                    ]}
+                >
+                    <Input placeholder="Motivo de la visita" maxLength="50" style={{ width: 300 }} />
+                </Form.Item>
+
+                <Form.Item
+                    name="descripcion"
+                    label="Detalles"
+                    requiredMark="optional"
+                    rules={[
+                        {
+                            required: true,
+                            message: 'Introduzca los detalles de la visita'
+                        }
+                    ]}
+                >
+                    <TextArea style={{ width: 295 }} placeholder="Detalles de la visita" />
+                </Form.Item>
             </Form>
         </Modal>
     );

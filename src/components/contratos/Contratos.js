@@ -19,7 +19,6 @@ class Contratos extends Component {
         this.refClientes = app.firestore().collection('clientes');
         this.refRedes = app.firestore().collection('redes');
         this.opcFecha = { year: 'numeric', month: 'short' };
-        this.networks = [];
 
         this.unsubscribe = null;
         this.state = {
@@ -91,7 +90,6 @@ class Contratos extends Component {
             });
         });
 
-        this.networks = redes;
         this.setState({
             redes
         });

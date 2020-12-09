@@ -12,9 +12,9 @@ class Mantenimientos extends Component
     constructor(props) {
         super(props);
 
-        this.refMantenimiento = app.firestore().collection('mantenimientos');
-        this.refCliente = app.firestore().collection('clientes');
-        this.refContrato = app.firestore().collection('contratos');
+        this.mainRef = app.firestore();
+        this.refMantenimiento = this.mainRef.collection('mantenimientos');
+        this.refRedes = this.mainRef.collection('redes');
 
         this.state = {
             busqueda: '',
@@ -22,7 +22,8 @@ class Mantenimientos extends Component
             mantenimientos: [],
             visible: false,
             registro: null,
-            modalDetalle: false
+            modalDetalle: false,
+            redes: []
         };
     }
 
@@ -61,6 +62,7 @@ class Mantenimientos extends Component
 
     componentDidMount() {
         this.refMantenimiento.onSnapshot(this.obtenerMantenimientos);
+        this.refRedes.orderBy('numero').onSnapshot(this.obtenerRedes);
     }
 
     buscar(valor) {
@@ -138,20 +140,33 @@ class Mantenimientos extends Component
         this.setState({ modalDetalle: true });
     }
 
+    obtenerRedes = querySnapshot => {
+        const redes = [];
+
+        querySnapshot.forEach(doc => {
+            let { numero } = doc.data();
+
+            redes.push({
+                key: doc.id,
+                numero: numero
+            });
+        });
+
+        this.setState({ redes });
+    }
+
     render(){
-        const { visible, registro, mantenimientos, loading, modalDetalle } = this.state;
+        const { visible, registro, mantenimientos, loading, redes, modalDetalle } = this.state;
 
         return (
             <div>
                 <ModalDatos
                     visible={visible}
-                    title={registro ? 'Editar información' : 'Agregar cliente'}
+                    title={registro ? 'Editar información' : 'Agregar mantenimiento'}
                     handleCancel={this.handleCancel}
                     record={registro}
-                    refMantenimiento={this.refMantenimiento}
-                    refContrato={this.refContrato}
-                    refCliente={this.refCliente}
-                    refPago={this.refPago}
+                    mainRef={this.mainRef}
+                    redes={redes}
                 />
                 <Tabla
                     titulo={

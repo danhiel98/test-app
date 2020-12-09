@@ -37,7 +37,7 @@ const ModalDatos = (props) => {
         form
         .validateFields()
         .then(val => {
-            if (record) { // Hace falta modificaciones cuendo cambia DUI de cliente, nombre y apellido
+            if (record) { // Hace falta modificaciones cuando cambia DUI de cliente, nombre y apellido
                 editarRegistro(val).then(() => {
                     form.resetFields();
                     props.handleCancel()
@@ -137,69 +137,78 @@ const ModalDatos = (props) => {
                         Regresar
                     </Button>
                     <Button key="submit" type="primary" loading={loading} onClick={handleOk}>
-                        Enviar
+                        Guardar
                     </Button>
                 </div>
             ]}
+            width={480}
         >
             <Form form={form}>
                 <Form.Item
                     name="nombre"
                     label="Nombres"
+                    requiredMark="optional"
                     rules={[
                         {
                             required: true,
                             message: 'Introducir el nombre del cliente'
                         }
                     ]}
+                    style={{ width: 300 }}
                 >
                     <Input />
                 </Form.Item>
                 <Form.Item
                     name="apellido"
                     label="Apellidos"
+                    requiredMark="optional"
                     rules={[
                         {
                             required: true,
                             message: 'Introducir el apellido del cliente'
                         }
                     ]}
+                    style={{ width: 300 }}
                 >
                     <Input />
                 </Form.Item>
                 <Form.Item
                     name="dui"
                     label="No. DUI"
+                    requiredMark="optional"
                     rules={[
                         {
                             required: true,
-                            message: 'Introducir el número de DUI'
+                            message: 'Número de DUI requerido'
                         }
                     ]}
                 >
-                    <Input />
+                    <Input style={{ width: 150 }} />
                 </Form.Item>
                 <Form.Item
                     name="telefono"
                     label="Teléfono"
+                    requiredMark="optional"
                     rules={[
                         {
                             required: true,
-                            message: 'Introducir el número de teléfono'
+                            message: 'Número de teléfono requerido'
                         }
                     ]}
                 >
-                    <Input />
+                    <Input style={{ width: 150 }} />
                 </Form.Item>
                 <Form.Item
                     name="direccion"
                     label="Dirección"
+                    requiredMark="optional"
                     rules={[
                         {
                             required: true,
                             message: 'Introduzca la dirección del cliente'
                         }
                     ]}
+                    style={{ width: 400 }}
                 >
                     <TextArea></TextArea>
                 </Form.Item>
