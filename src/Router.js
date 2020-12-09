@@ -14,6 +14,7 @@ import Dashboard from './pages/Dashboard';
 import Clientes from './components/clientes/Clientes';
 import Contratos from './components/contratos/Contratos';
 import Talonario from './components/reportes/Talonario';
+import Mantenimientos from './components/mantenimientos/Mantenimientos';
 import Pagos from './components/pagos/Pagos';
 // import NotFound from './components/result/NotFound'
 
@@ -51,6 +52,7 @@ class Router extends Component
                         <Route exact path="/clientes" component={Clientes} />
                         <Route exact path="/contratos" component={Contratos} />
                         <Route exact path="/pagos" component={Pagos} />
+                        <Route exact path="/mantenimientos" component={Mantenimientos} />
                     </App>
                 </Switch>
             </ConnectedRouter>

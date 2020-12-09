@@ -17,6 +17,7 @@ class Seed extends Component
         this.refClientes = this.firestore.collection('clientes');
         this.refContratos = this.firestore.collection('contratos');
         this.refPagos = this.firestore.collection('pagos');
+        this.refMantenimientos = this.firestore.collection('mantenimientos');
 
         this.state = {
             redes: [],
@@ -35,7 +36,8 @@ class Seed extends Component
         // this.seedRedes();
         // this.seedIps();
         // this.seedCientes();
-        this.seedContratos();
+        // this.seedContratos();
+        this.seedMantenimientos();
     }
 
     setAvailableIPs = async () => {
@@ -248,6 +250,53 @@ class Seed extends Component
 
     }
 
+    seedMantenimientos = async () => {
+        let contratos = [];
+
+        console.log('Agregando mantenimientos');
+
+
+        await this.refContratos.get()
+        .then(querySnapshot => {
+            querySnapshot.forEach(function(doc) {
+                let data = doc.data();
+
+                contratos.push({
+                    id: doc.id,
+                    codigo: data.codigo,
+                    cliente: data.cliente,
+                    ref_cliente: data.ref_cliente,
+                    ref: doc.ref
+                });
+            });
+        });
+
+        return new Promise((resolve, reject) => {
+            for (let i = 1; i <= 10; i++){
+                let contrato = contratos[faker.random.number({min: 0, max: contratos.length - 1})];
+
+                let mantto = {
+                    fecha: faker.date.past(0, new Date()),
+                    fecha_eliminado: null,
+                    codigo_contrato: contrato.codigo,
+                    nombre_cliente: contrato.cliente,
+                    direccion: `${faker.address.city()} ${faker.address.direction()}`, // Cuando se ingrese el valor verdadero se debe obtener del cliente
+                    motivo: faker.lorem.words(),
+                    descripcion: faker.lorem.paragraph(),
+                    fecha_creacion: firebase.firestore.FieldValue.serverTimestamp()
+                }
+
+                this.refMantenimientos.add(mantto)
+                .then(doc => {
+                    if (i === 10) resolve('Mantenimientos insertados');
+                })
+                .catch((error) => {
+                    reject(error);
+                });
+            }
+        })
+    }
+
     clearData = () => {
         let pRedes = this.rollback(this.refRedes);
         let pIps = this.rollback(this.refIps);
@@ -295,8 +344,8 @@ class Seed extends Component
     render() {
         return (
             <>
+                <button onClick={this.makeData}>Make data</button>
                 <button onClick={this.clearData}>Clear data</button>
-                <button onClick={this.makeData}>Create data</button>
                 <button onClick={this.setAvailableIPs}>Set Available IPs</button>
             </>
         );

@@ -14,6 +14,7 @@ class SidebarNavigation extends Component
         this.goClients = this.goClients.bind(this);
         this.goContracts = this.goContracts.bind(this);
         this.goPayments = this.goPayments.bind(this);
+        this.goInvoices = this.goInvoices.bind(this);
         this.goMaintenances = this.goMaintenances.bind(this);
     }
 
@@ -22,6 +23,7 @@ class SidebarNavigation extends Component
     goClients = () => this.props.dispatch(push('/clientes'));
     goContracts = () => this.props.dispatch(push('/contratos'));
     goPayments = () => this.props.dispatch(push('/pagos'));
+    goInvoices = () => this.props.dispatch(push('/facturas'));
     goMaintenances = () => this.props.dispatch(push('/mantenimientos'));
 
     render() {
@@ -32,6 +34,7 @@ class SidebarNavigation extends Component
                 goClients={this.goClients}
                 goContracts={this.goContracts}
                 goPayments={this.goPayments}
+                goInvoices={this.goInvoices}
                 goMaintenances={this.goMaintenances}
             />
         );

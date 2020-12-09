@@ -7,7 +7,7 @@ import {
     SmileOutlined,
     ToolOutlined,
     HomeOutlined,
-    // FileAddOutlined
+    FileDoneOutlined
 } from '@ant-design/icons';
 
 const { Sider } = Layout;
@@ -46,7 +46,10 @@ export default class Sidebar extends Component {
                     <Menu.Item key="5" icon={<SmileOutlined />} onClick={this.props.goClients}>
                         Clientes
                     </Menu.Item>
-                    <Menu.Item key="6" icon={<ToolOutlined />} onClick={this.props.goMaintenances}>
+                    <Menu.Item key="6" icon={<FileDoneOutlined />} onClick={this.props.goInvoices}>
+                        Facturación
+                    </Menu.Item>
+                    <Menu.Item key="7" icon={<ToolOutlined />} onClick={this.props.goMaintenances}>
                         Mantenimientos
                     </Menu.Item>
                 </Menu>
