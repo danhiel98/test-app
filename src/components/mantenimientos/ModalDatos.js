@@ -3,7 +3,6 @@ import { DatePicker, Divider, Select, message, Form, Input, Modal, Button } from
 import moment from 'moment';
 import locale from "antd/es/date-picker/locale/es_ES";
 import TextArea from 'antd/lib/input/TextArea';
-import app from '../../firebaseConfig';
 import firebase from 'firebase';
 
 const { Option } = Select;
@@ -51,10 +50,12 @@ const ModalDatos = (props) => {
                 });
             }
         })
+        // eslint-disable-next-line
     }, [record, form, mainRef]);
 
     useEffect(() => {
         if (ip) validarContrato();
+        // eslint-disable-next-line
     }, [red]);
 
     const handleOk = async () => {
@@ -241,6 +242,7 @@ const ModalDatos = (props) => {
                         format="DD-MMMM-YYYY"
                         locale={locale}
                         disabledDate={current => {
+                            // eslint-disable-next-line
                             return current && (current < moment().subtract(1, 'y') || current && current > moment().endOf('day'))
                         }}
                         onChange={date => {

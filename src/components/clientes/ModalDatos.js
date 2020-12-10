@@ -5,7 +5,7 @@ import firebase from 'firebase';
 
 const ModalDatos = (props) => {
     const [form] = Form.useForm();
-    const { refCliente, refContrato, refPago, record } = props;
+    const { refCliente, refContrato, refPago, refMantenimiento, record } = props;
 
     const [loading, setLoading] = useState(false);
 
@@ -108,6 +108,16 @@ const ModalDatos = (props) => {
 
             // Actualizar los nombres en pagos del cliente
             refPago.where('ref_cliente', '==', ref)
+            .get()
+            .then(qs => {
+                qs.forEach(doc => {
+                    doc.ref.update({
+                        nombre_cliente: `${val.nombre} ${val.apellido}`
+                    })
+                });
+            })
+
+            refMantenimiento.where('ref_cliente', '==', ref)
             .get()
             .then(qs => {
                 qs.forEach(doc => {

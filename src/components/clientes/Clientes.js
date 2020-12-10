@@ -12,9 +12,11 @@ class Clientes extends Component
     constructor(props) {
         super(props);
 
-        this.refCliente = app.firestore().collection('clientes');
-        this.refContrato = app.firestore().collection('contratos');
-        this.refPago = app.firestore().collection('pagos');
+        this.mainRef = app.firestore();
+        this.refCliente = this.mainRef.collection('clientes');
+        this.refContrato = this.mainRef.collection('contratos');
+        this.refPago = this.mainRef.collection('pagos');
+        this.refMantenimiento = this.mainRef.collection('mantenimientos');
 
         this.state = {
             busqueda: '',
@@ -140,6 +142,7 @@ class Clientes extends Component
                     refCliente={this.refCliente}
                     refContrato={this.refContrato}
                     refPago={this.refPago}
+                    refMantenimiento={this.refMantenimiento}
                 />
                 <Tabla
                     titulo={

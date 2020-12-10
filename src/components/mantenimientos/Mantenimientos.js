@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import Tabla from '../Tabla';
 import { Space, Button, Input, Row, Col, Popover } from 'antd';
-import { InfoCircleOutlined } from '@ant-design/icons';
 import DetalleCliente from '../clientes/ModalDetalle';
 import DetalleContrato from '../contratos/ModalDetalle';
 import ModalDatos from './ModalDatos';
