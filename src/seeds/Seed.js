@@ -18,6 +18,7 @@ class Seed extends Component
         this.refContratos = this.firestore.collection('contratos');
         this.refPagos = this.firestore.collection('pagos');
         this.refMantenimientos = this.firestore.collection('mantenimientos');
+        this.refFacturas = this.firestore.collection('facturas');
 
         this.state = {
             redes: [],
@@ -37,7 +38,8 @@ class Seed extends Component
         // this.seedIps();
         // this.seedCientes();
         // this.seedContratos();
-        this.seedMantenimientos();
+        // this.seedMantenimientos();
+        this.seedFacturas();
     }
 
     setAvailableIPs = async () => {
@@ -290,6 +292,53 @@ class Seed extends Component
                 this.refMantenimientos.add(mantto)
                 .then(doc => {
                     if (i === 10) resolve('Mantenimientos insertados');
+                })
+                .catch((error) => {
+                    reject(error);
+                });
+            }
+        })
+    }
+
+    seedFacturas = async () => {
+        let contratos = [];
+
+        console.log('Agregando facturas');
+
+        await this.refContratos.get()
+        .then(querySnapshot => {
+            querySnapshot.forEach(function(doc) {
+                let data = doc.data();
+
+                contratos.push({
+                    id: doc.id,
+                    codigo: data.codigo,
+                    cliente: data.cliente,
+                    ref_cliente: data.ref_cliente,
+                    ref: doc.ref
+                });
+            });
+        });
+
+        return new Promise((resolve, reject) => {
+            for (let i = 1; i <= 10; i++){
+                let contrato = contratos[faker.random.number({min: 0, max: contratos.length - 1})];
+
+                let factura = {
+                    fecha: faker.date.past(0, new Date()),
+                    fecha_eliminado: null,
+                    codigo_contrato: contrato.codigo,
+                    nombre_cliente: contrato.cliente,
+                    ref_cliente: contrato.ref_cliente,
+                    direccion: `${faker.address.city()} ${faker.address.direction()}`, // Cuando se ingrese el valor verdadero se debe obtener del cliente
+                    motivo: faker.lorem.words(),
+                    descripcion: faker.lorem.paragraph(),
+                    fecha_creacion: firebase.firestore.FieldValue.serverTimestamp()
+                }
+
+                this.refFacturas.add(factura)
+                .then(doc => {
+                    if (i === 10) resolve('Facturas ingresadas');
                 })
                 .catch((error) => {
                     reject(error);
