@@ -39,7 +39,7 @@ class Mantenimientos extends Component
         this.setState({ loading: true })
 
         qs.forEach((doc) => {
-            const { codigo_contrato, nombre_cliente, fecha, direccion, motivo, descripcion } = doc.data();
+            const { codigo_contrato, nombre_cliente, fecha, direccion, motivo, descripcion, ref_cliente } = doc.data();
 
             if (busqueda &&
                 codigo_contrato.toLowerCase().indexOf(busqueda) === -1 &&
@@ -57,7 +57,8 @@ class Mantenimientos extends Component
                 direccion,
                 motivo,
                 descripcion,
-                fecha: fecha.toDate()
+                fecha: fecha.toDate(),
+                ref_cliente
             });
         });
 
@@ -86,20 +87,20 @@ class Mantenimientos extends Component
     asignarColumnas() {
         return [
             {
-                title: 'Cliente',
-                key: 'nombre_cliente',
-                render: record => (
-                    <span>
-                        { record.nombre_cliente }
-                    </span>
-                )
-            },
-            {
                 title: 'Contrato',
                 key: 'codigo_contrato',
                 render: record => (
                     <Button type="link" onClick={() => this.verDetalleContrato(record.codigo_contrato)}>
                         <strong>{ record.codigo_contrato }</strong>
+                    </Button>
+                )
+            },
+            {
+                title: 'Cliente',
+                key: 'nombre_cliente',
+                render: record => (
+                    <Button type="link" onClick={() => this.verDetalleCliente(record.ref_cliente.id)}>
+                        <strong>{ record.nombre_cliente }</strong>
                     </Button>
                 )
             },
