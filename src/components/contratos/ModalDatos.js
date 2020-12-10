@@ -106,17 +106,21 @@ const ModalDatos = (props) => {
                     activo: true,
                     dui_cliente: cliente.dui,
                     cliente: `${cliente.nombre} ${cliente.apellido}`,
-                    codigo: `R${val.red}-${zeroPad(val.ip, 3)}-${fechaInicio.format('MMYY')}-${fechaFin.format('MMYY')}`,
-                    red: val.red,
-                    ip: Number(val.ip),
                     fecha_eliminado: null,
-                    fecha_ingreso: firebase.firestore.Timestamp.now(),
-                    fecha_inicio: new Date(fechaInicio),
-                    fecha_fin: new Date(fechaFin),
                     cant_cuotas: val.cuotas,
                     precio_cuota: val.precio_cuota,
                     velocidad: val.velocidad,
                     ref_cliente: cliente.ref,
+                }
+
+                contrato.codigo = record ? record.codigo : `R${val.red}-${zeroPad(val.ip, 3)}-${fechaInicio.format('MMYY')}-${fechaFin.format('MMYY')}`;
+
+                if (!record) {
+                    contrato.fecha_ingreso = firebase.firestore.Timestamp.now();
+                    contrato.red = val.red;
+                    contrato.ip = Number(val.ip);
+                    contrato.fecha_inicio = new Date(fechaInicio);
+                    contrato.fecha_fin = new Date(fechaFin);
                 }
 
                 if (record) {
@@ -178,7 +182,7 @@ const ModalDatos = (props) => {
     const editarRegistro = async (contrato) => {
         const ref = fireRef.doc(contrato.codigo);
 
-        await ref.set(contrato).then(async (docRef) => {
+        await ref.update(contrato).then(async (docRef) => {
             if (contrato.codigo !== record.codigo) await fireRef.doc(record.codigo).delete();
 
             if (contrato.red !== record.red || contrato.ip !== record.ip) {
@@ -201,6 +205,7 @@ const ModalDatos = (props) => {
                     setRed(val);
                     if (ip) validarIP();
                 }}
+                disabled={record}
             >
                 {
                 props.redes.map(red =>
@@ -383,7 +388,7 @@ const ModalDatos = (props) => {
                     validateStatus={stValidacionIP}
                     help={msgValidacionIP}
                 >
-                    <Input addonBefore={selectRedes} onChange={ev => setIP(ev.target.value)} style={{ width: 200 }} placeholder="IP" onBlur={validarIP} />
+                    <Input disabled={record} addonBefore={selectRedes} onChange={ev => setIP(ev.target.value)} style={{ width: 200 }} placeholder="IP" onBlur={validarIP} />
                 </Form.Item>
 
                 <Form.Item
@@ -412,6 +417,7 @@ const ModalDatos = (props) => {
                             let fecha = moment(fechaInicio.get());
                             setFechaFin(fecha.add(cnt - 1, 'M'));
                         }}
+                        disabled={record}
                     />
                 </Form.Item>
                 <Row>
@@ -447,6 +453,7 @@ const ModalDatos = (props) => {
                                     let fecha = moment(date.get());
                                     setFechaFin(fecha.add(cantCuotas - 1, 'M'));
                                 }}
+                                disabled={record}
                             />
                         </Form.Item>
                     </Col>
