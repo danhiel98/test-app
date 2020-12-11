@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import faker from 'faker';
 import app from '../firebaseConfig';
 import firebase from 'firebase';
-// faker.locale = 'es_MX';
+const NumerosALetras = require('../NumerosALetras');
 
 class Seed extends Component
 {
@@ -302,6 +302,7 @@ class Seed extends Component
 
     seedFacturas = async () => {
         let contratos = [];
+        let pagos = [];
 
         console.log('Agregando facturas');
 
@@ -320,31 +321,57 @@ class Seed extends Component
             });
         });
 
-        return new Promise((resolve, reject) => {
-            for (let i = 1; i <= 10; i++){
-                let contrato = contratos[faker.random.number({min: 0, max: contratos.length - 1})];
 
+        contratos.forEach(async contrato => {
+            await this.refPagos
+                    .where('codigo_contrato', '==', contrato.codigo)
+                    .where('facturado', '==', false)
+                    .get()
+                    .then(qs => {
+                        qs.forEach(doc => {
+                            let { cantidad, fecha_cuota, fecha_pago, numero_cuota, ref_cliente } = doc.data();
+
+                            pagos.push({
+                                id: doc.id,
+                                cantidad,
+                                fecha_cuota,
+                                fecha_pago,
+                                numero_cuota,
+                                ref_cliente,
+                                ref: doc.ref
+                            });
+                        })
+                    })
+                    .catch(error => {
+                        console.log(error);
+                    });
+
+            pagos.forEach(pago => {
                 let factura = {
                     fecha: faker.date.past(0, new Date()),
+                    cantidad_pagos: 1,
+                    detalle: `Servicio de conexión a internet de banda ancha, correspondiente al periodo de ${pago.fecha_cuota.toDate().toLocaleString('es-SV', { year: 'numeric', month: 'short' })}`,
+                    precio_pago: pago.cantidad,
+                    total: pago.cantidad,
+                    total_letras: NumerosALetras.default(pago.cantidad),
                     eliminado: false,
                     codigo_contrato: contrato.codigo,
                     nombre_cliente: contrato.cliente,
                     ref_cliente: contrato.ref_cliente,
-                    direccion: `${faker.address.city()} ${faker.address.direction()}`, // Cuando se ingrese el valor verdadero se debe obtener del cliente
-                    motivo: faker.lorem.words(),
-                    descripcion: faker.lorem.paragraph(),
                     fecha_creacion: firebase.firestore.FieldValue.serverTimestamp()
                 }
 
+                // console.log(factura);
                 this.refFacturas.add(factura)
                 .then(doc => {
-                    if (i === 10) resolve('Facturas ingresadas');
+                    pago.ref.update({ facturado: true });
                 })
                 .catch((error) => {
-                    reject(error);
+                    // reject(error);
                 });
-            }
+            });
         })
+
     }
 
     clearData = () => {

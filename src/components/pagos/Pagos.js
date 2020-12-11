@@ -267,6 +267,7 @@ class Pagos extends Component
                                 numero_cuota: cuota.id,
                                 fecha_cuota: d_cuota.fecha_pago,
                                 fecha_pago: null,
+                                facturado: false,
                                 fecha_creacion: firebase.firestore.FieldValue.serverTimestamp()
                             }).then(doc => {
                                 cuota.ref.update({ cancelado: true })
