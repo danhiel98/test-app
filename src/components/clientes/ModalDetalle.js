@@ -123,13 +123,7 @@ const ModalDetalle = props => {
                                     description={`${verFecha(item.fecha_inicio)} - ${verFecha(item.fecha_fin)}` }
                                 />
                                 <div>
-                                    {
-                                    item.activo
-                                    ?
-                                        <span style={{ color: '#389e0d' }}>Activo</span>
-                                    :
-                                        <span style={{ color: '#f5222d' }}>Finalizado</span>
-                                    }
+                                    { item.estado }
                                 </div>
                             </List.Item>
                             )}

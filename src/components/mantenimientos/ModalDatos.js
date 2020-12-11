@@ -97,7 +97,7 @@ const ModalDatos = (props) => {
     // eslint-disable-next-line
     const agregarRegistro = async (val) => {
         refMantenimiento.add({
-            fecha_eliminado: null,
+            eliminado: false,
             fecha: fecha,
             codigo_contrato: contrato.codigo,
             nombre_cliente: contrato.cliente,

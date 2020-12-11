@@ -41,7 +41,7 @@ class Contratos extends Component {
         const { busqueda } = this.state;
 
         querySnapshot.forEach(async (doc) => {
-            let { cliente, dui_cliente, activo, codigo, fecha_inicio, fecha_fin, velocidad, cant_cuotas, precio_cuota, red, ip, ref_cliente } = doc.data();
+            let { cliente, dui_cliente, estado, codigo, fecha_inicio, fecha_fin, velocidad, cant_cuotas, precio_cuota, red, ip, ref_cliente } = doc.data();
 
             fecha_inicio = this.verFecha(fecha_inicio);
             fecha_fin = this.verFecha(fecha_fin);
@@ -61,7 +61,7 @@ class Contratos extends Component {
                 cliente,
                 dui_cliente,
                 codigo,
-                activo,
+                estado,
                 fecha_inicio,
                 fecha_fin,
                 velocidad,
@@ -223,11 +223,9 @@ class Contratos extends Component {
                 dataIndex: 'precio_cuota',
                 sorter: true,
                 render: precio_cuota => (
-                    <>
-                        <strong>
-                            <span style={{ color: '#089D6C', fontSize: '1.2em' }}>{this.formatoDinero(precio_cuota)}</span>
-                        </strong>
-                    </>
+                    <strong>
+                        <span style={{ color: '#089D6C', fontSize: '1.2em' }}>{this.formatoDinero(precio_cuota)}</span>
+                    </strong>
                 )
             },
             {
@@ -237,6 +235,15 @@ class Contratos extends Component {
             {
                 title: 'Fecha fin',
                 dataIndex: 'fecha_fin'
+            },
+            {
+                title: 'Estado',
+                key: 'estado',
+                render: record => (
+                    <strong>
+                        <span style={{ color: '#089D6C', fontSize: '1em' }}>{record.estado}</span>
+                    </strong>
+                )
             },
             {
                 title: 'Opciones',

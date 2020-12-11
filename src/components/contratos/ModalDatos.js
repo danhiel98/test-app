@@ -103,10 +103,10 @@ const ModalDatos = (props) => {
                 });
 
                 let contrato = {
-                    activo: true,
+                    estado: 'activo',
                     dui_cliente: cliente.dui,
                     cliente: `${cliente.nombre} ${cliente.apellido}`,
-                    fecha_eliminado: null,
+                    eliminado: false,
                     cant_cuotas: val.cuotas,
                     precio_cuota: val.precio_cuota,
                     velocidad: val.velocidad,

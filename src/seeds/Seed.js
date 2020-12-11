@@ -126,7 +126,7 @@ class Seed extends Component
                 let dui = faker.phone.phoneNumber('0#######-#');
                 let cliente = {
                     dui,
-                    fecha_eliminado: null,
+                    eliminado: false,
                     nombre: faker.name.firstName(),
                     apellido: faker.name.lastName(),
                     telefono: faker.phone.phoneNumber('####-####'),
@@ -211,7 +211,7 @@ class Seed extends Component
                 let contrato = {
                     activo: true,
                     archivado: false,
-                    fecha_eliminado: null,
+                    eliminado: false,
                     cliente: `${cliente.nombre} ${cliente.apellido}`,
                     codigo: `R${red.numero}-${this.zeroPad(ip.numero, 3)}-${f_inicio}-${f_fin}`,
                     cant_cuotas: 18,
@@ -279,7 +279,7 @@ class Seed extends Component
 
                 let mantto = {
                     fecha: faker.date.past(0, new Date()),
-                    fecha_eliminado: null,
+                    eliminado: false,
                     codigo_contrato: contrato.codigo,
                     nombre_cliente: contrato.cliente,
                     ref_cliente: contrato.ref_cliente,
@@ -326,7 +326,7 @@ class Seed extends Component
 
                 let factura = {
                     fecha: faker.date.past(0, new Date()),
-                    fecha_eliminado: null,
+                    eliminado: false,
                     codigo_contrato: contrato.codigo,
                     nombre_cliente: contrato.cliente,
                     ref_cliente: contrato.ref_cliente,

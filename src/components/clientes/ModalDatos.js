@@ -72,7 +72,7 @@ const ModalDatos = (props) => {
             dui: val.dui,
             telefono: val.telefono,
             direccion: val.direccion,
-            fecha_eliminado: null,
+            eliminado: false,
             fecha_creacion: firebase.firestore.Timestamp.now()
         })
         .then((docRef) => {
