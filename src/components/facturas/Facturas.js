@@ -20,7 +20,7 @@ class Contratos extends Component {
         // this.refContratos = app.firestore().collection('facturas');
         // this.refClientes = app.firestore().collection('clientes');
         // this.refRedes = app.firestore().collection('redes');
-        this.opcFecha = { year: 'numeric', month: 'short' };
+        this.opcFecha = { year: 'numeric', month: 'numeric', day: 'numeric' };
 
         this.unsubscribe = null;
         this.state = {
@@ -39,27 +39,32 @@ class Contratos extends Component {
 
     formatoDinero = num => new Intl.NumberFormat("es-SV", {style: "currency", currency: "USD"}).format(num);
 
-    obtenerFacturas = (querySnapshot) => {
+    obtenerFacturas = (qs) => {
         const facturas = [];
         const { busqueda } = this.state;
 
-        querySnapshot.forEach(async (doc) => {
-            let { nombre_cliente, codigo_contrato, fecha, total, total_letras } = doc.data();
+        qs.forEach(async (doc) => {
+            let { cantidad_pagos, codigo_contrato, periodo, detalle, fecha, nombre_cliente, precio_pago, total, total_letras, ref_cliente } = doc.data();
 
             if
             (
                 busqueda &&
                 nombre_cliente.toLowerCase().indexOf(busqueda) === -1 &&
                 codigo_contrato.toLowerCase().indexOf(busqueda) === -1 &&
-                total_letras.toLowerCase().indexOf(busqueda) === -1
+                total_letras.toLowerCase().indexOf(busqueda) === -1 &&
+                detalle.toLowerCase().indexOf(busqueda) === -1
             )
                 return;
 
             facturas.push({
                 key: doc.id,
                 codigo_contrato,
+                periodo,
+                detalle,
                 nombre_cliente,
-                fecha,
+                fecha: fecha.toDate(),
+                cantidad_pagos,
+                precio_pago,
                 total,
                 total_letras,
                 ref_cliente
@@ -71,10 +76,10 @@ class Contratos extends Component {
         });
     }
 
-    obtenerRedes = querySnapshot => {
+    obtenerRedes = qs => {
         const redes = [];
 
-        querySnapshot.forEach(doc => {
+        qs.forEach(doc => {
             let { numero } = doc.data();
 
             redes.push({
@@ -88,10 +93,10 @@ class Contratos extends Component {
         });
     }
 
-    obtenerClientes = querySnapshot => {
+    obtenerClientes = qs => {
         const clientes = [];
 
-        querySnapshot.forEach(doc => {
+        qs.forEach(doc => {
             let { dui, nombre, apellido } = doc.data();
 
             clientes.push({
@@ -108,22 +113,18 @@ class Contratos extends Component {
     }
 
     componentDidMount() {
-        this.unsubscribe = this.refContratos.orderBy('fecha_ingreso', 'desc').onSnapshot(this.obtenerFacturas);
-        this.refClientes.orderBy('fecha_creacion', 'desc').onSnapshot(this.obtenerClientes);
-        this.refRedes.orderBy('numero').onSnapshot(this.obtenerRedes);
-    }
-
-    componentDidUpdate(prevState, newState) {
-
+        this.unsubscribe = this.refFacturas.orderBy('fecha', 'desc').onSnapshot(this.obtenerFacturas);
+        // this.refClientes.orderBy('fecha_creacion', 'desc').onSnapshot(this.obtenerClientes);
+        // this.refRedes.orderBy('numero').onSnapshot(this.obtenerRedes);
     }
 
     buscar(valor) {
         if (valor.toLowerCase() !== this.state.busqueda) {
             this.setState({ loading: true })
             this.setState({ busqueda: valor.toLowerCase() })
-            this.refContratos
+            this.refFacturas
                 .get()
-                .then(querySnapshot => this.obtenerFacturas(querySnapshot));
+                .then(qs => this.obtenerFacturas(qs));
         }
     }
 
@@ -148,10 +149,6 @@ class Contratos extends Component {
         return s.charAt(0).toUpperCase() + s.slice(1)
     }
 
-    verFecha = fecha => {
-        return this.capitalize(new Date(fecha.seconds * 1000).toLocaleDateString("es-SV", this.opcFecha))
-    }
-
     irA = ruta => {
         this.unsubscribe();
         this.props.dispatch(push(`facturas/${ruta}`));
@@ -172,65 +169,64 @@ class Contratos extends Component {
     asignarColumnas() {
         return [
             {
-                title: 'Código',
-                key: 'codigo',
-                sorter: {
-                    compare: (a, b) => a.codigo - b.codigo,
-                    multiple: 2,
-                },
-                filters: [],
-                onFilter: (value, record) => record.codigo.indexOf(value) === 0,
-                render: record => (
-                    <Button type="link" onClick={() => this.verDetalle(record)}>
-                        <strong>{ record.codigo }</strong>
-                    </Button>
-                )
-            },
-            {
                 title: 'Cliente',
                 key: 'cliente',
-                sorter: {
-                    compare: (a, b) => a.cliente - b.cliente,
-                    multiple: 1,
-                },
                 render: record => (
                     <Button type="link" onClick={() => this.verDetalleCliente(record)}>
-                        <strong>{ record.cliente }</strong>
+                        <strong>{ record.nombre_cliente }</strong>
                     </Button>
                 )
             },
             {
-                title: 'Velocidad',
-                dataIndex: 'velocidad',
+                title: 'Fecha',
+                dataIndex: 'fecha',
+                render: fecha => (
+                    <strong>
+                        { fecha.toLocaleDateString('es-SV', this.opcFecha) }
+                    </strong>
+                )
+            },
+            {
+                title: 'Cant. cuotas',
+                dataIndex: 'cantidad_pagos',
                 sorter: true,
-                filters: [],
-                onFilter: (value, record) => record.velocidad === value,
-                render: velocidad => (
+                render: cantidad_pagos => (
+                    <strong>
+                        {cantidad_pagos}
+                    </strong>
+                )
+            },
+            {
+                title: 'Periodo',
+                dataIndex: 'periodo',
+                sorter: true,
+                render: periodo => (
                     <>
-                        <Badge count={`${velocidad} Mb`} style={{ backgroundColor: '#52c41a' }} />
+                        {periodo}
                     </>
                 )
             },
             {
-                title: 'Precio',
-                dataIndex: 'precio_cuota',
+                title: 'Precio unitario',
+                dataIndex: 'precio_pago',
                 sorter: true,
-                render: precio_cuota => (
-                    <>
-                        <strong>
-                            <span style={{ color: '#089D6C', fontSize: '1.2em' }}>{this.formatoDinero(precio_cuota)}</span>
-                        </strong>
-                    </>
+                render: precio_pago => (
+                    <strong>
+                        {this.formatoDinero(precio_pago)}
+                    </strong>
                 )
             },
             {
-                title: 'Fecha inicio',
-                dataIndex: 'fecha_inicio'
+                title: 'Total',
+                dataIndex: 'total',
+                sorter: true,
+                render: total => (
+                    <strong>
+                        <span style={{ color: '#089D6C', fontSize: '1.2em' }}>{this.formatoDinero(total)}</span>
+                    </strong>
+                )
             },
-            {
-                title: 'Fecha fin',
-                dataIndex: 'fecha_fin'
-            },
+
             {
                 title: 'Opciones',
                 key: 'opciones',
@@ -266,7 +262,7 @@ class Contratos extends Component {
 
         return (
             <div>
-                {
+                {/* {
                     visible &&
                     <ModalDatos
                         visible={visible}
@@ -293,7 +289,7 @@ class Contratos extends Component {
                         codigoCliente={codigoCliente}
                         handleCancel={this.handleCancel}
                     />
-                }
+                } */}
                 <PageHeader
                     className="site-page-header"
                     title="Contratos"
@@ -312,7 +308,7 @@ class Contratos extends Component {
                         ]
                     }
                 />
-                {
+                {/* {
                     !this.columnas[0].filters.length && // eslint-disable-next-line
                     redes.map(red => {
                         this.columnas[0].filters.push(
@@ -334,7 +330,7 @@ class Contratos extends Component {
                             value: velocidad
                         });
                     })
-                }
+                } */}
                 <Tabla
                     columnas={this.columnas}
                     data={facturas}

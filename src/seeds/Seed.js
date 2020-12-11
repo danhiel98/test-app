@@ -325,7 +325,7 @@ class Seed extends Component
         contratos.forEach(async contrato => {
             await this.refPagos
                     .where('codigo_contrato', '==', contrato.codigo)
-                    .where('facturado', '==', false)
+                    // .where('facturado', '==', false)
                     .get()
                     .then(qs => {
                         qs.forEach(doc => {
@@ -347,10 +347,12 @@ class Seed extends Component
                     });
 
             pagos.forEach(pago => {
+                let periodo =  pago.fecha_cuota.toDate().toLocaleString('es-SV', { year: 'numeric', month: 'short' });
                 let factura = {
                     fecha: faker.date.past(0, new Date()),
                     cantidad_pagos: 1,
-                    detalle: `Servicio de conexión a internet de banda ancha, correspondiente al periodo de ${pago.fecha_cuota.toDate().toLocaleString('es-SV', { year: 'numeric', month: 'short' })}`,
+                    periodo,
+                    detalle: `Servicio de conexión a internet de banda ancha, correspondiente al periodo de ${periodo}`,
                     precio_pago: pago.cantidad,
                     total: pago.cantidad,
                     total_letras: NumerosALetras.default(pago.cantidad),
