@@ -314,12 +314,9 @@ const Talonario = props => {
 
     cuotasOrdenadas = ordenarCuotas(cuotas);
 
-    console.log(process.env.PUBLIC_URL);
-    console.log(__dirname);
-
     return (
         <Document>
-            <Page size="LETTER" style={{ flexDirection: 'row', size: 'LETTER' }} wrap>
+            <Page size="LETTER" style={{ flexDirection: 'row' }} wrap>
                 <View style={styles.mainContainer}>
                     {
                         cuotasOrdenadas.map((cuota) =>

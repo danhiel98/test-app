@@ -5,6 +5,8 @@ import app from '../../firebaseConfig';
 import { connect } from 'react-redux';
 import { push } from 'connected-react-router';
 import Tabla from '../Tabla';
+import Factura from '../reportes/Factura';
+import { pdf } from '@react-pdf/renderer';
 // import ModalDatos from './ModalDatos';
 // import ModalDetalle from './ModalDetalle';
 // import ModalDetalleCliente from '../clientes/ModalDetalle';
@@ -233,7 +235,7 @@ class Contratos extends Component {
                 render: (record) => (
                     <Space size="middle">
                         <Tooltip title="Descargar">
-                            <CloudDownloadOutlined key="download" onClick={() => console.log('download')} style={{ color: '#389e0d' }} />
+                            <CloudDownloadOutlined key="download" onClick={() => this.download(record)} style={{ color: '#389e0d' }} />
                         </Tooltip>
                         <Tooltip title="Editar">
                             <EditOutlined onClick={() => this.modalData(record)} style={{ color: '#fa8c16' }} />
@@ -245,6 +247,20 @@ class Contratos extends Component {
                 )
             }
         ]
+    }
+
+    download = record => {
+        pdf(Factura(record)).toBlob()
+        .then(file => {
+            var csvURL = window.URL.createObjectURL(file);
+            let tempLink = document.createElement('a');
+            tempLink.href = csvURL;
+            tempLink.setAttribute('download', `Factura (${record.nombre_cliente}).pdf`);
+            tempLink.click();
+        })
+        .catch(error => {
+            console.log(error);
+        })
     }
 
     render() {
