@@ -13,13 +13,13 @@ import { pdf } from '@react-pdf/renderer';
 
 const { Search } = Input;
 
-class Contratos extends Component {
+class Facturas extends Component {
     constructor(props) {
         super(props);
 
         this.mainRef = app.firestore();
         this.refFacturas = this.mainRef.collection('facturas');
-        // this.refContratos = app.firestore().collection('facturas');
+        // this.refFacturas = app.firestore().collection('facturas');
         // this.refClientes = app.firestore().collection('clientes');
         // this.refRedes = app.firestore().collection('redes');
         this.opcFecha = { year: 'numeric', month: 'numeric', day: 'numeric' };
@@ -287,7 +287,7 @@ class Contratos extends Component {
                         redes={redes}
                         handleCancel={this.handleCancel}
                         record={registro}
-                        fireRef={this.refContratos}
+                        fireRef={this.refFacturas}
                     />
                 }
                 {
@@ -308,7 +308,7 @@ class Contratos extends Component {
                 } */}
                 <PageHeader
                     className="site-page-header"
-                    title="Contratos"
+                    title="Facturas"
                     subTitle="Lista de facturas"
                     extra={
                         [
@@ -363,4 +363,4 @@ function mapStateToProps(state, ownProps) {
     }
 }
 
-export default connect(mapStateToProps)(Contratos);
+export default connect(mapStateToProps)(Facturas);

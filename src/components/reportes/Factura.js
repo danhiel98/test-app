@@ -18,9 +18,71 @@ const styles = StyleSheet.create({
         marginTop: 135,
         marginLeft: 295,
     },
-    date: {
+    dataValue: {
         fontFamily: 'Courier New',
         fontSize: 11
+    },
+    nameContainer: {
+        marginTop: 15,
+        marginLeft: 60,
+    },
+    descriptionContainer: {
+        marginTop: 70,
+        display: 'flex',
+        flexDirection: 'row',
+    },
+    quantityColum: {
+        // border: 1,
+        // borderColor: 'red',
+        marginLeft: 10,
+        width: 25,
+        textAlign: 'center'
+    },
+    descriptionColumn: {
+        // border: 1,
+        // borderColor: 'yellow',
+        width: 175,
+        textOverflow: 'hidden'
+    },
+    unitPriceColumn: {
+        // border: 1,
+        // borderColor: 'blue',
+        width: 40
+    },
+    priceValue: {
+        fontFamily: 'Courier New',
+        fontSize: 9
+    },
+    taxedSalesColumn: {
+        border: 1,
+        borderColor: 'brown',
+        marginLeft: 65,
+        width: 50
+    },
+    finalContainer: {
+        border: 1,
+        borderColor: 'red',
+        marginTop: 115,
+        marginLeft: 10,
+        display: 'flex',
+        flexDirection: 'row',
+    },
+    textTotalContainer: {
+        border: 1,
+        borderColor: 'green',
+        marginLeft: 20,
+        width: 180
+    },
+    totalsContainer: {
+        display: 'flex',
+        flexDirection: 'row'
+    },
+    sumsContainer: {
+        border: 1,
+        borderColor: 'red',
+        marginLeft: 104,
+        width: 50,
+        height: 15
     }
 });
 
@@ -31,7 +93,55 @@ const Factura = props => {
             <Page size={[397, 595.2]} style={{ flexDirection: 'row' }}>
                 <View style={styles.mainContainer}>
                     <View style={styles.dateContanier}>
-                        <Text style={styles.date}>06/03/2020</Text>
+                        <Text style={styles.dataValue}>06/03/2020</Text>
+                    </View>
+                    <View style={styles.nameContainer}>
+                        <Text style={styles.dataValue}>Hector Alexander Barrera Portillo</Text>
+                    </View>
+                    <View style={styles.descriptionContainer}>
+                        <View style={styles.quantityColum}>
+                            <Text style={styles.dataValue}>1</Text>
+                        </View>
+                        <View style={styles.descriptionColumn}>
+                            <Text style={styles.dataValue}>
+                                Servicio de Conexión a
+                            </Text>
+                            <Text style={styles.dataValue}>
+                                Internet de Banda
+                            </Text>
+                            <Text style={styles.dataValue}>
+                                ancha, correspondiente
+                            </Text>
+                            <Text style={styles.dataValue}>
+                                al periodo de:
+                            </Text>
+                            <Text style={styles.dataValue}>
+                                1 al 31 de Marzo de 2020
+                            </Text>
+                        </View>
+                        <View style={styles.unitPriceColumn}>
+                            <Text style={styles.priceValue}>
+                                $35.00
+                            </Text>
+                        </View>
+                        <View style={styles.taxedSalesColumn}>
+                            <Text style={styles.dataValue}>
+                                $35.00
+                            </Text>
+                        </View>
+                    </View>
+                    <View style={styles.finalContainer}>
+                        <View style={styles.textTotalContainer}>
+                            <Text style={styles.dataValue}>Treinta y seis 55/100 dólares</Text>
+                        </View>
+                        <View style={styles.totalsContainer}>
+                            <View style={styles.sumsContainer}>
+                                <Text style={styles.dataValue}>$35.00</Text>
+                            </View>
+                            <View style={styles.sumsContainer}>
+                                <Text style={styles.dataValue}>80</Text>
+                            </View>
+                        </View>
                     </View>
                 </View>
             </Page>
