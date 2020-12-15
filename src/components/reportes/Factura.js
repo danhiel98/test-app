@@ -3,16 +3,18 @@ import { Page, Text, View, Document, StyleSheet, Image, Font } from '@react-pdf/
 
 Font.register({ family: 'Courier New', src: `${process.env.PUBLIC_URL}/cour.ttf` });
 
+const opcFecha = { year: 'numeric', month: 'numeric', day: 'numeric' };
+
 const zeroPad = (num, places) => String(num).padStart(places, '0');
 
 const formatoDinero = num => new Intl.NumberFormat("es-SV", {style: "currency", currency: "USD"}).format(num);
 
 const styles = StyleSheet.create({
     mainContainer: {
+        // border: 1,
+        // borderColor: 'red'
         width: 380,
         margin: 8,
-        border: 1,
-        borderColor: 'red'
     },
     dateContanier: {
         marginTop: 135,
@@ -54,53 +56,57 @@ const styles = StyleSheet.create({
         fontSize: 9
     },
     taxedSalesColumn: {
-        border: 1,
-        borderColor: 'brown',
+        // border: 1,
+        // borderColor: 'brown',
         marginLeft: 65,
         width: 50
     },
     finalContainer: {
-        border: 1,
-        borderColor: 'red',
+        // border: 1,
+        // borderColor: 'red',
         marginTop: 115,
         marginLeft: 10,
         display: 'flex',
         flexDirection: 'row',
     },
     textTotalContainer: {
-        border: 1,
-        borderColor: 'green',
+        // border: 1,
+        // borderColor: 'green',
         marginLeft: 20,
         width: 180
     },
     totalsContainer: {
         display: 'flex',
-        flexDirection: 'row'
+        // flexDirection: 'col'
     },
     sumsContainer: {
-        border: 1,
-        borderColor: 'red',
+        // border: 1,
+        // borderColor: 'red',
         marginLeft: 104,
         width: 50,
-        height: 15
+        height: 15,
+        textAlign: 'center'
     }
 });
 
 const Factura = props => {
+    console.log(props);
+
+    let { factura } = props;
 
     return (
         <Document>
             <Page size={[397, 595.2]} style={{ flexDirection: 'row' }}>
                 <View style={styles.mainContainer}>
                     <View style={styles.dateContanier}>
-                        <Text style={styles.dataValue}>06/03/2020</Text>
+                        <Text style={styles.dataValue}>06/10/2020</Text>
                     </View>
                     <View style={styles.nameContainer}>
-                        <Text style={styles.dataValue}>Hector Alexander Barrera Portillo</Text>
+                        <Text style={styles.dataValue}>{factura.nombre_cliente}</Text>
                     </View>
                     <View style={styles.descriptionContainer}>
                         <View style={styles.quantityColum}>
-                            <Text style={styles.dataValue}>1</Text>
+                            <Text style={styles.dataValue}>{factura.cantidad_pagos}</Text>
                         </View>
                         <View style={styles.descriptionColumn}>
                             <Text style={styles.dataValue}>
@@ -116,30 +122,45 @@ const Factura = props => {
                                 al periodo de:
                             </Text>
                             <Text style={styles.dataValue}>
-                                1 al 31 de Marzo de 2020
+                                {factura.periodo}
                             </Text>
                         </View>
                         <View style={styles.unitPriceColumn}>
                             <Text style={styles.priceValue}>
-                                $35.00
+                                {formatoDinero(factura.precio_pago)}
                             </Text>
                         </View>
                         <View style={styles.taxedSalesColumn}>
                             <Text style={styles.dataValue}>
-                                $35.00
+                                {formatoDinero(factura.total)}
                             </Text>
                         </View>
                     </View>
                     <View style={styles.finalContainer}>
                         <View style={styles.textTotalContainer}>
-                            <Text style={styles.dataValue}>Treinta y seis 55/100 dólares</Text>
+                            <Text style={styles.dataValue}>{factura.total_letras}</Text>
                         </View>
                         <View style={styles.totalsContainer}>
                             <View style={styles.sumsContainer}>
-                                <Text style={styles.dataValue}>$35.00</Text>
+                                <Text style={styles.dataValue}>{formatoDinero(factura.total)}</Text>
                             </View>
                             <View style={styles.sumsContainer}>
-                                <Text style={styles.dataValue}>80</Text>
+                                <Text style={styles.dataValue}>-</Text>
+                            </View>
+                            <View style={styles.sumsContainer}>
+                                <Text style={styles.dataValue}>-</Text>
+                            </View>
+                            <View style={styles.sumsContainer}>
+                                <Text style={styles.dataValue}>-</Text>
+                            </View>
+                            <View style={styles.sumsContainer}>
+                                <Text style={styles.dataValue}>{formatoDinero(factura.total)}</Text>
+                            </View>
+                            <View style={styles.sumsContainer}>
+                                <Text style={styles.dataValue}>-</Text>
+                            </View>
+                            <View style={styles.sumsContainer}>
+                                <Text style={styles.dataValue}>{formatoDinero(factura.total)}</Text>
                             </View>
                         </View>
                     </View>

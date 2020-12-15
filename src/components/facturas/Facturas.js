@@ -7,9 +7,9 @@ import { push } from 'connected-react-router';
 import Tabla from '../Tabla';
 import Factura from '../reportes/Factura';
 import { pdf } from '@react-pdf/renderer';
+import DetalleCliente from '../clientes/ModalDetalle';
 // import ModalDatos from './ModalDatos';
 // import ModalDetalle from './ModalDetalle';
-// import ModalDetalleCliente from '../clientes/ModalDetalle';
 
 const { Search } = Input;
 
@@ -250,7 +250,7 @@ class Facturas extends Component {
     }
 
     download = record => {
-        pdf(Factura(record)).toBlob()
+        pdf(Factura({ factura: record })).toBlob()
         .then(file => {
             var csvURL = window.URL.createObjectURL(file);
             let tempLink = document.createElement('a');
@@ -297,15 +297,15 @@ class Facturas extends Component {
                         codigoContrato={registro.key}
                         handleCancel={this.handleCancel}
                     />
-                }
+                } */}
                 {
                     modalDetalleCliente &&
-                    <ModalDetalleCliente
+                    <DetalleCliente
                         visible={modalDetalleCliente}
                         codigoCliente={codigoCliente}
                         handleCancel={this.handleCancel}
                     />
-                } */}
+                }
                 <PageHeader
                     className="site-page-header"
                     title="Facturas"
