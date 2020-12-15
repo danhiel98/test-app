@@ -78,13 +78,18 @@ class Clientes extends Component
     asignarColumnas() {
         return [
             {
-                title: 'Nombre',
-                dataIndex: 'nombre'
+                title: 'DUI',
+                key: 'dui',
+                sorter: (a, b) => a.dui.length - b.dui.length,
+                render: record => (
+                    <Button type="link" onClick={() => this.verDetalle(record)}>
+                        <strong>{record.dui}</strong>
+                    </Button>
+                )
             },
             {
-                title: 'DUI',
-                dataIndex: 'dui',
-                sorter: (a, b) => a.dui.length - b.dui.length,
+                title: 'Nombre',
+                dataIndex: 'nombre'
             },
             {
                 title: 'Teléfono',
@@ -101,7 +106,6 @@ class Clientes extends Component
                 key: 'opciones',
                 render: (record) => (
                     <Space size="small">
-                        <InfoCircleOutlined onClick={() => this.verDetalle(record)} style={{ color: '#389e0d' }} />
                         <Button type="link" onClick={ () => { this.modalData(record); } }>Editar</Button>
                     </Space>
                 )
