@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import { Tooltip, Badge, Space, PageHeader, Input, Button } from 'antd';
-import { EditOutlined, StopOutlined, CloudDownloadOutlined } from '@ant-design/icons';
+import { message, Modal, Tooltip, Badge, Space, PageHeader, Input, Button } from 'antd';
+import { ExclamationCircleOutlined, EditOutlined, DeleteOutlined, StopOutlined, CloudDownloadOutlined } from '@ant-design/icons';
 import app from '../../firebaseConfig';
 import { connect } from 'react-redux';
 import { push } from 'connected-react-router';
@@ -9,6 +9,7 @@ import ModalDatos from './ModalDatos';
 import ModalDetalle from './ModalDetalle';
 import ModalDetalleCliente from '../clientes/ModalDetalle';
 
+const { confirm } = Modal;
 const { Search } = Input;
 
 class Contratos extends Component {
@@ -18,6 +19,8 @@ class Contratos extends Component {
         this.refContratos = app.firestore().collection('contratos');
         this.refClientes = app.firestore().collection('clientes');
         this.refRedes = app.firestore().collection('redes');
+        this.refPagos = app.firestore().collection('pagos');
+        this.refMantenimientos = app.firestore().collection('mantenimientos');
         this.opcFecha = { year: 'numeric', month: 'short' };
 
         this.unsubscribe = null;
@@ -256,14 +259,75 @@ class Contratos extends Component {
                         <Tooltip title="Editar">
                             <EditOutlined onClick={() => this.modalData(record)} style={{ color: '#fa8c16' }} />
                         </Tooltip>
-                        <Tooltip title="Cancelar">
+                        {/* <Tooltip title="Cancelar">
                             <StopOutlined key="cancel" onClick={() => console.log('cancel')} style={{ color: '#f5222d' }} />
+                        </Tooltip> */}
+                        <Tooltip title="Eliminar">
+                            <DeleteOutlined onClick={() => this.eliminar(record)} style={{ color: '#f5222d' }} />
                         </Tooltip>
                     </Space>
                 )
             }
         ]
     }
+
+    //
+    confirmEliminar = contrato => {
+        let me = this;
+        confirm({
+            title: '¿Está seguro que desea eliminar este registro?',
+            icon: <ExclamationCircleOutlined />,
+            content: 'Eliminar contrato',
+            okText: 'Sí',
+            cancelText: 'No',
+            onOk() {
+                me.eliminarContrato(contrato);
+            }
+        });
+    }
+
+    pagosMantenimientosContrato = async contrato => {
+        return new Promise((resolve, reject) => {
+            this.refPagos
+            .where('codigo_contrato', '==', contrato.codigo)
+            .limit(1)
+            .get()
+            .then(qs => {
+                if (qs.size === 0){
+                    this.refMantenimientos
+                    .where('codigo_contrato', '==', contrato.codigo)
+                    .limit(1)
+                    .get()
+                    .then(qs => {
+                        resolve(qs.size);
+                    })
+                } else {
+                    resolve(qs.size);
+                }
+            })
+            .catch(err => reject(err));
+        })
+    }
+
+    eliminarContrato = contrato => {
+        this.refContratos.doc(contrato.key).delete()
+        .then(() => message.success('Se eliminó el registro'))
+        .catch(err => message.error('Ocurrió un error'));
+    }
+
+    eliminar = async record => {
+        message
+        .loading('Verificando...', );
+        this.pagosMantenimientosContrato(record)
+        .then(size => {
+            message.destroy();
+            if (size === 0)
+                this.confirmEliminar(record);
+            else if (size >= 1)
+                message.error('No se puede eliminar este contrato porque ya se registraron pagos o mantenimientos');
+        });
+    }
+    //
 
     render() {
         const {

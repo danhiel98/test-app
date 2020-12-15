@@ -192,7 +192,7 @@ class Clientes extends Component
 
         return (
             <div>
-                <Datos
+                <ModalDatos
                     visible={visible}
                     title={registro ? 'Editar información' : 'Agregar cliente'}
                     handleCancel={this.handleCancel}
