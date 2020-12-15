@@ -1,11 +1,13 @@
 import React, { Component } from 'react';
 import Tabla from '../Tabla';
-import { Space, Button, Input, Row, Col } from 'antd';
-import { InfoCircleOutlined } from '@ant-design/icons';
+import { message, Modal, Tooltip, Space, Button, Input, Row, Col } from 'antd';
+import { EditOutlined, DeleteOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import ModalDatos from './ModalDatos';
 import ModalDetalle from './ModalDetalle';
 import app from '../../firebaseConfig';
+
 const { Search } = Input;
+const { confirm } = Modal;
 
 class Clientes extends Component
 {
@@ -23,6 +25,7 @@ class Clientes extends Component
             loading: true,
             clientes: [],
             visible: false,
+            visibleDelete: false,
             registro: null,
             modalDetalle: false
         };
@@ -47,6 +50,7 @@ class Clientes extends Component
 
             clientes.push({
                 key: doc.id,
+                ref: doc.ref,
                 nombre: `${nombre} ${apellido}`,
                 dui: dui,
                 direccion,
@@ -61,13 +65,14 @@ class Clientes extends Component
     }
 
     componentDidMount() {
-        this.refCliente.onSnapshot(this.obtenerClientes);
+        this.refCliente.orderBy('fecha_creacion', 'desc').onSnapshot(this.obtenerClientes);
     }
 
     buscar(valor) {
         if (valor !== this.state.busqueda) {
             this.setState({ busqueda: valor })
             this.refCliente
+            .orderBy('fecha_creacion', 'desc')
             .get()
             .then(querySnapshot => this.obtenerClientes(querySnapshot));
         }
@@ -105,8 +110,13 @@ class Clientes extends Component
                 title: 'Opciones',
                 key: 'opciones',
                 render: (record) => (
-                    <Space size="small">
-                        <Button type="link" onClick={ () => { this.modalData(record); } }>Editar</Button>
+                    <Space align="center">
+                        <Tooltip title="Editar">
+                            <EditOutlined onClick={() => this.modalData(record)} style={{ color: '#fa8c16' }} />
+                        </Tooltip>
+                        <Tooltip title="Eliminar">
+                            <DeleteOutlined onClick={() => this.eliminar(record)} style={{ color: '#f5222d' }} />
+                        </Tooltip>
                     </Space>
                 )
             }
@@ -118,6 +128,50 @@ class Clientes extends Component
             visible: true,
             registro: record
         })
+    }
+
+    confirmEliminar = cliente => {
+        let me = this;
+        confirm({
+            title: '¿Está seguro que desea eliminar este registro?',
+            icon: <ExclamationCircleOutlined />,
+            content: 'Eliminar información de cliente',
+            okText: 'Sí',
+            cancelText: 'No',
+            onOk() {
+                me.eliminarCliente(cliente);
+            }
+        });
+    }
+
+    contratosCliente = async cliente => {
+        return new Promise((resolve, reject) => {
+            this.refContrato
+            .where('ref_cliente', '==', cliente.ref)
+            .limit(1)
+            .get()
+            .then(qs => resolve(qs.size))
+            .catch(err => reject(err));
+        })
+    }
+
+    eliminarCliente = cliente => {
+        this.refCliente.doc(cliente.key).delete()
+        .then(() => message.success('Se eliminó el registro'))
+        .catch(err => message.error('Ocurrió un error'));
+    }
+
+    eliminar = async record => {
+        message
+        .loading('Verificando...', );
+        this.contratosCliente(record)
+        .then(size => {
+            message.destroy();
+            if (size == 0)
+                this.confirmEliminar(record);
+            else if (size == 1)
+                message.error('No se puede eliminar este cliente porque ya tiene contratos');
+        });
     }
 
     handleCancel = () => {
@@ -138,7 +192,7 @@ class Clientes extends Component
 
         return (
             <div>
-                <ModalDatos
+                <Datos
                     visible={visible}
                     title={registro ? 'Editar información' : 'Agregar cliente'}
                     handleCancel={this.handleCancel}
