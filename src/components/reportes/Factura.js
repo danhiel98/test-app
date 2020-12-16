@@ -1,11 +1,7 @@
 import React from 'react';
-import { Page, Text, View, Document, StyleSheet, Image, Font } from '@react-pdf/renderer';
+import { Page, Text, View, Document, StyleSheet, Font } from '@react-pdf/renderer';
 
 Font.register({ family: 'Courier New', src: `${process.env.PUBLIC_URL}/cour.ttf` });
-
-const opcFecha = { year: 'numeric', month: 'numeric', day: 'numeric' };
-
-const zeroPad = (num, places) => String(num).padStart(places, '0');
 
 const formatoDinero = num => new Intl.NumberFormat("es-SV", {style: "currency", currency: "USD"}).format(num);
 

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { message, Modal, Tooltip, Badge, Space, PageHeader, Input, Button } from 'antd';
-import { ExclamationCircleOutlined, EditOutlined, DeleteOutlined, StopOutlined, CloudDownloadOutlined } from '@ant-design/icons';
+import { ExclamationCircleOutlined, EditOutlined, DeleteOutlined, CloudDownloadOutlined } from '@ant-design/icons';
 import app from '../../firebaseConfig';
 import { connect } from 'react-redux';
 import { push } from 'connected-react-router';
