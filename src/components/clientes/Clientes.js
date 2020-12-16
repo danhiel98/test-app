@@ -156,7 +156,8 @@ class Clientes extends Component
     }
 
     eliminarCliente = cliente => {
-        this.refCliente.doc(cliente.key).delete()
+        this.refCliente.doc(cliente.key)
+        .delete()
         .then(() => message.success('Se eliminó el registro'))
         .catch(err => message.error('Ocurrió un error'));
     }

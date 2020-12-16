@@ -1,11 +1,13 @@
 import React, { Component } from 'react';
 import Tabla from '../Tabla';
-import { Space, Button, Input, Row, Col, Popover } from 'antd';
+import { message, Tooltip, Modal, Space, Button, Input, Row, Col, Popover } from 'antd';
+import { EditOutlined, DeleteOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import DetalleCliente from '../clientes/ModalDetalle';
 import DetalleContrato from '../contratos/ModalDetalle';
 import ModalDatos from './ModalDatos';
 import app from '../../firebaseConfig';
 
+const { confirm } = Modal;
 const { Search } = Input;
 
 let opcFecha = { year: 'numeric', month: 'numeric', day: 'numeric' };
@@ -129,10 +131,38 @@ class Mantenimientos extends Component
                 title: 'Opciones',
                 key: 'opciones',
                 render: (record) => (
-                    <Button type="link" onClick={ () => { this.modalData(record); } }>Editar</Button>
+                    <Space align="center">
+                        <Tooltip title="Editar">
+                            <EditOutlined onClick={() => this.modalData(record)} style={{ color: '#fa8c16' }} />
+                        </Tooltip>
+                        <Tooltip title="Eliminar">
+                            <DeleteOutlined onClick={() => this.eliminar(record)} style={{ color: '#f5222d' }} />
+                        </Tooltip>
+                    </Space>
                 )
             }
         ]
+    }
+
+    eliminar = mantenimiento => {
+        let me = this;
+        confirm({
+            title: '¿Está seguro que desea eliminar este registro?',
+            icon: <ExclamationCircleOutlined />,
+            content: 'Eliminar mantenimiento',
+            okText: 'Sí',
+            cancelText: 'No',
+            onOk() {
+                me.eliminarMantenimiento(mantenimiento);
+            }
+        });
+    }
+
+    eliminarMantenimiento = mantenimiento => {
+        this.refMantenimiento.doc(mantenimiento.key)
+        .delete()
+        .then(() => message.success('Se eliminó el registro'))
+        .catch(err => message.error('Ocurrió un error'));
     }
 
     modalData = (record) => {

@@ -20,7 +20,8 @@ export default function configureStore(history){
         rootReducer(history),
         compose(
             applyMiddleware(routerMiddleware(history)),
-            persistState('user')
-        )
+            persistState('user'),
+            window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
+        ),
     );
 }
