@@ -22,6 +22,7 @@ export default class Sidebar extends Component {
     };
 
     render() {
+
         return (
             <Sider
                 collapsible
@@ -30,26 +31,23 @@ export default class Sidebar extends Component {
                 style={ { marginTop: "65px" } }
                 theme="light"
             >
-                <Menu theme="light" defaultSelectedKeys={["1"]} mode="inline">
-                    <Menu.Item key="1" icon={<HomeOutlined />} onClick={this.props.goHome}>
+                <Menu theme="light" defaultSelectedKeys={["home"]} selectedKeys={[this.props.selected]} mode="inline">
+                    <Menu.Item key="inicio" icon={<HomeOutlined />} onClick={this.props.goHome}>
                         Inicio
                     </Menu.Item>
-                    {/* <Menu.Item key="2" icon={<FileAddOutlined />} onClick={this.props.goNewPayment}>
-                        Registrar Pagos
-                    </Menu.Item> */}
-                    <Menu.Item key="3" icon={<FileTextOutlined />} onClick={this.props.goContracts}>
+                    <Menu.Item key="contratos" icon={<FileTextOutlined />} onClick={this.props.goContracts}>
                         Contratos
                     </Menu.Item>
-                    <Menu.Item key="4" icon={<DollarOutlined />} onClick={this.props.goPayments}>
+                    <Menu.Item key="pagos" icon={<DollarOutlined />} onClick={this.props.goPayments}>
                         Pagos
                     </Menu.Item>
-                    <Menu.Item key="5" icon={<SmileOutlined />} onClick={this.props.goClients}>
+                    <Menu.Item key="clientes" icon={<SmileOutlined />} onClick={this.props.goClients}>
                         Clientes
                     </Menu.Item>
-                    <Menu.Item key="6" icon={<FileDoneOutlined />} onClick={this.props.goInvoices}>
+                    <Menu.Item key="facturas" icon={<FileDoneOutlined />} onClick={this.props.goInvoices}>
                         Facturación
                     </Menu.Item>
-                    <Menu.Item key="7" icon={<ToolOutlined />} onClick={this.props.goMaintenances}>
+                    <Menu.Item key="mantenimientos" icon={<ToolOutlined />} onClick={this.props.goMaintenances}>
                         Mantenimientos
                     </Menu.Item>
                 </Menu>

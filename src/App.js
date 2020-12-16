@@ -12,28 +12,14 @@ const { Content } = Layout;
 
 class App extends Component
 {
-    // constructor(props) {
-    //     super(props);
-    // }
-
     render(){
         return (
             <>
                 <Layout style={{ minHeight: "100vh" }}>
                     <HeaderNavigation />
                     <Layout className="site-layout">
-                        <SidebarNavigation />
+                        <SidebarNavigation selected={this.props.location.pathname.substr(1) || 'inicio'} />
                         <Content style={{ margin: "75px 16px" }}>
-                            {/* <Breadcrumb style={{ margin: "10px 0" }}>
-                                <Breadcrumb.Item>User</Breadcrumb.Item>
-                                <Breadcrumb.Item>Bill</Breadcrumb.Item>
-                            </Breadcrumb> */}
-                            {/* <div
-                                className="site-layout-background"
-                                style={{ padding: 24, minHeight: 360 }}
-                            >
-                                { this.props.children }
-                            </div> */}
                             { this.props.children }
                         </Content>
                     </Layout>

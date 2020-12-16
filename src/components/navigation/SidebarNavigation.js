@@ -36,6 +36,7 @@ class SidebarNavigation extends Component
                 goPayments={this.goPayments}
                 goInvoices={this.goInvoices}
                 goMaintenances={this.goMaintenances}
+                selected={this.props.selected}
             />
         );
     }

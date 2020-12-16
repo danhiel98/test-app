@@ -168,9 +168,9 @@ class Clientes extends Component
         this.contratosCliente(record)
         .then(size => {
             message.destroy();
-            if (size == 0)
+            if (size === 0)
                 this.confirmEliminar(record);
-            else if (size == 1)
+            else if (size === 1)
                 message.error('No se puede eliminar este cliente porque ya tiene contratos');
         });
     }
