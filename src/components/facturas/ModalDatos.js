@@ -289,10 +289,11 @@ const ModalDatos = (props) => {
                     </Button>
                 </div>,
             ]}
+            width={800}
         >
             <Form form={form}>
                 <Row>
-                    <Col span={24}>
+                    <Col span={12}>
                         <Form.Item
                             name="id_cliente"
                             label="Cliente"
@@ -323,9 +324,7 @@ const ModalDatos = (props) => {
                             </Select>
                         </Form.Item>
                     </Col>
-                </Row>
-                <Row>
-                    <Col span={16}>
+                    <Col span={12}>
                         <Form.Item
                             name="id_contrato"
                             label="Contrato"
@@ -392,6 +391,11 @@ const ModalDatos = (props) => {
                                 style={{ width: 170 }}
                             />
                         </Form.Item>
+                    </Col>
+                </Row>
+                <Row>
+                    <Col span={24}>
+                        <strong>Pagos</strong>
                     </Col>
                 </Row>
             </Form>

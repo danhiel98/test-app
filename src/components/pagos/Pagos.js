@@ -249,6 +249,7 @@ class Pagos extends Component
         if (/(R[\d]{1,3})(-|')(\d{1,3})(-|')(\d{4})(-|')(\d{4})(-|')\d{2}/.test(codigo))
         {
             let exist = false;
+            let anteriorCancelado = false;
             let codContrato = codigo.substring(0, codigo.length -3);
 
             await this.refPagos.doc(codigo)
@@ -264,9 +265,28 @@ class Pagos extends Component
 
             this.refContratos.doc(codContrato)
             .get()
-            .then(contrato => {
+            .then(async contrato => {
                 if (contrato.exists) {
-                    contrato.ref.collection('cuotas').doc(codigo.substr(-2))
+                    let numCuota = Number.parseInt(codigo.substr(-2));
+
+                    if (numCuota > 1) {
+                        await contrato.ref.collection('cuotas').doc(`0${numCuota - 1}`)
+                        .get()
+                        .then(doc => {
+                            let cuota = doc.data();
+                            if (cuota.cancelado) {
+                                anteriorCancelado = true;
+                            }
+                        })
+
+                        // Si la cuota anterior a esta no ha sido cancelada, entonces no se puede agregar el pago
+                        if (!anteriorCancelado) {
+                            message.error('La cuota anterior no ha sido cancelada aún');
+                            return;
+                        }
+                    }
+
+                    contrato.ref.collection('cuotas').doc(`0${numCuota}`)
                     .get()
                     .then(cuota => {
                         if (cuota.exists) {
