@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Tooltip, Badge, Space, PageHeader, Input, Button } from 'antd';
+import { Tooltip, Space, PageHeader, Input, Button } from 'antd';
 import { EditOutlined, StopOutlined, CloudDownloadOutlined } from '@ant-design/icons';
 import app from '../../firebaseConfig';
 import { connect } from 'react-redux';
@@ -8,7 +8,7 @@ import Tabla from '../Tabla';
 import Factura from '../reportes/Factura';
 import { pdf } from '@react-pdf/renderer';
 import DetalleCliente from '../clientes/ModalDetalle';
-// import ModalDatos from './ModalDatos';
+import ModalDatos from './ModalDatos';
 // import ModalDetalle from './ModalDetalle';
 
 const { Search } = Input;
@@ -20,7 +20,7 @@ class Facturas extends Component {
         this.mainRef = app.firestore();
         this.refFacturas = this.mainRef.collection('facturas');
         // this.refFacturas = app.firestore().collection('facturas');
-        // this.refClientes = app.firestore().collection('clientes');
+        this.refClientes = this.mainRef.collection('clientes');
         // this.refRedes = app.firestore().collection('redes');
         this.opcFecha = { year: 'numeric', month: 'numeric', day: 'numeric' };
 
@@ -29,7 +29,7 @@ class Facturas extends Component {
             loading: true,
             facturas: [],
             // facturas: [],
-            // clientes: [],
+            clientes: [],
             // redes: [],
             visible: false,
             registro: null,
@@ -103,6 +103,7 @@ class Facturas extends Component {
 
             clientes.push({
                 key: doc.id,
+                ref: doc.ref,
                 dui,
                 nombre,
                 apellido
@@ -116,7 +117,7 @@ class Facturas extends Component {
 
     componentDidMount() {
         this.unsubscribe = this.refFacturas.orderBy('fecha', 'desc').onSnapshot(this.obtenerFacturas);
-        // this.refClientes.orderBy('fecha_creacion', 'desc').onSnapshot(this.obtenerClientes);
+        this.refClientes.orderBy('fecha_creacion', 'desc').onSnapshot(this.obtenerClientes);
         // this.refRedes.orderBy('numero').onSnapshot(this.obtenerRedes);
     }
 
@@ -270,27 +271,34 @@ class Facturas extends Component {
             visible,
             registro,
             clientes,
-            redes,
             codigoCliente,
-            modalDetalle,
+            // modalDetalle,
             modalDetalleCliente
         } = this.state;
 
         return (
             <div>
-                {/* {
+                {
                     visible &&
+                    // <ModalDatos
+                    //     visible={visible}
+                    //     title={registro ? 'Editar información' : 'Nuevo contrato'}
+                    //     clientes={clientes}
+                    //     redes={redes}
+                    //     handleCancel={this.handleCancel}
+                    //     record={registro}
+                    //     fireRef={this.refFacturas}
+                    // />
                     <ModalDatos
                         visible={visible}
-                        title={registro ? 'Editar información' : 'Nuevo contrato'}
+                        title={registro ? 'Editar información' : 'Nueva factura'}
                         clientes={clientes}
-                        redes={redes}
                         handleCancel={this.handleCancel}
                         record={registro}
-                        fireRef={this.refFacturas}
+                        fireRef={this.refContratos}
                     />
                 }
-                {
+                {/* {
                     modalDetalle &&
                     <ModalDetalle
                         visible={modalDetalle}
@@ -313,12 +321,12 @@ class Facturas extends Component {
                     extra={
                         [
                             <Search
-                                key="1"
+                                key="buscar"
                                 placeholder="Buscar"
                                 onSearch={value => this.buscar(value)}
                                 style={{ width: 200 }}
                             />,
-                            <Button key="2" type="primary" ghost onClick={() => this.modalData()}>
+                            <Button key="nuevo" type="primary" ghost onClick={() => this.modalData()}>
                                 Nuevo
                             </Button>
                         ]

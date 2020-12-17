@@ -87,7 +87,7 @@ class Pagos extends Component
         this.setState({ loading: true })
 
         querySnapshot.forEach((doc) => {
-            let { cantidad, codigo_contrato, nombre_cliente, numero_cuota, fecha_creacion, ref_cliente, fecha_cuota, fecha_pago } = doc.data();
+            let { cantidad, facturado, codigo_contrato, nombre_cliente, numero_cuota, fecha_creacion, ref_cliente, fecha_cuota, fecha_pago } = doc.data();
 
             if (fecha_creacion)
                 fecha_creacion = this.verFecha(fecha_creacion);
@@ -111,6 +111,7 @@ class Pagos extends Component
                 fecha_creacion,
                 fecha_cuota,
                 fecha_pago,
+                facturado,
                 ref_cliente
             });
         });
@@ -215,6 +216,19 @@ class Pagos extends Component
                             </Col>
                         </Row>
                     </span>
+                )
+            },
+            {
+                title: 'Facturado',
+                key: 'facturado',
+                render: record => (
+                    <Space>
+                        {
+                            record.facturado
+                            ? <strong style={{ color: '#52c41a' }}>Sí</strong>
+                            : <strong style={{ color: '#165473' }}>No</strong>
+                        }
+                    </Space>
                 )
             },
             {
