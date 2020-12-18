@@ -11,6 +11,8 @@ import firebase from 'firebase';
 const { Search } = Input;
 let ref = app.firestore();
 
+const zeroPad = (num, places) => String(num).padStart(places, '0');
+
 let opcFecha = { year: 'numeric', month: 'numeric', day: 'numeric' };
 
 const SelectFecha = (props)  => {
@@ -237,7 +239,7 @@ class Pagos extends Component
                 render: (record) => (
                     <Space size="middle">
                         <Tooltip title="Cancelar">
-                            <StopOutlined key="cancel" onClick={() => this.cancelarPago(record)} style={{ color: '#f5222d' }} />
+                            <StopOutlined key="cancel" onClick={() => this.eliminarPago(record)} style={{ color: '#f5222d' }} />
                         </Tooltip>
                     </Space>
                 )
@@ -274,9 +276,7 @@ class Pagos extends Component
                         .get()
                         .then(doc => {
                             let cuota = doc.data();
-                            if (cuota.cancelado) {
-                                anteriorCancelado = true;
-                            }
+                            if (cuota.cancelado) anteriorCancelado = true;
                         })
 
                         // Si la cuota anterior a esta no ha sido cancelada, entonces no se puede agregar el pago
@@ -321,7 +321,33 @@ class Pagos extends Component
         }
     }
 
-    cancelarPago = async record => {
+    eliminarPago = async record => {
+        let siguienteCancelada = false;
+
+        await this.refContratos.doc(record.codigo_contrato)
+        .get()
+        .then(async d_contrato => {
+            if (d_contrato.exists) {
+                let numCuota = Number.parseInt(record.numero_cuota);
+
+                await d_contrato.ref.collection('cuotas').doc(zeroPad(numCuota + 1, 2))
+                .get()
+                .then(d_cuota => {
+                    if (d_cuota.exists) {
+                        if (d_cuota.data().cancelado){
+                            siguienteCancelada = true;
+                        }
+                    }
+                })
+            }
+        })
+
+        // Si hay un pago más reciente, se debe eliminar ese primero
+        if (siguienteCancelada) {
+            message.error('Primero debe eliminar los pagos más recientes');
+            return;
+        }
+
         await this.refPagos.doc(`${record.key}`)
         .delete()
         .then(() => {
