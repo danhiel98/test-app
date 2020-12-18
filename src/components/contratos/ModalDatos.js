@@ -147,7 +147,7 @@ const ModalDatos = (props) => {
             })
             .catch((info) => {
                 console.log(info);
-                message.warning('¡Verifique la información ingresada');
+                message.warning('¡Verifique la información ingresada!');
             })
             .finally(() => {
                 setLoading(false);

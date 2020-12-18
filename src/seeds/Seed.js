@@ -257,7 +257,6 @@ class Seed extends Component
 
         console.log('Agregando mantenimientos');
 
-
         await this.refContratos.get()
         .then(querySnapshot => {
             querySnapshot.forEach(function(doc) {
@@ -320,7 +319,6 @@ class Seed extends Component
                 });
             });
         });
-
 
         contratos.forEach(async contrato => {
             await this.refPagos

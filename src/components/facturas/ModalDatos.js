@@ -7,21 +7,28 @@ import locale from "antd/es/date-picker/locale/es_ES";
 import app from '../../firebaseConfig';
 import firebase from 'firebase';
 
+const NumerosALetras = require('../../NumerosALetras');
+
 const { Option } = Select;
 
 const opcFecha = { year: 'numeric', month: 'long'};
 
 const formatoDinero = num => new Intl.NumberFormat("es-SV", {style: "currency", currency: "USD"}).format(num);
 
+const verFecha = fecha => fecha.toDate().toLocaleString('es-SV', opcFecha);
+
 const ModalDatos = (props) => {
     const [form] = Form.useForm();
     const { record, clientes } = props;
 
     const [loading, setLoading] = useState(false);
+    const [contrato, setContrato] = useState(null);
     const [contratos, setContratos] = useState([]);
+    const [total, setTotal] = useState(0);
     const [pagos, setPagos] = useState([]);
     const [barcode, setBarcode] = useState('');
 
+    let refFacturas = app.firestore().collection('facturas');
     let refContratos = app.firestore().collection('contratos');
     let refPagos = app.firestore().collection('pagos');
 
@@ -34,8 +41,48 @@ const ModalDatos = (props) => {
     const handleOk = async () => {
         setLoading(true);
 
+        form.validateFields()
+        .then(val => {
+            if (pagos.length === 0) {
+                message.error('¡No hay ningún pago a facturar!')
+                return;
+            }
 
+            guardarFactura(val);
+        })
+        .catch(error => {
+            console.log(error);
+            message.warning('¡Verifique la información ingresada!');
+        })
+        setLoading(false);
     };
+
+    const guardarFactura = data => {
+        let periodo = `${verFecha(pagos[0].fecha_cuota)}`;
+
+        if (pagos.length > 1) periodo += ` a ${verFecha(pagos[pagos.length - 1].fecha_cuota)}`
+
+        let factura = {
+            fecha: new Date(data.fecha),
+            cantidad_pagos: pagos.length,
+            periodo,
+            detalle: `Servicio de conexión a internet de banda ancha, correspondiente al periodo de ${periodo}`,
+            precio_pago: total / pagos.length,
+            total,
+            total_letras: NumerosALetras.default(total),
+            eliminado: false,
+            codigo_contrato: contrato.codigo,
+            nombre_cliente: contrato.cliente,
+            ref_cliente: contrato.ref_cliente,
+            fecha_creacion: firebase.firestore.FieldValue.serverTimestamp()
+        }
+
+        console.log(factura);
+        // Agregar factura y actualizar estado de los pagos a facturado
+        // refFacturas.add({
+
+        // });
+    }
 
     const agregarPago = async codigo => {
         if (/(R[\d]{1,3})(-|')(\d{1,3})(-|')(\d{4})(-|')(\d{4})(-|')\d{2}/.test(codigo))
@@ -57,12 +104,12 @@ const ModalDatos = (props) => {
 
             refContratos.doc(codContrato)
             .get()
-            .then(async contrato => {
-                if (contrato.exists) {
+            .then(async d_contrato => {
+                if (d_contrato.exists) {
                     let numCuota = Number.parseInt(codigo.substr(-2));
 
                     if (numCuota > 1) {
-                        await contrato.ref.collection('cuotas').doc(`0${numCuota - 1}`)
+                        await d_contrato.ref.collection('cuotas').doc(`0${numCuota - 1}`)
                         .get()
                         .then(doc => {
                             let cuota = doc.data();
@@ -78,28 +125,31 @@ const ModalDatos = (props) => {
                         }
                     }
 
-                    contrato.ref.collection('cuotas').doc(`0${numCuota}`)
+                    d_contrato.ref.collection('cuotas').doc(`0${numCuota}`)
                     .get()
-                    .then(cuota => {
-                        if (cuota.exists) {
-                            let d_cuota = cuota.data();
-                            let d_contrato = contrato.data();
+                    .then(d_cuota => {
+                        if (d_cuota.exists) {
+                            let cuota = d_cuota.data();
+                            let cont = d_contrato.data();
 
-                            refPagos.doc(d_cuota.codigo).set({
-                                cantidad: d_cuota.cantidad,
+                            refPagos.doc(cuota.codigo).set({
+                                cantidad: cuota.cantidad,
                                 codigo_contrato: contrato.id,
-                                ref_cliente: d_contrato.ref_cliente,
-                                nombre_cliente: d_contrato.cliente,
+                                ref_cliente: cont.ref_cliente,
+                                nombre_cliente: cont.cliente,
                                 numero_cuota: cuota.id,
-                                fecha_cuota: d_cuota.fecha_pago,
+                                fecha_cuota: cuota.fecha_pago,
                                 fecha_pago: null,
                                 facturado: false,
                                 fecha_creacion: firebase.firestore.FieldValue.serverTimestamp()
                             }).then(doc => {
                                 cuota.ref.update({ cancelado: true })
-                                .then(() => {
+                                .then(async () => {
                                     setBarcode('');
-                                    cargarPagos(d_contrato.codigo);
+                                    form.setFieldsValue({ 'id_cliente': cont.ref_cliente.id });
+                                    await cargarContratos(cont.ref_cliente.id)
+                                    form.setFieldsValue({ 'id_contrato': cont.codigo });
+                                    cargarPagos(cont.codigo);
                                     message.success('Pago registrado');
                                 })
                             })
@@ -166,10 +216,11 @@ const ModalDatos = (props) => {
         })
     }
 
-    const cargarContratos = codCliente => {
+    const cargarContratos = async codCliente => {
         form.setFieldsValue({
             'id_contrato': null
         });
+        setPagos([]);
 
         setContratos([]);
         let auxContratos = [];
@@ -177,7 +228,7 @@ const ModalDatos = (props) => {
 
         if (!cliente) return;
 
-        refContratos
+        await refContratos
         .where('ref_cliente', '==', cliente.ref)
         .get()
         .then(qs => {
@@ -186,11 +237,22 @@ const ModalDatos = (props) => {
             })
             setContratos(auxContratos);
         })
+
+        return true;
     }
 
-    const cargarPagos = codigoContrato => {
+    const cargarPagos = async codigoContrato => {
         let auxPagos = [];
+        let auxTotal = 0;
+        setTotal(0);
         setPagos([]);
+        setContrato(null);
+
+        await refContratos.doc(codigoContrato)
+        .get()
+        .then(doc => {
+            setContrato(doc.data());
+        })
 
         refPagos
         .where('codigo_contrato', '==', codigoContrato)
@@ -198,9 +260,12 @@ const ModalDatos = (props) => {
         .get()
         .then(qs => {
             qs.forEach(doc => {
-                auxPagos.push(doc.data());
+                let pago = doc.data();
+                auxPagos.push(pago);
+                auxTotal += pago.cantidad;
             })
             setPagos(auxPagos);
+            setTotal(auxTotal);
         });
     }
 
@@ -390,6 +455,14 @@ const ModalDatos = (props) => {
                                 </List.Item>
                             )}
                         />
+                    </Col>
+                </Row>
+                <Row>
+                    <Col style={{ textAlign: 'right' }} span={12}>
+                        <strong>{ pagos.length } cuotas</strong>
+                    </Col>
+                    <Col style={{ textAlign: 'right' }} span={12}>
+                        <strong style={{ fontSize: '1.5em' }}>Total: {formatoDinero(total)}</strong>
                     </Col>
                 </Row>
             </Form>
