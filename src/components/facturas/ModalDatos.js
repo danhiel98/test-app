@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { message, Row, Col, DatePicker, Select, Form, Input, Modal, Button, Tooltip, InputNumber } from "antd";
+import { List, Avatar, message, Row, Col, DatePicker, Select, Form, Input, Modal, Button, Tooltip, InputNumber } from "antd";
+import { DollarOutlined } from '@ant-design/icons';
 import moment from 'moment';
 import "moment/locale/es";
 import locale from "antd/es/date-picker/locale/es_ES";
@@ -8,12 +9,17 @@ import firebase from 'firebase';
 
 const { Option } = Select;
 
+const opcFecha = { year: 'numeric', month: 'long'};
+
+const formatoDinero = num => new Intl.NumberFormat("es-SV", {style: "currency", currency: "USD"}).format(num);
+
 const ModalDatos = (props) => {
     const [form] = Form.useForm();
     const { fireRef, record, clientes } = props;
 
     const [loading, setLoading] = useState(false);
     const [contratos, setContratos] = useState([]);
+    const [pagos, setPagos] = useState([]);
 
     const [red, setRed] = useState(null);
     const [ip, setIP] = useState(null);
@@ -24,7 +30,8 @@ const ModalDatos = (props) => {
     const [fechaFin, setFechaFin] = useState(null);
 
     let refContratos = app.firestore().collection('contratos');
-    let refCliente = app.firestore().collection('clientes');
+    let refPagos = app.firestore().collection('pagos');
+    let refClientes = app.firestore().collection('clientes');
     let refIP = app.firestore().collection('ips');
 
     useEffect(() => {
@@ -86,9 +93,9 @@ const ModalDatos = (props) => {
                 }
 
                 let cliente = '';
-                refCliente = refCliente.doc(val.id_cliente);
+                refClientes = refClientes.doc(val.id_cliente);
 
-                await refCliente
+                await refClientes
                 .get()
                 .then(doc => {
                     let data = doc.data();
@@ -241,6 +248,8 @@ const ModalDatos = (props) => {
         let auxContratos = [];
         let cliente = props.clientes.find(cli => cli.key === codCliente);
 
+        if (!cliente) return;
+
         refContratos
         .where('ref_cliente', '==', cliente.ref)
         .get()
@@ -250,6 +259,22 @@ const ModalDatos = (props) => {
             })
             setContratos(auxContratos);
         })
+    }
+
+    const cargarPagos = codigoContrato => {
+        let auxPagos = [];
+        setPagos([]);
+
+        refPagos
+        .where('codigo_contrato', '==', codigoContrato)
+        .where('facturado', '==', false)
+        .get()
+        .then(qs => {
+            qs.forEach(doc => {
+                auxPagos.push(doc.data());
+            })
+            setPagos(auxPagos);
+        });
     }
 
     return (
@@ -314,7 +339,7 @@ const ModalDatos = (props) => {
                                 filterOption={(input, option) =>
                                     option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                                 }
-                                onChange={codCliente => cargarContratos(codCliente)}
+                                onChange={codigo => cargarContratos(codigo)}
                             >
                                 {
                                     props.clientes.map(cliente =>
@@ -345,6 +370,7 @@ const ModalDatos = (props) => {
                                 filterOption={(input, option) =>
                                     option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                                 }
+                                onChange={codigo => cargarPagos(codigo)}
                             >
                                 {
                                     contratos.map(cont =>
@@ -396,6 +422,20 @@ const ModalDatos = (props) => {
                 <Row>
                     <Col span={24}>
                         <strong>Pagos</strong>
+                        <List
+                            itemLayout="horizontal"
+                            dataSource={pagos}
+                            renderItem={item => (
+                                <List.Item>
+                                    <List.Item.Meta
+                                        avatar={<Avatar style={{ backgroundColor: 'transparent' }} icon={<DollarOutlined style={{ color: '#5595ff' }} />} />}
+                                        title={<a href="https://ant.design">{`${item.fecha_cuota.toDate().toLocaleString('es-SV', opcFecha)}`}</a>}
+                                        description={`${item.codigo_contrato}-${item.numero_cuota}`}
+                                    />
+                                    <strong>{formatoDinero(item.cantidad)}</strong>
+                                </List.Item>
+                            )}
+                        />
                     </Col>
                 </Row>
             </Form>
