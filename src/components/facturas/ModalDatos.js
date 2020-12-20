@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Space, List, Avatar, message, Row, Col, DatePicker, Select, Form, Input, Modal, Button, Tooltip } from "antd";
+import { Space, List, Avatar, Table, message, Row, Col, DatePicker, Select, Form, Input, Modal, Button, Tooltip, Divider } from "antd";
 import { StopOutlined, BarcodeOutlined, DollarOutlined } from '@ant-design/icons';
 import moment from 'moment';
 import "moment/locale/es";
@@ -12,10 +12,31 @@ const NumerosALetras = require('../../NumerosALetras');
 const { Option } = Select;
 
 const opcFecha = { year: 'numeric', month: 'long'};
+const opcFecha2 = { year: 'numeric', month: 'long', day: 'numeric'};
 
 const formatoDinero = num => new Intl.NumberFormat("es-SV", {style: "currency", currency: "USD"}).format(num);
 
-const verFecha = fecha => fecha.toDate().toLocaleString('es-SV', opcFecha);
+const verFecha = (fecha, todo = false) => {
+    let opc = todo ? opcFecha2 : opcFecha;
+    return fecha.toDate().toLocaleString('es-SV', opc);
+}
+
+const fechaMayor = (fecha, fechaComparacion) => {
+    let f1 = fecha.toDate();
+    let f2 = fechaComparacion.toDate();
+
+    if (f1.getYear() > f2.getYear()) return true; // Verdadero si el año es mayor
+    else if (f1.getYear() < f2.getYear()) return false; // Falso si el año es menor
+
+    // En caso que el año sea el mismo:
+    if (f1.getMonth() > f2.getMonth()) return true; // Verdadero si el mes es mayor
+    else if (f1.getMonth() < f2.getMonth()) return false; // Falso su el mes es menor
+
+    // En caso que también el mes sea el mismo:
+    if (f1.getDate() > f2.getDate()) return true; // Verdadero si el día es mayor
+
+    return false; // Falso si es el mismo día o si es menor
+}
 
 const ModalDatos = (props) => {
     const [form] = Form.useForm();
@@ -25,8 +46,12 @@ const ModalDatos = (props) => {
     const [contrato, setContrato] = useState(null);
     const [contratos, setContratos] = useState([]);
     const [total, setTotal] = useState(0);
+    const [mora, setMora] = useState(0);
     const [pagos, setPagos] = useState([]);
     const [barcode, setBarcode] = useState('');
+    const [loadingPagos, setLoadingPagos] = useState(false);
+    const [stValidacionContrato, setStValidacionContrato] = useState(null);
+    const [msgValidacionContrato, setMsgValidacionContrato] = useState(null);
 
     let refFacturas = app.firestore().collection('facturas');
     let refContratos = app.firestore().collection('contratos');
@@ -78,7 +103,7 @@ const ModalDatos = (props) => {
         }
 
         console.log(factura);
-        // Agregar factura y actualizar estado de los pagos a facturado
+        // Agregar factura y actualizar estado de los pagos a 'facturado'
         // refFacturas.add({
 
         // });
@@ -134,7 +159,7 @@ const ModalDatos = (props) => {
 
                             refPagos.doc(cuota.codigo).set({
                                 cantidad: cuota.cantidad,
-                                codigo_contrato: contrato.id,
+                                codigo_contrato: cont.codigo,
                                 ref_cliente: cont.ref_cliente,
                                 nombre_cliente: cont.cliente,
                                 numero_cuota: cuota.id,
@@ -217,12 +242,16 @@ const ModalDatos = (props) => {
     }
 
     const cargarContratos = async codCliente => {
+        setStValidacionContrato('validating');
+        setMsgValidacionContrato(null);
         form.setFieldsValue({
             'id_contrato': null
         });
         setPagos([]);
-
         setContratos([]);
+
+        if (!codCliente) return;
+
         let auxContratos = [];
         let cliente = clientes.find(cli => cli.key === codCliente);
 
@@ -230,6 +259,7 @@ const ModalDatos = (props) => {
 
         await refContratos
         .where('ref_cliente', '==', cliente.ref)
+        .where('estado', '==', 'activo')
         .get()
         .then(qs => {
             qs.forEach(doc => {
@@ -238,15 +268,34 @@ const ModalDatos = (props) => {
             setContratos(auxContratos);
         })
 
+        if (auxContratos.length === 0) {
+            setStValidacionContrato('warning');
+            setMsgValidacionContrato('No se encontraton contratos');
+        } else if (auxContratos.length === 1) {
+            form.setFieldsValue({
+                'id_contrato': auxContratos[0].codigo
+            });
+            cargarPagos(auxContratos[0].codigo);
+            setStValidacionContrato(null);
+        } else {
+            setStValidacionContrato(null);
+        }
+
         return true;
     }
 
     const cargarPagos = async codigoContrato => {
         let auxPagos = [];
         let auxTotal = 0;
+        let auxMora = 0;
         setTotal(0);
+        setMora(0);
         setPagos([]);
         setContrato(null);
+
+        if (!codigoContrato) return;
+
+        setLoadingPagos(true);
 
         await refContratos.doc(codigoContrato)
         .get()
@@ -254,20 +303,84 @@ const ModalDatos = (props) => {
             setContrato(doc.data());
         })
 
-        refPagos
+        await refPagos
         .where('codigo_contrato', '==', codigoContrato)
         .where('facturado', '==', false)
         .get()
         .then(qs => {
             qs.forEach(doc => {
                 let pago = doc.data();
+                pago.key = doc.key;
                 auxPagos.push(pago);
                 auxTotal += pago.cantidad;
+                if (fechaMayor(pago.fecha_pago, pago.fecha_cuota)) {
+                    auxMora += 3
+                    auxTotal += 3;
+                }
+
             })
             setPagos(auxPagos);
+            setMora(auxMora);
             setTotal(auxTotal);
         });
+
+        setLoadingPagos(false);
     }
+
+    const columnas = [
+        {
+          title: 'No. Cuota',
+          dataIndex: 'numero_cuota',
+        },
+        {
+          title: 'Mes',
+          dataIndex: 'fecha_cuota',
+          render: fecha_cuota => (
+              <span>{verFecha(fecha_cuota)}</span>
+          )
+        },
+        {
+          title: 'Fecha de pago',
+          dataIndex: 'fecha_pago',
+          render: fecha_pago => (
+              fecha_pago
+              ?
+              <span>{verFecha(fecha_pago, true)}</span>
+              :
+              ''
+          )
+        },
+        {
+            title: 'Precio de cuota',
+            dataIndex: 'cantidad',
+            render: cantidad => (
+                <strong>{formatoDinero(cantidad)}</strong>
+            )
+        },
+        {
+            title: 'Mora',
+            key: 'mora',
+            render: record => {
+                let valor = 0;
+                if (!record.fecha_pago) return '';
+
+                if (fechaMayor(record.fecha_pago, record.fecha_cuota)) valor = 3;
+
+                return <strong>{formatoDinero(valor)}</strong>;
+            }
+        },
+        {
+            title: 'Cant. gravada',
+            key: 'cantidad_gravada',
+            render: record => {
+                let cant = record.cantidad;
+
+                if (fechaMayor(record.fecha_pago, record.fecha_cuota)) cant += 3;
+
+                return <strong>{formatoDinero(cant)}</strong>
+            }
+        }
+    ];
 
     return (
         <Modal
@@ -345,13 +458,11 @@ const ModalDatos = (props) => {
                         <Form.Item
                             name="id_contrato"
                             label="Contrato"
-                            rules={[
-                                {
-                                    required: true,
-                                    message: 'Seleccione un contrato',
-                                }
-                            ]}
+                            rules={[ { required: true, message: 'Seleccione un contrato' } ]}
                             requiredMark="optional"
+                            hasFeedback
+                            validateStatus={stValidacionContrato}
+                            help={msgValidacionContrato}
                         >
                             <Select
                                 placeholder="Seleccione un contrato"
@@ -433,12 +544,20 @@ const ModalDatos = (props) => {
                         />
                     </Col>
                 </Row>
+                <Divider />
                 <Row>
                     <Col span={24}>
-                        <List
+                        <Table
+                            loading={loadingPagos}
+                            columns={columnas}
+                            dataSource={pagos}
+                            size="small"
+                        />
+                        {/* <List
                             itemLayout="horizontal"
                             dataSource={pagos}
                             style={{ height: 250, overflowY: 'auto' }}
+                            loading={loadingPagos}
                             renderItem={item => (
                                 <List.Item>
                                     <List.Item.Meta
@@ -454,7 +573,7 @@ const ModalDatos = (props) => {
                                     </Space>
                                 </List.Item>
                             )}
-                        />
+                        /> */}
                     </Col>
                 </Row>
                 <Row>
@@ -462,7 +581,10 @@ const ModalDatos = (props) => {
                         <strong>{ pagos.length } cuotas</strong>
                     </Col>
                     <Col style={{ textAlign: 'right' }} span={12}>
-                        <strong style={{ fontSize: '1.5em' }}>Total: {formatoDinero(total)}</strong>
+                        <Space>
+                            <strong style={{ fontSize: '1.2em' }}>Mora: {formatoDinero(mora)}</strong>
+                            <strong style={{ fontSize: '1.5em' }}>Total: {formatoDinero(total)}</strong>
+                        </Space>
                     </Col>
                 </Row>
             </Form>

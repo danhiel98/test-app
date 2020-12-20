@@ -35,7 +35,7 @@ const SelectFecha = (props)  => {
                 locale={locale}
                 format="DD-MMMM-YYYY"
                 size="small"
-                onChange={ date => { fecha = new Date(date.get()) }}
+                onChange={ date => { fecha = date ? new Date(date.get()) : null }}
             />
             <CheckCircleOutlined onClick={() => selecFechaPago(record.key)} style={{ color: '#389e0d' }} />
         </Space>
