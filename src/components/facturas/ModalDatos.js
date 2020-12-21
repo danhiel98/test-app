@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Space, List, Avatar, Table, message, Row, Col, DatePicker, Select, Form, Input, Modal, Button, Tooltip, Divider } from "antd";
+import { Checkbox, Space, List, Avatar, Table, message, Row, Col, DatePicker, Select, Form, Input, Modal, Button, Tooltip, Divider } from "antd";
 import { StopOutlined, BarcodeOutlined, DollarOutlined } from '@ant-design/icons';
 import moment from 'moment';
 import "moment/locale/es";
@@ -47,19 +47,24 @@ const ModalDatos = (props) => {
     const [contratos, setContratos] = useState([]);
     const [total, setTotal] = useState(0);
     const [mora, setMora] = useState(0);
+    const [sumas, setSumas] = useState(0);
     const [pagos, setPagos] = useState([]);
     const [barcode, setBarcode] = useState('');
     const [loadingPagos, setLoadingPagos] = useState(false);
     const [stValidacionContrato, setStValidacionContrato] = useState(null);
     const [msgValidacionContrato, setMsgValidacionContrato] = useState(null);
+    const [exonerarMora, setExonerarMora] = useState(false);
 
     let refFacturas = app.firestore().collection('facturas');
     let refContratos = app.firestore().collection('contratos');
     let refPagos = app.firestore().collection('pagos');
 
     useEffect(() => {
-
-    }, []);
+        if (exonerarMora)
+            setTotal(sumas)
+        else
+            setTotal(sumas + mora);
+    }, [exonerarMora]);
 
     const zeroPad = (num, places) => String(num).padStart(places, '0');
 
@@ -84,6 +89,7 @@ const ModalDatos = (props) => {
 
     const guardarFactura = data => {
         let periodo = `${verFecha(pagos[0].fecha_cuota)}`;
+        let total_pagar = exonerarMora ? total : total + mora;
 
         if (pagos.length > 1) periodo += ` a ${verFecha(pagos[pagos.length - 1].fecha_cuota)}`
 
@@ -93,8 +99,11 @@ const ModalDatos = (props) => {
             periodo,
             detalle: `Servicio de conexión a internet de banda ancha, correspondiente al periodo de ${periodo}`,
             precio_pago: total / pagos.length,
-            total,
-            total_letras: NumerosALetras.default(total),
+            mora: mora,
+            sumas: total,
+            mora_exonerada: exonerarMora,
+            total: total_pagar,
+            total_letras: NumerosALetras.default(total_pagar),
             eliminado: false,
             codigo_contrato: contrato.codigo,
             nombre_cliente: contrato.cliente,
@@ -263,7 +272,7 @@ const ModalDatos = (props) => {
         .get()
         .then(qs => {
             qs.forEach(doc => {
-                auxContratos.push(doc.data());
+                auxContratos.push({key: doc.id, ...doc.data()});
             })
             setContratos(auxContratos);
         })
@@ -286,10 +295,12 @@ const ModalDatos = (props) => {
 
     const cargarPagos = async codigoContrato => {
         let auxPagos = [];
-        let auxTotal = 0;
+        let auxSumas = 0;
         let auxMora = 0;
-        setTotal(0);
+        // let auxTotal = 0;
+        setSumas(0);
         setMora(0);
+        setTotal(0);
         setPagos([]);
         setContrato(null);
 
@@ -310,18 +321,18 @@ const ModalDatos = (props) => {
         .then(qs => {
             qs.forEach(doc => {
                 let pago = doc.data();
-                pago.key = doc.key;
+                pago.key = doc.id;
                 auxPagos.push(pago);
-                auxTotal += pago.cantidad;
-                if (fechaMayor(pago.fecha_pago, pago.fecha_cuota)) {
-                    auxMora += 3
-                    auxTotal += 3;
+                auxSumas += pago.cantidad;
+                if (pago.fecha_pago && fechaMayor(pago.fecha_pago, pago.fecha_cuota)) {
+                    auxMora += 3;
                 }
-
             })
             setPagos(auxPagos);
             setMora(auxMora);
-            setTotal(auxTotal);
+            setSumas(auxSumas);
+            setTotal(auxSumas + auxMora);
+            if (exonerarMora) setTotal(auxSumas);
         });
 
         setLoadingPagos(false);
@@ -362,9 +373,8 @@ const ModalDatos = (props) => {
             key: 'mora',
             render: record => {
                 let valor = 0;
-                if (!record.fecha_pago) return '';
 
-                if (fechaMayor(record.fecha_pago, record.fecha_cuota)) valor = 3;
+                if (record.fecha_pago && fechaMayor(record.fecha_pago, record.fecha_cuota)) valor = 3;
 
                 return <strong>{formatoDinero(valor)}</strong>;
             }
@@ -375,7 +385,7 @@ const ModalDatos = (props) => {
             render: record => {
                 let cant = record.cantidad;
 
-                if (fechaMayor(record.fecha_pago, record.fecha_cuota)) cant += 3;
+                if (record.fecha_pago && fechaMayor(record.fecha_pago, record.fecha_cuota)) cant += 3;
 
                 return <strong>{formatoDinero(cant)}</strong>
             }
@@ -551,40 +561,38 @@ const ModalDatos = (props) => {
                             loading={loadingPagos}
                             columns={columnas}
                             dataSource={pagos}
+                            footer={() => (
+                                <Row>
+                                    <Col style={{ textAlign: 'right' }} span={11}>
+                                        <strong>{ pagos.length } cuotas</strong>
+                                    </Col>
+                                    <Col style={{ textAlign: 'right' }} span={13}>
+                                        <Space>
+                                            <strong style={{ fontSize: '1.1em' }}>Mora: {formatoDinero(mora)}</strong>
+                                            <strong style={{ fontSize: '1.1em' }}>Sumas: {formatoDinero(sumas)}</strong>
+                                        </Space>
+                                    </Col>
+                                </Row>
+                            )}
                             size="small"
                         />
-                        {/* <List
-                            itemLayout="horizontal"
-                            dataSource={pagos}
-                            style={{ height: 250, overflowY: 'auto' }}
-                            loading={loadingPagos}
-                            renderItem={item => (
-                                <List.Item>
-                                    <List.Item.Meta
-                                        avatar={<Avatar style={{ backgroundColor: 'transparent' }} icon={<DollarOutlined style={{ color: '#5595ff' }} />} />}
-                                        title={<a href="https://ant.design">{`${item.fecha_cuota.toDate().toLocaleString('es-SV', opcFecha)}`}</a>}
-                                        description={`${item.codigo_contrato}-${item.numero_cuota}`}
-                                    />
-                                    <Space>
-                                        <strong>{formatoDinero(item.cantidad)}</strong>
-                                        <Tooltip title="Cancelar">
-                                            <StopOutlined key="cancel" onClick={() => eliminarPago(item)} style={{ color: '#f5222d' }} />
-                                        </Tooltip>
-                                    </Space>
-                                </List.Item>
-                            )}
-                        /> */}
                     </Col>
                 </Row>
+                <Divider />
                 <Row>
-                    <Col style={{ textAlign: 'right' }} span={12}>
-                        <strong>{ pagos.length } cuotas</strong>
+                    <Col span={9}>
+                        {
+                            mora > 0 &&
+                            <Checkbox
+                                checked={exonerarMora}
+                                onChange={e => setExonerarMora(e.target.checked)}
+                            >
+                                Exonerar mora
+                            </Checkbox>
+                        }
                     </Col>
-                    <Col style={{ textAlign: 'right' }} span={12}>
-                        <Space>
-                            <strong style={{ fontSize: '1.2em' }}>Mora: {formatoDinero(mora)}</strong>
-                            <strong style={{ fontSize: '1.5em' }}>Total: {formatoDinero(total)}</strong>
-                        </Space>
+                    <Col span={15}>
+                        <strong style={{ fontSize: '1.2em' }}>Total a Pagar: {formatoDinero(total)}</strong>
                     </Col>
                 </Row>
             </Form>
