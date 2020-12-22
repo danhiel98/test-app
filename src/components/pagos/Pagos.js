@@ -15,6 +15,8 @@ const zeroPad = (num, places) => String(num).padStart(places, '0');
 
 let opcFecha = { year: 'numeric', month: 'numeric', day: 'numeric' };
 
+const formatoDinero = num => new Intl.NumberFormat("es-SV", {style: "currency", currency: "USD"}).format(num);
+
 const SelectFecha = (props)  => {
     let { record } = props;
     let fecha = null;
@@ -181,6 +183,15 @@ class Pagos extends Component
                     <Button type="link" onClick={() => this.verDetalleCliente(record.ref_cliente.id)}>
                         <strong>{ record.nombre_cliente }</strong>
                     </Button>
+                )
+            },
+            {
+                title: 'Cantidad',
+                dataIndex: 'cantidad',
+                render: cantidad => (
+                    <strong>
+                        { formatoDinero(cantidad) }
+                    </strong>
                 )
             },
             {
