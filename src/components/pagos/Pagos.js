@@ -270,7 +270,8 @@ class Pagos extends Component
                     let numCuota = Number.parseInt(codigo.substr(-2));
 
                     if (numCuota > 1) {
-                        await contrato.ref.collection('cuotas').doc(`0${numCuota - 1}`)
+                        await contrato.ref.collection('cuotas')
+                        .doc(`${zeroPad(numCuota - 1, 2)}`)
                         .get()
                         .then(doc => {
                             let cuota = doc.data();
@@ -284,7 +285,7 @@ class Pagos extends Component
                         }
                     }
 
-                    contrato.ref.collection('cuotas').doc(`0${numCuota}`)
+                    contrato.ref.collection('cuotas').doc(`${zeroPad(numCuota)}`)
                     .get()
                     .then(cuota => {
                         if (cuota.exists) {

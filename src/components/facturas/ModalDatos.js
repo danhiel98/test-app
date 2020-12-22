@@ -188,9 +188,7 @@ const ModalDatos = (props) => {
                                 .get()
                                 .then((doc) => {
                                     let cuota = doc.data();
-                                    if (cuota.cancelado) {
-                                        anteriorCancelado = true;
-                                    }
+                                    if (cuota.cancelado) anteriorCancelado = true;
                                 });
 
                             // Si la cuota anterior a esta no ha sido cancelada, entonces no se puede agregar el pago
