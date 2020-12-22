@@ -196,28 +196,26 @@ class Pagos extends Component
                 title: 'Fecha de pago',
                 key: 'fecha_pago',
                 render: record => (
-                    <span>
-                        <Row justify="center">
-                            <Col>
-                                {
-                                    record.fecha_pago
-                                    ?
-                                    ` ${record.fecha_pago.toDate().toLocaleDateString('es-SV', opcFecha)} `
-                                    :
-                                    ''
+                    <Row justify="center">
+                        <Col>
+                            {
+                                record.fecha_pago
+                                ?
+                                ` ${record.fecha_pago.toDate().toLocaleDateString('es-SV', opcFecha)} `
+                                :
+                                ''
+                            }
+                            <Popover
+                                content={
+                                    <SelectFecha record={record} />
                                 }
-                                <Popover
-                                    content={
-                                        <SelectFecha record={record} />
-                                    }
-                                    title="Seleccione"
-                                    trigger="click"
-                                >
-                                    <CalendarOutlined style={{ color: '#1c86c6' }} />
-                                </Popover>
-                            </Col>
-                        </Row>
-                    </span>
+                                title="Seleccione"
+                                trigger="click"
+                            >
+                                <CalendarOutlined style={{ color: '#1c86c6' }} />
+                            </Popover>
+                        </Col>
+                    </Row>
                 )
             },
             {

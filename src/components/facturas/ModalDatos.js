@@ -2,8 +2,6 @@ import React, { useState, useEffect } from "react";
 import {
     Checkbox,
     Space,
-    List,
-    Avatar,
     Table,
     message,
     Row,
@@ -23,9 +21,7 @@ import {
     CheckCircleOutlined,
     StopOutlined,
     BarcodeOutlined,
-    DollarOutlined,
 } from "@ant-design/icons";
-import moment from "moment";
 import "moment/locale/es";
 import locale from "antd/es/date-picker/locale/es_ES";
 import app from "../../firebaseConfig";
@@ -93,6 +89,7 @@ const ModalDatos = (props) => {
     useEffect(() => {
         if (exonerarMora) setTotal(sumas);
         else setTotal(sumas + mora);
+        // eslint-disable-next-line
     }, [exonerarMora]);
 
     const zeroPad = (num, places) => String(num).padStart(places, "0");
@@ -108,6 +105,8 @@ const ModalDatos = (props) => {
                 }
 
                 let total_pagar = exonerarMora ? total : total + mora;
+
+                cuotas.forEach((cuota, index, arr) => arr[index].mora_exonerada = exonerarMora );
 
                 let factura = {
                     fecha: new Date(val.fecha),
@@ -125,15 +124,15 @@ const ModalDatos = (props) => {
                     fecha_creacion: firebase.firestore.FieldValue.serverTimestamp(),
                 };
 
-                console.log(factura);
-
                 // Agregar factura y actualizar estado de los pagos a 'facturado'
                 await refFacturas.add(factura)
                 .then(docRef => {
                     pagos.forEach(pago => {
                         pago.ref.update({ facturado: true });
                     })
-                    console.log('Se agregró la factura, cracks');
+                    message.success('¡Factura agregada correctamente!')
+                    form.resetFields();
+                    props.handleCancel()
                 })
                 .catch(error => {
                     console.log(error);
@@ -377,6 +376,7 @@ const ModalDatos = (props) => {
         let auxCuotas = [];
         let auxSumas = 0;
         let auxMora = 0;
+        let precioMora = 0;
 
         setSumas(0);
         setMora(0);
@@ -406,11 +406,15 @@ const ModalDatos = (props) => {
                     pago.ref = doc.ref;
                     pago.key = doc.id;
 
+                    if (pago.fecha_pago) {
+                        precioMora = fechaMayor(pago.fecha_pago, pago.fecha_cuota) ? 3 : 0;
+                    }
+
                     auxCuotas.push({
                         fecha_cuota: pago.fecha_cuota,
                         fecha_pago: pago.fecha_pago,
                         num_cuota: pago.numero_cuota,
-                        precio_mora: fechaMayor(pago.fecha_pago, pago.fecha_cuota) ? 3 : 0,
+                        precio_mora: precioMora,
                         mora_exonerada: exonerarMora,
                         cantidad: pago.cantidad,
                     });

@@ -1,9 +1,10 @@
 import React, { Component } from "react";
-import { Tooltip, Space, PageHeader, Input, Button } from "antd";
+import { message, Row, Col, Popover, Tooltip, Space, PageHeader, Input, Button, InputNumber } from "antd";
 import {
     EditOutlined,
     StopOutlined,
     CloudDownloadOutlined,
+    CheckCircleOutlined
 } from "@ant-design/icons";
 import app from "../../firebaseConfig";
 import { connect } from "react-redux";
@@ -16,6 +17,47 @@ import ModalDatos from "./ModalDatos";
 // import ModalDetalle from './ModalDetalle';
 
 const { Search } = Input;
+let ref = app.firestore();
+
+const zeroPad = (num, places) => String(num).padStart(places, '0');
+
+const SelectNumero = (props) => {
+    let { record } = props;
+    let numero = 0;
+
+    let cambiarNumero = () => {
+
+        if (numero <= 0) {
+            message.error('Debe introducir un número mayor a cero');
+            return;
+        }
+
+        ref.collection('facturas')
+            .doc(record.key)
+            .update({
+                numero: zeroPad(numero, 6),
+            })
+            .then(() => {
+                message.success("¡Número establecido correctamente!");
+            });
+    };
+
+    return (
+        <Space>
+            <InputNumber
+                size="small"
+                min={1}
+                max={100000}
+                onChange={(val) => {numero = val; console.log(numero)}}
+                onPressEnter={(ev) => cambiarNumero()}
+            />
+            <CheckCircleOutlined
+                onClick={() => cambiarNumero()}
+                style={{ color: "#389e0d" }}
+            />
+        </Space>
+    );
+};
 
 class Facturas extends Component {
     constructor(props) {
@@ -53,21 +95,23 @@ class Facturas extends Component {
             let {
                 cantidad_pagos,
                 codigo_contrato,
-                detalle,
+                numero,
                 fecha,
                 nombre_cliente,
+                sumas,
+                mora,
+                mora_exonerada,
                 total,
                 total_letras,
                 ref_cliente,
-                cuotas
+                cuotas,
             } = doc.data();
 
             if (
                 busqueda &&
                 nombre_cliente.toLowerCase().indexOf(busqueda) === -1 &&
                 codigo_contrato.toLowerCase().indexOf(busqueda) === -1 &&
-                total_letras.toLowerCase().indexOf(busqueda) === -1 &&
-                detalle.toLowerCase().indexOf(busqueda) === -1
+                total_letras.toLowerCase().indexOf(busqueda) === -1
             )
                 return;
 
@@ -80,7 +124,11 @@ class Facturas extends Component {
                 total,
                 total_letras,
                 ref_cliente,
-                cuotas
+                cuotas,
+                sumas,
+                mora,
+                mora_exonerada,
+                numero,
             });
         });
         this.setState({
@@ -196,6 +244,24 @@ class Facturas extends Component {
                 ),
             },
             {
+                title: "No. Factura",
+                key: "numero",
+                render: (record) => (
+                    <Row justify="center">
+                        <Col>
+                            {record.numero ? record.numero : "-"}
+                            <Popover
+                                content={<SelectNumero record={record} />}
+                                title="Seleccione"
+                                trigger="click"
+                            >
+                                <EditOutlined style={{ color: "#1c86c6" }} />
+                            </Popover>
+                        </Col>
+                    </Row>
+                ),
+            },
+            {
                 title: "Fecha",
                 dataIndex: "fecha",
                 render: (fecha) => (
@@ -212,18 +278,18 @@ class Facturas extends Component {
                 render: (cantidad_pagos) => <strong>{cantidad_pagos}</strong>,
             },
             {
-                title: "Periodo",
-                dataIndex: "periodo",
-                sorter: true,
-                render: (periodo) => <>{periodo}</>,
+                title: "Sumas",
+                dataIndex: "sumas",
+                render: (sumas) => <strong>{this.formatoDinero(sumas)}</strong>,
             },
             {
-                title: "Precio cuota",
-                dataIndex: "precio_pago",
-                sorter: true,
-                render: (precio_pago) => (
-                    <strong>{this.formatoDinero(precio_pago)}</strong>
-                ),
+                title: "Mora",
+                key: "mora",
+                render: (record) => {
+                    let mora = record.mora_exonerada ? 0 : record.mora;
+
+                    return <strong>{this.formatoDinero(mora)}</strong>;
+                },
             },
             {
                 title: "Total",
@@ -248,12 +314,6 @@ class Facturas extends Component {
                                 key="download"
                                 onClick={() => this.download(record)}
                                 style={{ color: "#389e0d" }}
-                            />
-                        </Tooltip>
-                        <Tooltip title="Editar">
-                            <EditOutlined
-                                onClick={() => this.modalData(record)}
-                                style={{ color: "#fa8c16" }}
                             />
                         </Tooltip>
                         <Tooltip title="Cancelar">

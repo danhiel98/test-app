@@ -134,18 +134,14 @@ const Item = props => {
 }
 
 const Factura = props => {
-    console.log(props);
-
     let { factura } = props;
-
-    console.log(factura.cuotas);
 
     return (
         <Document>
             <Page size={[397, 595.2]} style={{ flexDirection: 'row' }}>
                 <View style={styles.mainContainer}>
                     <View style={styles.dateContanier}>
-                        <Text style={styles.dataValue}>06/10/2020</Text>
+                        <Text style={styles.dataValue}>{factura.fecha.toLocaleDateString('es-SV', { year: "numeric", month: "numeric", day: "numeric" })}</Text>
                     </View>
                     <View style={styles.nameContainer}>
                         <Text style={styles.dataValue}>{factura.nombre_cliente}</Text>
@@ -153,7 +149,10 @@ const Factura = props => {
                     <View style={styles.divider} />
                     {
                         factura.cuotas.map(cuota => (
-                            <Item pago={cuota} />
+                            <Item
+                                key={cuota.num_cuota}
+                                pago={cuota}
+                            />
                         ))
                     }
 
