@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import { message, Row, Col, Popover, Tooltip, Space, PageHeader, Input, Button, InputNumber } from "antd";
 import {
+    InfoCircleOutlined,
     EditOutlined,
     StopOutlined,
     CloudDownloadOutlined,
@@ -309,6 +310,13 @@ class Facturas extends Component {
                 key: "opciones",
                 render: (record) => (
                     <Space size="middle">
+                        <Tooltip title="Descargar">
+                            <InfoCircleOutlined
+                                key="info"
+                                onClick={() => console.log(record)}
+                                style={{ color: "#0d9e8a" }}
+                            />
+                        </Tooltip>
                         <Tooltip title="Descargar">
                             <CloudDownloadOutlined
                                 key="download"

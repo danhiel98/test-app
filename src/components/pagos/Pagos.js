@@ -285,7 +285,7 @@ class Pagos extends Component
                         }
                     }
 
-                    contrato.ref.collection('cuotas').doc(`${zeroPad(numCuota)}`)
+                    contrato.ref.collection('cuotas').doc(`${zeroPad(numCuota, 2)}`)
                     .get()
                     .then(cuota => {
                         if (cuota.exists) {
@@ -308,6 +308,10 @@ class Pagos extends Component
                                     this.setState({ barcode: '' })
                                     message.success('Pago registrado');
                                 })
+                            })
+                            .catch(error => {
+                                message.error('Ocurrió un error, contacte con el administrador');
+                                console.log(error);
                             })
                         }
                     })
