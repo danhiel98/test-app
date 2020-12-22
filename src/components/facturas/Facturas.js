@@ -1,14 +1,18 @@
-import React, { Component } from 'react';
-import { Tooltip, Space, PageHeader, Input, Button } from 'antd';
-import { EditOutlined, StopOutlined, CloudDownloadOutlined } from '@ant-design/icons';
-import app from '../../firebaseConfig';
-import { connect } from 'react-redux';
-import { push } from 'connected-react-router';
-import Tabla from '../Tabla';
-import Factura from '../reportes/Factura';
-import { pdf } from '@react-pdf/renderer';
-import DetalleCliente from '../clientes/ModalDetalle';
-import ModalDatos from './ModalDatos';
+import React, { Component } from "react";
+import { Tooltip, Space, PageHeader, Input, Button } from "antd";
+import {
+    EditOutlined,
+    StopOutlined,
+    CloudDownloadOutlined,
+} from "@ant-design/icons";
+import app from "../../firebaseConfig";
+import { connect } from "react-redux";
+import { push } from "connected-react-router";
+import Tabla from "../Tabla";
+import Factura from "../reportes/Factura";
+import { pdf } from "@react-pdf/renderer";
+import DetalleCliente from "../clientes/ModalDetalle";
+import ModalDatos from "./ModalDatos";
 // import ModalDetalle from './ModalDetalle';
 
 const { Search } = Input;
@@ -18,38 +22,47 @@ class Facturas extends Component {
         super(props);
 
         this.mainRef = app.firestore();
-        this.refFacturas = this.mainRef.collection('facturas');
-        // this.refFacturas = app.firestore().collection('facturas');
-        this.refClientes = this.mainRef.collection('clientes');
-        // this.refRedes = app.firestore().collection('redes');
-        this.opcFecha = { year: 'numeric', month: 'numeric', day: 'numeric' };
+        this.refFacturas = this.mainRef.collection("facturas");
+        this.refClientes = this.mainRef.collection("clientes");
+        this.opcFecha = { year: "numeric", month: "numeric", day: "numeric" };
 
         this.unsubscribe = null;
         this.state = {
             loading: true,
             facturas: [],
-            // facturas: [],
             clientes: [],
-            // redes: [],
             visible: false,
             registro: null,
             modalDetalle: false,
             modalDetalleCliente: false,
-            codigoCliente: null
+            codigoCliente: null,
         };
     }
 
-    formatoDinero = num => new Intl.NumberFormat("es-SV", {style: "currency", currency: "USD"}).format(num);
+    formatoDinero = (num) =>
+        new Intl.NumberFormat("es-SV", {
+            style: "currency",
+            currency: "USD",
+        }).format(num);
 
     obtenerFacturas = (qs) => {
         const facturas = [];
         const { busqueda } = this.state;
 
         qs.forEach(async (doc) => {
-            let { cantidad_pagos, codigo_contrato, periodo, detalle, fecha, nombre_cliente, precio_pago, total, total_letras, ref_cliente } = doc.data();
+            let {
+                cantidad_pagos,
+                codigo_contrato,
+                detalle,
+                fecha,
+                nombre_cliente,
+                total,
+                total_letras,
+                ref_cliente,
+                cuotas
+            } = doc.data();
 
-            if
-            (
+            if (
                 busqueda &&
                 nombre_cliente.toLowerCase().indexOf(busqueda) === -1 &&
                 codigo_contrato.toLowerCase().indexOf(busqueda) === -1 &&
@@ -61,44 +74,42 @@ class Facturas extends Component {
             facturas.push({
                 key: doc.id,
                 codigo_contrato,
-                periodo,
-                detalle,
                 nombre_cliente,
                 fecha: fecha.toDate(),
                 cantidad_pagos,
-                precio_pago,
                 total,
                 total_letras,
-                ref_cliente
+                ref_cliente,
+                cuotas
             });
         });
         this.setState({
             facturas,
             loading: false,
         });
-    }
+    };
 
-    obtenerRedes = qs => {
+    obtenerRedes = (qs) => {
         const redes = [];
 
-        qs.forEach(doc => {
+        qs.forEach((doc) => {
             let { numero } = doc.data();
 
             redes.push({
                 key: doc.id,
-                numero: numero
+                numero: numero,
             });
         });
 
         this.setState({
-            redes
+            redes,
         });
-    }
+    };
 
-    obtenerClientes = qs => {
+    obtenerClientes = (qs) => {
         const clientes = [];
 
-        qs.forEach(doc => {
+        qs.forEach((doc) => {
             let { dui, nombre, apellido } = doc.data();
 
             clientes.push({
@@ -106,163 +117,175 @@ class Facturas extends Component {
                 ref: doc.ref,
                 dui,
                 nombre,
-                apellido
+                apellido,
             });
         });
 
         this.setState({
-            clientes
+            clientes,
         });
-    }
+    };
 
     componentDidMount() {
-        this.unsubscribe = this.refFacturas.orderBy('fecha', 'desc').onSnapshot(this.obtenerFacturas);
-        this.refClientes.orderBy('fecha_creacion', 'desc').onSnapshot(this.obtenerClientes);
-        // this.refRedes.orderBy('numero').onSnapshot(this.obtenerRedes);
+        this.unsubscribe = this.refFacturas
+            .orderBy("fecha_creacion", "desc")
+            .onSnapshot(this.obtenerFacturas);
+        this.refClientes
+            .orderBy("fecha_creacion", "desc")
+            .onSnapshot(this.obtenerClientes);
     }
 
     buscar(valor) {
         if (valor.toLowerCase() !== this.state.busqueda) {
-            this.setState({ loading: true })
-            this.setState({ busqueda: valor.toLowerCase() })
-            this.refFacturas
-                .get()
-                .then(qs => this.obtenerFacturas(qs));
+            this.setState({ loading: true });
+            this.setState({ busqueda: valor.toLowerCase() });
+            this.refFacturas.get().then((qs) => this.obtenerFacturas(qs));
         }
     }
 
     modalData = (record) => {
         this.setState({
             visible: true,
-            registro: record
-        })
-    }
+            registro: record,
+        });
+    };
 
     handleCancel = () => {
         this.setState({
             registro: null,
             modalDetalle: false,
             modalDetalleCliente: false,
-            visible: false
-        })
-    }
+            visible: false,
+        });
+    };
 
-    capitalize = s => {
-        if (typeof s !== 'string') return s
-        return s.charAt(0).toUpperCase() + s.slice(1)
-    }
+    capitalize = (s) => {
+        if (typeof s !== "string") return s;
+        return s.charAt(0).toUpperCase() + s.slice(1);
+    };
 
-    irA = ruta => {
+    irA = (ruta) => {
         this.unsubscribe();
         this.props.dispatch(push(`facturas/${ruta}`));
-    }
+    };
 
-    verDetalle = record => {
+    verDetalle = (record) => {
         this.setState({ registro: record });
         this.setState({ modalDetalle: true });
-    }
+    };
 
-    verDetalleCliente = record => {
+    verDetalleCliente = (record) => {
         this.setState({ codigoCliente: record.ref_cliente.id });
         this.setState({ modalDetalleCliente: true });
-    }
+    };
 
     columnas = this.asignarColumnas();
 
     asignarColumnas() {
         return [
             {
-                title: 'Cliente',
-                key: 'cliente',
-                render: record => (
-                    <Button type="link" onClick={() => this.verDetalleCliente(record)}>
-                        <strong>{ record.nombre_cliente }</strong>
+                title: "Cliente",
+                key: "cliente",
+                render: (record) => (
+                    <Button
+                        type="link"
+                        onClick={() => this.verDetalleCliente(record)}
+                    >
+                        <strong>{record.nombre_cliente}</strong>
                     </Button>
-                )
+                ),
             },
             {
-                title: 'Fecha',
-                dataIndex: 'fecha',
-                render: fecha => (
+                title: "Fecha",
+                dataIndex: "fecha",
+                render: (fecha) => (
                     <strong>
-                        { fecha.toLocaleDateString('es-SV', this.opcFecha) }
+                        {fecha.toLocaleDateString("es-SV", this.opcFecha)}
                     </strong>
-                )
+                ),
             },
             {
-                title: 'Cant. cuotas',
-                dataIndex: 'cantidad_pagos',
+                title: "Cant. cuotas",
+                dataIndex: "cantidad_pagos",
                 sorter: true,
-                render: cantidad_pagos => (
+                align: "center",
+                render: (cantidad_pagos) => <strong>{cantidad_pagos}</strong>,
+            },
+            {
+                title: "Periodo",
+                dataIndex: "periodo",
+                sorter: true,
+                render: (periodo) => <>{periodo}</>,
+            },
+            {
+                title: "Precio cuota",
+                dataIndex: "precio_pago",
+                sorter: true,
+                render: (precio_pago) => (
+                    <strong>{this.formatoDinero(precio_pago)}</strong>
+                ),
+            },
+            {
+                title: "Total",
+                dataIndex: "total",
+                sorter: true,
+                render: (total) => (
                     <strong>
-                        {cantidad_pagos}
+                        <span style={{ color: "#089D6C", fontSize: "1.2em" }}>
+                            {this.formatoDinero(total)}
+                        </span>
                     </strong>
-                )
-            },
-            {
-                title: 'Periodo',
-                dataIndex: 'periodo',
-                sorter: true,
-                render: periodo => (
-                    <>
-                        {periodo}
-                    </>
-                )
-            },
-            {
-                title: 'Precio unitario',
-                dataIndex: 'precio_pago',
-                sorter: true,
-                render: precio_pago => (
-                    <strong>
-                        {this.formatoDinero(precio_pago)}
-                    </strong>
-                )
-            },
-            {
-                title: 'Total',
-                dataIndex: 'total',
-                sorter: true,
-                render: total => (
-                    <strong>
-                        <span style={{ color: '#089D6C', fontSize: '1.2em' }}>{this.formatoDinero(total)}</span>
-                    </strong>
-                )
+                ),
             },
 
             {
-                title: 'Opciones',
-                key: 'opciones',
+                title: "Opciones",
+                key: "opciones",
                 render: (record) => (
                     <Space size="middle">
                         <Tooltip title="Descargar">
-                            <CloudDownloadOutlined key="download" onClick={() => this.download(record)} style={{ color: '#389e0d' }} />
+                            <CloudDownloadOutlined
+                                key="download"
+                                onClick={() => this.download(record)}
+                                style={{ color: "#389e0d" }}
+                            />
                         </Tooltip>
                         <Tooltip title="Editar">
-                            <EditOutlined onClick={() => this.modalData(record)} style={{ color: '#fa8c16' }} />
+                            <EditOutlined
+                                onClick={() => this.modalData(record)}
+                                style={{ color: "#fa8c16" }}
+                            />
                         </Tooltip>
                         <Tooltip title="Cancelar">
-                            <StopOutlined key="cancel" onClick={() => console.log('cancel')} style={{ color: '#f5222d' }} />
+                            <StopOutlined
+                                key="cancel"
+                                onClick={() => console.log("cancel")}
+                                style={{ color: "#f5222d" }}
+                            />
                         </Tooltip>
                     </Space>
-                )
-            }
-        ]
+                ),
+            },
+        ];
     }
 
-    download = record => {
-        pdf(Factura({ factura: record })).toBlob()
-        .then(file => {
-            var csvURL = window.URL.createObjectURL(file);
-            let tempLink = document.createElement('a');
-            tempLink.href = csvURL;
-            tempLink.setAttribute('download', `Factura (${record.nombre_cliente}).pdf`);
-            tempLink.click();
-        })
-        .catch(error => {
-            console.log(error);
-        })
-    }
+    download = (record) => {
+        pdf(Factura({ factura: record }))
+            .toBlob()
+            .then((file) => {
+                var csvURL = window.URL.createObjectURL(file);
+                let tempLink = document.createElement("a");
+                tempLink.href = csvURL;
+                tempLink.setAttribute(
+                    "download",
+                    `Factura (${record.nombre_cliente}).pdf`
+                );
+                tempLink.click();
+            })
+            .catch((error) => {
+                console.log(error);
+            });
+    };
 
     render() {
         const {
@@ -273,13 +296,12 @@ class Facturas extends Component {
             clientes,
             codigoCliente,
             // modalDetalle,
-            modalDetalleCliente
+            modalDetalleCliente,
         } = this.state;
 
         return (
             <div>
-                {
-                    visible &&
+                {visible && (
                     // <ModalDatos
                     //     visible={visible}
                     //     title={registro ? 'Editar información' : 'Nuevo contrato'}
@@ -291,13 +313,15 @@ class Facturas extends Component {
                     // />
                     <ModalDatos
                         visible={visible}
-                        title={registro ? 'Editar información' : 'Nueva factura'}
+                        title={
+                            registro ? "Editar información" : "Nueva factura"
+                        }
                         clientes={clientes}
                         handleCancel={this.handleCancel}
                         record={registro}
                         fireRef={this.refContratos}
                     />
-                }
+                )}
                 {/* {
                     modalDetalle &&
                     <ModalDetalle
@@ -306,31 +330,33 @@ class Facturas extends Component {
                         handleCancel={this.handleCancel}
                     />
                 } */}
-                {
-                    modalDetalleCliente &&
+                {modalDetalleCliente && (
                     <DetalleCliente
                         visible={modalDetalleCliente}
                         codigoCliente={codigoCliente}
                         handleCancel={this.handleCancel}
                     />
-                }
+                )}
                 <PageHeader
                     className="site-page-header"
                     title="Facturas"
                     subTitle="Lista de facturas"
-                    extra={
-                        [
-                            <Search
-                                key="buscar"
-                                placeholder="Buscar"
-                                onSearch={value => this.buscar(value)}
-                                style={{ width: 200 }}
-                            />,
-                            <Button key="nuevo" type="primary" ghost onClick={() => this.modalData()}>
-                                Nuevo
-                            </Button>
-                        ]
-                    }
+                    extra={[
+                        <Search
+                            key="buscar"
+                            placeholder="Buscar"
+                            onSearch={(value) => this.buscar(value)}
+                            style={{ width: 200 }}
+                        />,
+                        <Button
+                            key="nuevo"
+                            type="primary"
+                            ghost
+                            onClick={() => this.modalData()}
+                        >
+                            Nuevo
+                        </Button>,
+                    ]}
                 />
                 {/* {
                     !this.columnas[0].filters.length && // eslint-disable-next-line
@@ -367,8 +393,8 @@ class Facturas extends Component {
 
 function mapStateToProps(state, ownProps) {
     return {
-        user: state.user
-    }
+        user: state.user,
+    };
 }
 
 export default connect(mapStateToProps)(Facturas);
