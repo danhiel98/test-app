@@ -104,11 +104,6 @@ const styles = StyleSheet.create({
 const Item = props => {
     const { pago } = props;
 
-    let mora = '';
-
-    if (!pago.mora_exonerada)
-        mora += `más mora ($3.00)`;
-
     return (
         <View style={styles.descriptionContainer}>
             <View style={styles.quantityColum}>
@@ -116,7 +111,7 @@ const Item = props => {
             </View>
             <View style={styles.descriptionColumn}>
                 <Text style={styles.descriptionValue}>
-                    Pago de servicio de internet del mes de {verFecha(pago.fecha_cuota)} {mora}
+                    Pago de servicio de internet del mes de {verFecha(pago.fecha_cuota)}
                 </Text>
             </View>
             <View style={styles.unitPriceColumn}>
@@ -126,7 +121,7 @@ const Item = props => {
             </View>
             <View style={styles.taxedSalesColumn}>
                 <Text style={styles.dataValue}>
-                    {formatoDinero(pago.cantidad + pago.precio_mora)}
+                    {formatoDinero(pago.cantidad)}
                 </Text>
             </View>
         </View>
@@ -135,6 +130,24 @@ const Item = props => {
 
 const Factura = props => {
     let { factura } = props;
+
+    let pagosMora = factura.cuotas.filter(cuota => !cuota.mora_exonerada && cuota.precio_mora > 0);
+    let cantPagos = pagosMora.length;
+    let datoMora = null;
+
+    if (cantPagos > 0) {
+        datoMora = {
+            cantidad: cantPagos,
+            descripcion: 'Pago de mora de ',
+            precioUnitario: 3,
+            total: cantPagos * 3
+        };
+
+        pagosMora.forEach((pago, idx) => {
+            datoMora.descripcion += pago.fecha_cuota.toDate().toLocaleDateString('es-SV', { month: 'long', year: 'numeric' })
+            if (idx + 1 < cantPagos) datoMora.descripcion += ', '
+        })
+    }
 
     return (
         <Document>
@@ -154,6 +167,29 @@ const Factura = props => {
                                 pago={cuota}
                             />
                         ))
+                    }
+                    {
+                        cantPagos > 0 &&
+                        <View style={styles.descriptionContainer}>
+                            <View style={styles.quantityColum}>
+                                <Text style={styles.dataValue}>{cantPagos}</Text>
+                            </View>
+                            <View style={styles.descriptionColumn}>
+                                <Text style={styles.descriptionValue}>
+                                    { datoMora.descripcion }
+                                </Text>
+                            </View>
+                            <View style={styles.unitPriceColumn}>
+                                <Text style={styles.priceValue}>
+                                    {formatoDinero(datoMora.precioUnitario)}
+                                </Text>
+                            </View>
+                            <View style={styles.taxedSalesColumn}>
+                                <Text style={styles.dataValue}>
+                                    {formatoDinero(datoMora.total)}
+                                </Text>
+                            </View>
+                        </View>
                     }
 
                     <View style={styles.finalContainer}>

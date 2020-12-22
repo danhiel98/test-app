@@ -104,8 +104,6 @@ const ModalDatos = (props) => {
                     return;
                 }
 
-                let total_pagar = exonerarMora ? total : total + mora;
-
                 cuotas.forEach((cuota, index, arr) => arr[index].mora_exonerada = exonerarMora );
 
                 let factura = {
@@ -114,9 +112,9 @@ const ModalDatos = (props) => {
                     cuotas: cuotas,
                     mora: mora,
                     mora_exonerada: exonerarMora,
-                    sumas: Math.round(total * 100) / 100,
-                    total: Math.round(total_pagar * 100) / 100,
-                    total_letras: NumerosALetras.default(total_pagar),
+                    sumas: Math.round(sumas * 100) / 100,
+                    total: Math.round(total * 100) / 100,
+                    total_letras: NumerosALetras.default(total),
                     eliminado: false,
                     codigo_contrato: contrato.codigo,
                     nombre_cliente: contrato.cliente,
