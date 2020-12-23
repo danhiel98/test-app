@@ -131,21 +131,32 @@ const Item = props => {
 const Factura = props => {
     let { factura } = props;
 
+    let pagosMoraEx = factura.cuotas.filter(cuota => cuota.mora_exonerada && cuota.precio_mora > 0);
     let pagosMora = factura.cuotas.filter(cuota => !cuota.mora_exonerada && cuota.precio_mora > 0);
-    let cantPagos = pagosMora.length;
+    let cantPagosMora = pagosMora.length;
+    let cantPagosMoraEx = pagosMoraEx.length;
     let datoMora = null;
-    let meses = '';
+    let mesesMora = '';
+    let mesesMoraEx = '';
 
-    if (cantPagos > 0) {
+    if (cantPagosMora > 0) {
         datoMora = {
-            cantidad: cantPagos,
+            cantidad: cantPagosMora,
             precioUnitario: 3,
-            total: cantPagos * 3
+            total: cantPagosMora * 3
         };
 
         pagosMora.forEach((pago, idx) => {
-            meses += pago.fecha_cuota.toDate().toLocaleDateString('es-SV', { month: 'long', year: 'numeric' })
-            if (idx + 1 < cantPagos) meses += ', '
+            mesesMora += pago.fecha_cuota.toDate().toLocaleDateString('es-SV', { month: 'long', year: 'numeric' })
+            if (idx + 1 < cantPagosMora) mesesMora += ', '
+        })
+
+    }
+
+    if (cantPagosMoraEx > 0) {
+        pagosMoraEx.forEach((pago, idx) => {
+            mesesMoraEx += pago.fecha_cuota.toDate().toLocaleDateString('es-SV', { month: 'long', year: 'numeric' })
+            if (idx + 1 < cantPagosMoraEx) mesesMoraEx += ', '
         })
     }
 
@@ -169,14 +180,14 @@ const Factura = props => {
                         ))
                     }
                     {
-                        cantPagos > 0 &&
+                        cantPagosMora > 0 &&
                         <View style={styles.descriptionContainer}>
                             <View style={styles.quantityColum}>
-                                <Text style={styles.dataValue}>{cantPagos}</Text>
+                                <Text style={styles.dataValue}>{cantPagosMora}</Text>
                             </View>
                             <View style={styles.descriptionColumn}>
                                 <Text style={styles.descriptionValue}>
-                                    { `Pago de mora de ${meses}` }
+                                    { `Pago de mora de ${mesesMora}` }
                                 </Text>
                             </View>
                             <View style={styles.unitPriceColumn}>
@@ -192,14 +203,14 @@ const Factura = props => {
                         </View>
                     }
                     {
-                        factura.mora_exonerada &&
+                        cantPagosMoraEx > 0 &&
                         <View style={styles.descriptionContainer}>
                             <View style={styles.quantityColum}>
                                 <Text style={styles.dataValue}></Text>
                             </View>
                             <View style={styles.descriptionColumn}>
                                 <Text style={styles.descriptionValue}>
-                                    { `Mora exonerada de ${meses}` }
+                                    { `Mora exonerada de ${mesesMoraEx}` }
                                 </Text>
                             </View>
                         </View>

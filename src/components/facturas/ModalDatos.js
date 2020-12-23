@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import {
-    Checkbox,
     Space,
     Table,
     message,
@@ -17,6 +16,7 @@ import {
     Popover,
 } from "antd";
 import {
+    ExceptionOutlined,
     CalendarOutlined,
     CheckCircleOutlined,
     StopOutlined,
@@ -46,7 +46,7 @@ const verFecha = (fecha, todo = false) => {
 };
 
 const fechaMayor = (fecha, fechaComparacion) => {
-    let f1 = fecha.toDate();
+    let f1 = (fecha instanceof Date) ? fecha : fecha.toDate();
     let f2 = fechaComparacion.toDate();
 
     if (f1.getYear() > f2.getYear()) return true;
@@ -80,17 +80,14 @@ const ModalDatos = (props) => {
     const [loadingPagos, setLoadingPagos] = useState(false);
     const [stValidacionContrato, setStValidacionContrato] = useState(null);
     const [msgValidacionContrato, setMsgValidacionContrato] = useState(null);
-    const [exonerarMora, setExonerarMora] = useState(false);
 
     let refFacturas = app.firestore().collection("facturas");
     let refContratos = app.firestore().collection("contratos");
     let refPagos = app.firestore().collection("pagos");
 
     useEffect(() => {
-        if (exonerarMora) setTotal(sumas);
-        else setTotal(sumas + mora);
-        // eslint-disable-next-line
-    }, [exonerarMora]);
+
+    }, []);
 
     const zeroPad = (num, places) => String(num).padStart(places, "0");
 
@@ -104,14 +101,13 @@ const ModalDatos = (props) => {
                     return;
                 }
 
-                cuotas.forEach((cuota, index, arr) => arr[index].mora_exonerada = exonerarMora );
+                console.log('Antes de factura');
 
                 let factura = {
                     fecha: new Date(val.fecha),
                     cantidad_pagos: pagos.length,
                     cuotas: cuotas,
                     mora: mora,
-                    mora_exonerada: exonerarMora,
                     sumas: Math.round(sumas * 100) / 100,
                     total: Math.round(total * 100) / 100,
                     total_letras: NumerosALetras.default(total),
@@ -121,6 +117,8 @@ const ModalDatos = (props) => {
                     ref_cliente: contrato.ref_cliente,
                     fecha_creacion: firebase.firestore.FieldValue.serverTimestamp(),
                 };
+
+                console.log(factura);
 
                 // Agregar factura y actualizar estado de los pagos a 'facturado'
                 await refFacturas.add(factura)
@@ -133,13 +131,13 @@ const ModalDatos = (props) => {
                     props.handleCancel()
                 })
                 .catch(error => {
-                    console.log(error);
                     message.error('Ha ocurrido un error');
+                    console.log(error);
                 })
             })
             .catch((error) => {
-                console.log(error);
                 message.warning("¡Verifique la información ingresada!");
+                console.log(error);
             })
             .finally(() => {
                 setLoading(false);
@@ -205,6 +203,7 @@ const ModalDatos = (props) => {
                             .then((d_cuota) => {
                                 if (d_cuota.exists) {
                                     let cuota = d_cuota.data();
+                                    let fechaPago = new Date();
 
                                     refPagos
                                         .doc(cuota.codigo)
@@ -215,7 +214,9 @@ const ModalDatos = (props) => {
                                             nombre_cliente: cont.cliente,
                                             numero_cuota: d_cuota.id,
                                             fecha_cuota: cuota.fecha_pago,
-                                            fecha_pago: new Date(),
+                                            fecha_pago: fechaPago,
+                                            mora: fechaMayor(fechaPago, cuota.fecha_pago) ? 3 : 0,
+                                            mora_exonerada: false,
                                             facturado: false,
                                             fecha_creacion: firebase.firestore.FieldValue.serverTimestamp(),
                                         })
@@ -259,6 +260,25 @@ const ModalDatos = (props) => {
             message.warn("El formato del código no es válido");
         }
     };
+
+    const alternarExoneracionMora = async (record) => {
+        await refPagos
+            .doc(record.key)
+            .update({
+                mora_exonerada: !record.mora_exonerada
+            })
+            .then(() => {
+                if (record.mora_exonerada)
+                    message.success('¡Se quitó la exoneración de la mora!')
+                else
+                    message.success('¡Se exoneró la mora correctamente!')
+                cargarPagos(record.codigo_contrato)
+            })
+            .catch(error => {
+                console.log(error);
+                message.error('Ocurrió un error');
+            })
+    }
 
     const eliminarPago = async (record) => {
         let siguienteCancelada = false;
@@ -372,7 +392,6 @@ const ModalDatos = (props) => {
         let auxCuotas = [];
         let auxSumas = 0;
         let auxMora = 0;
-        let precioMora = 0;
 
         setSumas(0);
         setMora(0);
@@ -402,22 +421,20 @@ const ModalDatos = (props) => {
                     pago.ref = doc.ref;
                     pago.key = doc.id;
 
-                    if (pago.fecha_pago) {
-                        precioMora = fechaMayor(pago.fecha_pago, pago.fecha_cuota) ? 3 : 0;
-                    }
-
                     auxCuotas.push({
                         fecha_cuota: pago.fecha_cuota,
                         fecha_pago: pago.fecha_pago,
                         num_cuota: pago.numero_cuota,
-                        precio_mora: precioMora,
-                        mora_exonerada: exonerarMora,
+                        precio_mora: pago.mora,
+                        mora_exonerada: pago.mora_exonerada,
                         cantidad: pago.cantidad,
                     });
 
                     auxPagos.push(pago);
                     auxSumas += pago.cantidad;
+
                     if (
+                        !pago.mora_exonerada &&
                         pago.fecha_pago &&
                         fechaMayor(pago.fecha_pago, pago.fecha_cuota)
                     ) {
@@ -430,7 +447,6 @@ const ModalDatos = (props) => {
                 setMora(auxMora);
                 setSumas(auxSumas);
                 setTotal(auxSumas + auxMora);
-                if (exonerarMora) setTotal(auxSumas);
             });
 
         setLoadingPagos(false);
@@ -439,11 +455,16 @@ const ModalDatos = (props) => {
     const SelectFecha = (props)  => {
         let { record } = props;
         let fecha = null;
+        let mora = 0;
 
         let selecFechaPago = codigo => {
+
+            if (fecha && fechaMayor(fecha, record.fecha_cuota)) mora = 3;
+
             refPagos.doc(codigo)
             .update({
-                fecha_pago: fecha
+                fecha_pago: fecha,
+                mora
             })
             .then(() => {
                 message.success('¡Fecha establecida correctamente!');
@@ -512,17 +533,51 @@ const ModalDatos = (props) => {
             title: "Mora",
             key: "mora",
             render: (record) => {
-                let valor = 0;
+                let style = {
+                    textDecoration: "none",
+                };
 
-                if (
-                    record.fecha_pago &&
-                    fechaMayor(record.fecha_pago, record.fecha_cuota)
+                if (record.mora_exonerada)
+                    style.textDecoration = "line-through";
+
+                return (
+                    <Space size="small">
+                        <strong style={style}>{formatoDinero(record.mora)}</strong>
+                        {
+                            record.mora > 0 &&
+                            <Tooltip title="Alternar exoneración">
+                                <ExceptionOutlined
+                                    disabled={record.mora === 0}
+                                    key="exonerate"
+                                    onClick={() => alternarExoneracionMora(record)}
+                                    style={{ color: '#2124ce' }}
+                                />
+                            </Tooltip>
+                        }
+                    </Space>
                 )
-                    valor = 3;
-
-                return <strong>{formatoDinero(valor)}</strong>;
             },
         },
+        // {
+        //     title: "Mora",
+        //     key: "mora",
+        //     render: (record) => {
+        //         let valor = 0;
+
+        //         if (
+        //             record.fecha_pago &&
+        //             fechaMayor(record.fecha_pago, record.fecha_cuota)
+        //         )
+        //             valor = 3;
+
+        //         return (
+        //             <Space size='small'>
+        //                 <strong>{formatoDinero(valor)}</strong>
+
+        //             </Space>
+        //         )
+        //     },
+        // },
         {
             title: "Cant. gravada",
             key: "cantidad_gravada",
@@ -756,18 +811,6 @@ const ModalDatos = (props) => {
                 </Row>
                 <Divider />
                 <Row>
-                    <Col span={9}>
-                        {mora > 0 && (
-                            <Checkbox
-                                checked={exonerarMora}
-                                onChange={(e) =>
-                                    setExonerarMora(e.target.checked)
-                                }
-                            >
-                                Exonerar mora
-                            </Checkbox>
-                        )}
-                    </Col>
                     <Col span={15}>
                         <strong style={{ fontSize: "1.2em" }}>
                             Total a Pagar: {formatoDinero(total)}
