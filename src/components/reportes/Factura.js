@@ -134,18 +134,18 @@ const Factura = props => {
     let pagosMora = factura.cuotas.filter(cuota => !cuota.mora_exonerada && cuota.precio_mora > 0);
     let cantPagos = pagosMora.length;
     let datoMora = null;
+    let meses = '';
 
     if (cantPagos > 0) {
         datoMora = {
             cantidad: cantPagos,
-            descripcion: 'Pago de mora de ',
             precioUnitario: 3,
             total: cantPagos * 3
         };
 
         pagosMora.forEach((pago, idx) => {
-            datoMora.descripcion += pago.fecha_cuota.toDate().toLocaleDateString('es-SV', { month: 'long', year: 'numeric' })
-            if (idx + 1 < cantPagos) datoMora.descripcion += ', '
+            meses += pago.fecha_cuota.toDate().toLocaleDateString('es-SV', { month: 'long', year: 'numeric' })
+            if (idx + 1 < cantPagos) meses += ', '
         })
     }
 
@@ -154,7 +154,7 @@ const Factura = props => {
             <Page size={[397, 595.2]} style={{ flexDirection: 'row' }}>
                 <View style={styles.mainContainer}>
                     <View style={styles.dateContanier}>
-                        <Text style={styles.dataValue}>{factura.fecha.toLocaleDateString('es-SV', { year: "numeric", month: "numeric", day: "numeric" })}</Text>
+                        <Text style={styles.dataValue}>{factura.fecha.toDate().toLocaleDateString('es-SV', { year: "numeric", month: "numeric", day: "numeric" })}</Text>
                     </View>
                     <View style={styles.nameContainer}>
                         <Text style={styles.dataValue}>{factura.nombre_cliente}</Text>
@@ -176,7 +176,7 @@ const Factura = props => {
                             </View>
                             <View style={styles.descriptionColumn}>
                                 <Text style={styles.descriptionValue}>
-                                    { datoMora.descripcion }
+                                    { `Pago de mora de ${meses}` }
                                 </Text>
                             </View>
                             <View style={styles.unitPriceColumn}>
@@ -187,6 +187,19 @@ const Factura = props => {
                             <View style={styles.taxedSalesColumn}>
                                 <Text style={styles.dataValue}>
                                     {formatoDinero(datoMora.total)}
+                                </Text>
+                            </View>
+                        </View>
+                    }
+                    {
+                        factura.mora_exonerada &&
+                        <View style={styles.descriptionContainer}>
+                            <View style={styles.quantityColum}>
+                                <Text style={styles.dataValue}></Text>
+                            </View>
+                            <View style={styles.descriptionColumn}>
+                                <Text style={styles.descriptionValue}>
+                                    { `Mora exonerada de ${meses}` }
                                 </Text>
                             </View>
                         </View>

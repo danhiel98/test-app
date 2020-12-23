@@ -15,7 +15,7 @@ import Factura from "../reportes/Factura";
 import { pdf } from "@react-pdf/renderer";
 import DetalleCliente from "../clientes/ModalDetalle";
 import ModalDatos from "./ModalDatos";
-// import ModalDetalle from './ModalDetalle';
+import ModalDetalle from './ModalDetalle';
 
 const { Search } = Input;
 let ref = app.firestore();
@@ -120,7 +120,7 @@ class Facturas extends Component {
                 key: doc.id,
                 codigo_contrato,
                 nombre_cliente,
-                fecha: fecha.toDate(),
+                fecha,
                 cantidad_pagos,
                 total,
                 total_letras,
@@ -267,7 +267,7 @@ class Facturas extends Component {
                 dataIndex: "fecha",
                 render: (fecha) => (
                     <strong>
-                        {fecha.toLocaleDateString("es-SV", this.opcFecha)}
+                        {fecha.toDate().toLocaleDateString("es-SV", this.opcFecha)}
                     </strong>
                 ),
             },
@@ -310,10 +310,10 @@ class Facturas extends Component {
                 key: "opciones",
                 render: (record) => (
                     <Space size="middle">
-                        <Tooltip title="Descargar">
+                        <Tooltip title="Detalles">
                             <InfoCircleOutlined
                                 key="info"
-                                onClick={() => console.log(record)}
+                                onClick={() => this.verDetalle(record)}
                                 style={{ color: "#0d9e8a" }}
                             />
                         </Tooltip>
@@ -363,22 +363,13 @@ class Facturas extends Component {
             registro,
             clientes,
             codigoCliente,
-            // modalDetalle,
+            modalDetalle,
             modalDetalleCliente,
         } = this.state;
 
         return (
             <div>
                 {visible && (
-                    // <ModalDatos
-                    //     visible={visible}
-                    //     title={registro ? 'Editar información' : 'Nuevo contrato'}
-                    //     clientes={clientes}
-                    //     redes={redes}
-                    //     handleCancel={this.handleCancel}
-                    //     record={registro}
-                    //     fireRef={this.refFacturas}
-                    // />
                     <ModalDatos
                         visible={visible}
                         title={
@@ -390,14 +381,14 @@ class Facturas extends Component {
                         fireRef={this.refContratos}
                     />
                 )}
-                {/* {
+                {
                     modalDetalle &&
                     <ModalDetalle
                         visible={modalDetalle}
-                        codigoContrato={registro.key}
+                        codigoFactura={registro.key}
                         handleCancel={this.handleCancel}
                     />
-                } */}
+                }
                 {modalDetalleCliente && (
                     <DetalleCliente
                         visible={modalDetalleCliente}
