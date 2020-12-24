@@ -16,13 +16,13 @@ const formatoDinero = num => new Intl.NumberFormat("es-SV", {style: "currency", 
 const styles = StyleSheet.create({
     mainContainer: {
         // border: 1,
-        // borderColor: 'red'
+        // borderColor: 'red',
         width: 380,
         margin: 8,
     },
     dateContanier: {
-        marginTop: 135,
-        marginLeft: 295,
+        marginTop: 115,
+        marginLeft: 285,
     },
     dataValue: {
         fontFamily: 'Courier New',
@@ -37,31 +37,34 @@ const styles = StyleSheet.create({
         marginLeft: 60,
     },
     descriptionContainer: {
+        // border: 1,
+        // borderColor: 'blue',
         marginTop: 5,
         display: 'flex',
         flexDirection: 'row',
     },
     quantityColum: {
         // border: 1,
-        // borderColor: 'red',
+        // borderColor: 'purple',
         marginLeft: 10,
         width: 25,
-        textAlign: 'center'
+        // textAlign: 'center'
     },
     divider: {
-        marginTop: 60,
+        marginTop: 75,
     },
     descriptionColumn: {
         // border: 1,
         // borderColor: 'yellow',
-        width: 175,
+        width: 185,
         paddingRight: 5,
         textOverflow: 'hidden'
     },
     unitPriceColumn: {
         // border: 1,
         // borderColor: 'blue',
-        width: 40
+        width: 40,
+        textAlign: 'center'
     },
     priceValue: {
         fontFamily: 'Courier New',
@@ -70,13 +73,15 @@ const styles = StyleSheet.create({
     taxedSalesColumn: {
         // border: 1,
         // borderColor: 'brown',
-        marginLeft: 65,
+        marginLeft: 'auto',
+        marginRight: 15,
         width: 50
     },
     finalContainer: {
         // border: 1,
         // borderColor: 'red',
-        marginTop: 115,
+        position: 'absolute',
+        marginTop: 430,
         marginLeft: 10,
         display: 'flex',
         flexDirection: 'row',
