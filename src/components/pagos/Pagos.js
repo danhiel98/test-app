@@ -40,7 +40,7 @@ const formatoDinero = (num) =>
 
 // Se debe evitar editar la fecha si ya se generó factura del pago
 const SelectFecha = (props) => {
-    let { record } = props;
+    let { record, disabled } = props;
     let fecha = null;
     let mora = 0;
 
@@ -62,6 +62,7 @@ const SelectFecha = (props) => {
     return (
         <Space>
             <DatePicker
+                disabled={disabled}
                 locale={locale}
                 format="DD-MMMM-YYYY"
                 size="small"
@@ -288,16 +289,21 @@ class Pagos extends Component {
                                 ? ` ${record.fecha_pago
                                       .toDate()
                                       .toLocaleDateString("es-SV", opcFecha)} `
-                                : ""}
-                            <Popover
-                                content={<SelectFecha record={record} />}
-                                title="Seleccione"
-                                trigger="click"
-                            >
-                                <CalendarOutlined
-                                    style={{ color: "#1c86c6" }}
-                                />
-                            </Popover>
+                                : "-"
+                            }
+                            {
+                                !record.facturado &&
+                                <Popover
+                                    content={<SelectFecha disabled={record.facturado} record={record} />}
+                                    title="Seleccione"
+                                    trigger="click"
+                                >
+                                    <CalendarOutlined
+                                        disabled={record.facturado}
+                                        style={{ color: "#1c86c6" }}
+                                    />
+                                </Popover>
+                            }
                         </Col>
                     </Row>
                 ),

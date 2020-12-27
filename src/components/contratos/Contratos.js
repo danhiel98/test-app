@@ -8,6 +8,8 @@ import Tabla from '../Tabla';
 import ModalDatos from './ModalDatos';
 import ModalDetalle from './ModalDetalle';
 import ModalDetalleCliente from '../clientes/ModalDetalle';
+import Contrato from '../reportes/Contrato';
+import { pdf } from '@react-pdf/renderer';
 
 const { confirm } = Modal;
 const { Search } = Input;
@@ -177,6 +179,20 @@ class Contratos extends Component {
         this.setState({ modalDetalleCliente: true });
     }
 
+    download = (record) => {
+        pdf(Contrato({ contrato: record})).toBlob()
+        .then(file => {
+            var csvURL = window.URL.createObjectURL(file);
+            let tempLink = document.createElement('a');
+            tempLink.href = csvURL;
+            tempLink.setAttribute('download', `Talonario ${record.codigo}.pdf`);
+            tempLink.click();
+        })
+        .catch(error => {
+            console.log(error);
+        })
+    }
+
     columnas = this.asignarColumnas();
 
     asignarColumnas() {
@@ -254,14 +270,11 @@ class Contratos extends Component {
                 render: (record) => (
                     <Space size="middle">
                         <Tooltip title="Descargar">
-                            <CloudDownloadOutlined key="download" onClick={() => console.log('download')} style={{ color: '#389e0d' }} />
+                            <CloudDownloadOutlined key="download" onClick={() => this.download(record)} style={{ color: '#389e0d' }} />
                         </Tooltip>
                         <Tooltip title="Editar">
                             <EditOutlined onClick={() => this.modalData(record)} style={{ color: '#fa8c16' }} />
                         </Tooltip>
-                        {/* <Tooltip title="Cancelar">
-                            <StopOutlined key="cancel" onClick={() => console.log('cancel')} style={{ color: '#f5222d' }} />
-                        </Tooltip> */}
                         <Tooltip title="Eliminar">
                             <DeleteOutlined onClick={() => this.eliminar(record)} style={{ color: '#f5222d' }} />
                         </Tooltip>
