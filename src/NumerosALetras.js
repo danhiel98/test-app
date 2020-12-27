@@ -130,7 +130,9 @@ function Millones(num) {
     return strMillones + " " + strMiles;
 }//Millones()
 
-export default function NumeroALetras(num) {
+
+
+export default function NumeroALetras(num, dinero = true) {
     var data = {
         numero: num,
         enteros: Math.floor(num),
@@ -141,6 +143,8 @@ export default function NumeroALetras(num) {
     };
 
     data.letrasCentavos = `${data.centavos}/100`;
+
+    if (!dinero) return capitalizeFirst(Millones(data.enteros));
 
     if(data.enteros === 0)
         return `Cero ${data.letrasCentavos} ${data.letrasMonedaPlural}`;
