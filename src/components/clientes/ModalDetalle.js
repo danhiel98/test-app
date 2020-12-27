@@ -92,7 +92,8 @@ const ModalDetalle = props => {
                             !loadingCliente &&
                             <div>
                                 Nombre: <strong>{`${cliente.nombre} ${cliente.apellido}`}</strong><br />
-                                DUI: <strong>{cliente.dui}</strong> <br />
+                                DUI: <strong>{cliente.dui}</strong><br />
+                                NIT: <strong>{cliente.nit}</strong><br />
                                 Teléfono: <strong>{cliente.telefono}</strong><br />
                                 Dirección: <strong>{cliente.direccion}</strong><br />
                             </div>

@@ -37,13 +37,14 @@ class Clientes extends Component
         this.setState({ loading: true })
 
         querySnapshot.forEach((doc) => {
-            const { dui, nombre, apellido, direccion, telefono } = doc.data();
+            const { dui, nit, nombre, apellido, direccion, telefono } = doc.data();
 
             if (busqueda &&
                 nombre.toLowerCase().indexOf(busqueda) === -1 &&
                 apellido.toLowerCase().indexOf(busqueda) === -1 &&
                 direccion.toLowerCase().indexOf(busqueda) === -1 &&
                 telefono.toLowerCase().indexOf(busqueda) === -1 &&
+                nit.indexOf(busqueda) === -1 &&
                 dui.indexOf(busqueda) === -1) {
                 return;
             }
@@ -52,7 +53,8 @@ class Clientes extends Component
                 key: doc.id,
                 ref: doc.ref,
                 nombre: `${nombre} ${apellido}`,
-                dui: dui,
+                dui,
+                nit,
                 direccion,
                 telefono
             });
@@ -90,6 +92,13 @@ class Clientes extends Component
                     <Button type="link" onClick={() => this.verDetalle(record)}>
                         <strong>{record.dui}</strong>
                     </Button>
+                )
+            },
+            {
+                title: 'NIT',
+                dataIndex: 'nit',
+                render: nit => (
+                    <strong>{nit}</strong>
                 )
             },
             {

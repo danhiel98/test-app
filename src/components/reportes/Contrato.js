@@ -118,8 +118,6 @@ const styles = StyleSheet.create({
 const Contrato = props => {
     let { contrato, cliente } = props;
 
-    console.log(contrato, cliente);
-
     return (
         <Document>
             <Page size="LETTER" style={styles.body} wrap>

@@ -21,6 +21,7 @@ const ModalDatos = (props) => {
                 const cli = doc.data();
                 form.setFieldsValue({
                     dui: cli.dui,
+                    nit: cli.nit,
                     nombre: cli.nombre,
                     apellido: cli.apellido,
                     telefono: cli.telefono,
@@ -70,6 +71,7 @@ const ModalDatos = (props) => {
             nombre: val.nombre,
             apellido: val.apellido,
             dui: val.dui,
+            nit: val.nit,
             telefono: val.telefono,
             direccion: val.direccion,
             eliminado: false,
@@ -92,6 +94,7 @@ const ModalDatos = (props) => {
             nombre: val.nombre,
             apellido: val.apellido,
             dui: val.dui,
+            nit: val.nit,
             telefono: val.telefono,
             direccion: val.direccion
         }).then(() => {
@@ -190,6 +193,19 @@ const ModalDatos = (props) => {
                         {
                             required: true,
                             message: 'Número de DUI requerido'
+                        }
+                    ]}
+                >
+                    <Input style={{ width: 150 }} />
+                </Form.Item>
+                <Form.Item
+                    name="nit"
+                    label="No. NIT"
+                    requiredMark="optional"
+                    rules={[
+                        {
+                            required: true,
+                            message: 'Número de NIT requerido'
                         }
                     ]}
                 >
