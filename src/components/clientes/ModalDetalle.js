@@ -86,7 +86,7 @@ const ModalDetalle = props => {
                                 <strong> Cliente </strong>
                             </Space>
                         }
-                        bodyStyle={{ height: 200 }}
+                        bodyStyle={{ height: 250 }}
                     >
                         {
                             !loadingCliente &&
@@ -112,7 +112,7 @@ const ModalDetalle = props => {
                                 </Tooltip>
                             </Space>
                         }
-                        bodyStyle={{ height: 200, overflowY: 'auto' }}
+                        bodyStyle={{ height: 250, overflowY: 'auto' }}
                     >
 
                         <List

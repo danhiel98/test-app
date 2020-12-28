@@ -37,9 +37,9 @@ class Seed extends Component
         // this.seedRedes();
         // this.seedIps();
         // this.seedCientes();
-        // this.seedContratos();
+        this.seedContratos();
         // this.seedMantenimientos();
-        this.seedFacturas();
+        // this.seedFacturas();
     }
 
     setAvailableIPs = async () => {
@@ -209,9 +209,7 @@ class Seed extends Component
                 let f_fin = `${this.zeroPad(mes_fin, 2)}${fecha_fin.getFullYear().toString().substr(-2)}`;
 
                 let contrato = {
-                    activo: true,
-                    archivado: false,
-                    eliminado: false,
+                    estado: 'activo', // Activo, Archivado, Eliminado
                     cliente: `${cliente.nombre} ${cliente.apellido}`,
                     codigo: `R${red.numero}-${this.zeroPad(ip.numero, 3)}-${f_inicio}-${f_fin}`,
                     cant_cuotas: 18,
@@ -228,11 +226,15 @@ class Seed extends Component
 
                 this.refContratos.doc(`${contrato.codigo}`).set(contrato)
                 .then(() => {
+                    let _codContrato = contrato.codigo.split('-');
+                    let _red = Number.parseInt(_codContrato[0].substr(1));
                     let fecha_pago = new Date(fecha_inicio);
+
                     fecha_pago.setMonth(fecha_pago.getMonth() - 1)
+
                     for (let i = 1; i <= 18; i++) {
                         let cuota = {
-                            codigo: `${contrato.codigo}-${this.zeroPad(i, 2)}`,
+                            codigo: `${this.zeroPad(_red, 4)}-0${_codContrato[1]}-${contrato.codigo.substr(8)}-${this.zeroPad(i, 4)}`,
                             cantidad: contrato.precio_cuota,
                             fecha_pago: new Date(fecha_pago.setMonth(fecha_pago.getMonth() + 1)),
                             cancelado: false

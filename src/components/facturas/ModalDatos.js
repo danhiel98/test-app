@@ -140,14 +140,18 @@ const ModalDatos = (props) => {
     };
 
     const agregarPago = async (codigo) => {
+        let code = codigo.replace('\'','-');
         if (
-            /(R[\d]{1,3})(-|')(\d{1,3})(-|')(\d{4})(-|')(\d{4})(-|')\d{2}/.test(
-                codigo
+            /(\d{4})(-|')(\d{4})(-|')(\d{4})(-|')(\d{4})(-|')\d{4}/.test(
+                code
             )
         ) {
             let exist = false;
             let anteriorCancelado = false;
-            let codContrato = codigo.substring(0, codigo.length - 3);
+            let _codContrato = code.split('-');
+            let _red = Number.parseInt(_codContrato[0]);
+            let _ip = _codContrato[1].substr(1);
+            let codContrato = `R${_red}-${_ip}-${_codContrato[2]}-${_codContrato[3]}`;
 
             await refPagos
                 .doc(codigo)
@@ -170,9 +174,9 @@ const ModalDatos = (props) => {
                 .then(async (d_contrato) => {
                     if (d_contrato.exists) {
                         let cont = d_contrato.data();
-                        let numCuota = Number.parseInt(codigo.substr(-2));
+                        let numCuota = Number.parseInt(_codContrato[4]);
 
-                        if (numCuota > 1) {
+                        if (numCuota > 1) { // Para validar si la anterior ya fue pagada
                             await d_contrato.ref
                                 .collection("cuotas")
                                 .doc(`${zeroPad(numCuota - 1, 2)}`)
@@ -304,7 +308,7 @@ const ModalDatos = (props) => {
         }
 
         await refPagos
-            .doc(`${record.codigo_contrato}-${record.numero_cuota}`)
+            .doc(`${record.key}`)
             .delete()
             .then(() => {
                 refContratos
@@ -750,9 +754,9 @@ const ModalDatos = (props) => {
                         <Input
                             addonBefore={<BarcodeOutlined />}
                             placeholder="Codigo de cuota"
-                            style={{ width: 240 }}
+                            style={{ width: 280 }}
                             autoFocus
-                            maxLength={20}
+                            maxLength={24}
                             allowClear
                             value={barcode}
                             onChange={(ev) => setBarcode(ev.target.value)}

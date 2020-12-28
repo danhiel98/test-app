@@ -13,6 +13,7 @@ import {
     Col,
     PageHeader,
     Button,
+    Modal
 } from "antd";
 import {
     ExceptionOutlined,
@@ -20,12 +21,15 @@ import {
     BarcodeOutlined,
     CalendarOutlined,
     CheckCircleOutlined,
+    ExclamationCircleOutlined
 } from "@ant-design/icons";
 import locale from "antd/es/date-picker/locale/es_ES";
 import app from "../../firebaseConfig";
 import firebase from "firebase";
 
 const { Search } = Input;
+const { confirm } = Modal;
+
 let ref = app.firestore();
 
 const zeroPad = (num, places) => String(num).padStart(places, "0");
@@ -359,7 +363,7 @@ class Pagos extends Component {
                         <Tooltip title="Cancelar">
                             <StopOutlined
                                 key="cancel"
-                                onClick={() => this.eliminarPago(record)}
+                                onClick={() => this.eliminar(record)}
                                 style={{ color: "#f5222d" }}
                             />
                         </Tooltip>
@@ -370,14 +374,18 @@ class Pagos extends Component {
     }
 
     agregarPago = async (codigo) => {
+        let code = codigo.replace('\'','-');
         if (
-            /(R[\d]{1,3})(-|')(\d{1,3})(-|')(\d{4})(-|')(\d{4})(-|')\d{2}/.test(
-                codigo
+            /(\d{4})(-|')(\d{4})(-|')(\d{4})(-|')(\d{4})(-|')\d{4}/.test(
+                code
             )
         ) {
             let exist = false;
             let anteriorCancelado = false;
-            let codContrato = codigo.substring(0, codigo.length - 3);
+            let _codContrato = code.split('-');
+            let _red = Number.parseInt(_codContrato[0]);
+            let _ip = _codContrato[1].substr(1);
+            let codContrato = `R${_red}-${_ip}-${_codContrato[2]}-${_codContrato[3]}`;
 
             await this.refPagos
                 .doc(codigo)
@@ -387,7 +395,10 @@ class Pagos extends Component {
                         message.error("¡Esta cuota ya fue cancelada!");
                         exist = true;
                     }
-                });
+                })
+                .catch(error => {
+                    console.log(error);
+                })
 
             if (exist) return;
 
@@ -396,9 +407,9 @@ class Pagos extends Component {
                 .get()
                 .then(async (contrato) => {
                     if (contrato.exists) {
-                        let numCuota = Number.parseInt(codigo.substr(-2));
+                        let numCuota = Number.parseInt(_codContrato[4]);
 
-                        if (numCuota > 1) {
+                        if (numCuota > 1) { // Para validar si la anterior ya fue pagada
                             await contrato.ref
                                 .collection("cuotas")
                                 .doc(`${zeroPad(numCuota - 1, 2)}`)
@@ -489,7 +500,7 @@ class Pagos extends Component {
             })
     }
 
-    eliminarPago = async (record) => {
+    eliminar = async (record) => {
         let siguienteCancelada = false;
 
         if (record.facturado) {
@@ -524,6 +535,21 @@ class Pagos extends Component {
             return;
         }
 
+        let me = this;
+
+        confirm({
+            title: "¿Está seguro que desea eliminar este pago?",
+            icon: <ExclamationCircleOutlined />,
+            content: "Eliminar pago",
+            okText: "Sí",
+            cancelText: "No",
+            onOk() {
+                me.eliminarPago(record);
+            },
+        });
+    };
+
+    eliminarPago = async (record) => {
         await this.refPagos
             .doc(`${record.key}`)
             .delete()
@@ -553,7 +579,7 @@ class Pagos extends Component {
                         }
                     });
             });
-    };
+    }
 
     render() {
         const {
@@ -577,9 +603,9 @@ class Pagos extends Component {
                             key="1"
                             addonBefore={<BarcodeOutlined />}
                             placeholder="Codigo de cuota"
-                            style={{ width: 240 }}
+                            style={{ width: 280 }}
                             autoFocus
-                            maxLength={20}
+                            maxLength={24}
                             allowClear
                             value={this.state.barcode}
                             onChange={(ev) =>
