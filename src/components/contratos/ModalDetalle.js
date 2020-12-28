@@ -1,50 +1,65 @@
-import React, { useEffect, useState } from 'react';
-import { Modal, List, Card, Row, Col, Spin, Tooltip, Space } from 'antd';
-import { CloudDownloadOutlined } from '@ant-design/icons';
-import Talonario from '../reportes/Talonario';
-import app from '../../firebaseConfig';
-import { pdf } from '@react-pdf/renderer';
+import React, { useEffect, useState } from "react";
+import {
+    message,
+    Modal,
+    List,
+    Card,
+    Row,
+    Col,
+    Spin,
+    Tooltip,
+    Space,
+} from "antd";
+import { CloudDownloadOutlined } from "@ant-design/icons";
+import Talonario from "../reportes/Talonario";
+import Contrato from "../reportes/Contrato";
+import app from "../../firebaseConfig";
+import { pdf } from "@react-pdf/renderer";
 
-const capitalize = s => {
-    if (typeof s !== 'string') return s
-    return s.charAt(0).toUpperCase() + s.slice(1)
-}
+const capitalize = (s) => {
+    if (typeof s !== "string") return s;
+    return s.charAt(0).toUpperCase() + s.slice(1);
+};
 
-const formatoDinero = num => new Intl.NumberFormat("es-SV", {style: "currency", currency: "USD"}).format(num);
+const formatoDinero = (num) =>
+    new Intl.NumberFormat("es-SV", {
+        style: "currency",
+        currency: "USD",
+    }).format(num);
 
-const verFecha = fecha => {
-    return capitalize(new Date(fecha.seconds * 1000).toLocaleDateString("es-SV", { year: 'numeric', month: 'short' }))
-}
+const verFecha = (fecha) => {
+    return capitalize(
+        new Date(fecha.seconds * 1000).toLocaleDateString("es-SV", {
+            year: "numeric",
+            month: "short",
+        })
+    );
+};
 
-const obtenerContrato = async ref => {
+const obtenerContrato = async (ref) => {
     let auxRecord = null;
-    await ref
-    .get()
-    .then(doc => {
+    await ref.get().then((doc) => {
         if (doc.exists) {
             auxRecord = doc.data();
         }
-    })
+    });
     return auxRecord;
-}
+};
 
-const obtenerCuotas = async ref => {
+const obtenerCuotas = async (ref) => {
     let auxCuotas = [];
-    await ref
-    .get()
-    .then(snapshot => {
-        snapshot.forEach(doc => {
+    await ref.get().then((snapshot) => {
+        snapshot.forEach((doc) => {
             auxCuotas.push({
                 id: doc.id,
-                ...doc.data() // Well
+                ...doc.data(), // Well
             });
-        })
-    })
+        });
+    });
     return auxCuotas;
-}
+};
 
-const ModalDetalle = props => {
-
+const ModalDetalle = (props) => {
     const { codigoContrato } = props;
     const [loadingRecord, setLoadingRecord] = useState(true);
     const [loadingCuotas, setLoadingCuotas] = useState(true);
@@ -53,32 +68,66 @@ const ModalDetalle = props => {
 
     useEffect(() => {
         setLoadingCuotas(true);
-        setLoadingRecord(true)
+        setLoadingRecord(true);
 
-        let ref = app.firestore().collection('contratos').doc(codigoContrato);
+        let ref = app.firestore().collection("contratos").doc(codigoContrato);
 
         obtenerContrato(ref)
-        .then(res => setRecord(res))
-        .finally(() => setLoadingRecord(false));
+            .then((res) => setRecord(res))
+            .finally(() => setLoadingRecord(false));
 
-        obtenerCuotas(ref.collection('cuotas'))
-        .then(res => setCuotas(res))
-        .finally(() => setLoadingCuotas(false));
+        obtenerCuotas(ref.collection("cuotas"))
+            .then((res) => setCuotas(res))
+            .finally(() => setLoadingCuotas(false));
     }, [codigoContrato]);
 
     const download = (tipo) => {
-        pdf(Talonario({ contrato: record, cuotas: cuotas, tipo: tipo })).toBlob()
-        .then(file => {
-            var csvURL = window.URL.createObjectURL(file);
-            let tempLink = document.createElement('a');
-            tempLink.href = csvURL;
-            tempLink.setAttribute('download', `Talonario ${record.codigo} (${tipo}).pdf`);
-            tempLink.click();
-        })
-        .catch(error => {
-            console.log(error);
-        })
-    }
+        pdf(Talonario({ contrato: record, cuotas: cuotas, tipo: tipo }))
+            .toBlob()
+            .then((file) => {
+                var csvURL = window.URL.createObjectURL(file);
+                let tempLink = document.createElement("a");
+                tempLink.href = csvURL;
+                tempLink.setAttribute(
+                    "download",
+                    `Talonario ${record.codigo} (${tipo}).pdf`
+                );
+                tempLink.click();
+            })
+            .catch((error) => {
+                console.log(error);
+            });
+    };
+
+    const descargarDocumento = async (record) => {
+        let cliente = null;
+        await record.ref_cliente
+            .get()
+            .then((doc) => (cliente = doc.data()))
+            .catch((error) => {
+                message.error(
+                    "¡Ocurrió un error al obtener la información del cliente!"
+                );
+            });
+
+        if (!cliente) return;
+
+        pdf(Contrato({ contrato: record, cliente: cliente }))
+            .toBlob()
+            .then((file) => {
+                var csvURL = window.URL.createObjectURL(file);
+                let tempLink = document.createElement("a");
+                tempLink.href = csvURL;
+                tempLink.setAttribute(
+                    "download",
+                    `Contrato ${record.codigo}.pdf`
+                );
+                tempLink.click();
+            })
+            .catch((error) => {
+                console.log(error);
+            });
+    };
 
     return (
         <Modal
@@ -86,15 +135,8 @@ const ModalDetalle = props => {
             visible={props.visible}
             onCancel={props.handleCancel}
             width={800}
-            title={
-                <div>
-                    Detalle de Contrato
-                </div>
-            }
-            footer={
-                <>
-                </>
-            }
+            title={<div>Detalle de Contrato</div>}
+            footer={<></>}
         >
             <Row>
                 <Col flex={7}>
@@ -104,25 +146,46 @@ const ModalDetalle = props => {
                                 <strong> {codigoContrato} </strong>
                                 <Tooltip title="Descargar documento">
                                     <strong>
-                                        <CloudDownloadOutlined key="download" onClick={() => console.log('download')} style={{ color: '#389e0d' }} />
+                                        <CloudDownloadOutlined
+                                            key="download"
+                                            onClick={() =>
+                                                descargarDocumento(record)
+                                            }
+                                            style={{ color: "#389e0d" }}
+                                        />
                                     </strong>
                                 </Tooltip>
                             </Space>
                         }
                         bodyStyle={{ height: 285 }}
                     >
-                        {
-                            !loadingRecord &&
+                        {!loadingRecord && (
                             <div>
-                                Cliente: <strong>{record.cliente}</strong><br />
-                                Dui cliente: <strong>{record.dui_cliente}</strong> <br />
-                                IP: <strong>192.168.{record.red}.{record.ip}</strong><br />
-                                Precio de cuota: <strong>{formatoDinero(record.precio_cuota)}</strong><br />
-                                Cant. Cuotas: <strong>{record.cant_cuotas}</strong><br />
-                                Fecha de inicio: <strong>{verFecha(record.fecha_inicio)}</strong><br />
-                                Fecha de fin: <strong>{verFecha(record.fecha_fin)}</strong><br />
+                                Cliente: <strong>{record.cliente}</strong>
+                                <br />
+                                Dui cliente:{" "}
+                                <strong>{record.dui_cliente}</strong> <br />
+                                IP:{" "}
+                                <strong>
+                                    192.168.{record.red}.{record.ip}
+                                </strong>
+                                <br />
+                                Precio de cuota:{" "}
+                                <strong>
+                                    {formatoDinero(record.precio_cuota)}
+                                </strong>
+                                <br />
+                                Cant. Cuotas:{" "}
+                                <strong>{record.cant_cuotas}</strong>
+                                <br />
+                                Fecha de inicio:{" "}
+                                <strong>{verFecha(record.fecha_inicio)}</strong>
+                                <br />
+                                Fecha de fin:{" "}
+                                <strong>{verFecha(record.fecha_fin)}</strong>
+                                <br />
                             </div>
-                        }
+                        )}
                     </Card>
                 </Col>
                 <Col flex={16} offset={1}>
@@ -130,43 +193,59 @@ const ModalDetalle = props => {
                         title={
                             <Space>
                                 <strong>Cuotas</strong>
-                                {
-                                    !loadingCuotas &&
+                                {!loadingCuotas && (
                                     <Space>
                                         <Tooltip title="Descargar original">
-                                            <CloudDownloadOutlined key="downloadOriginal" onClick={() => download('original')} style={{ color: '#389e0d' }} />
+                                            <CloudDownloadOutlined
+                                                key="downloadOriginal"
+                                                onClick={() =>
+                                                    download("original")
+                                                }
+                                                style={{ color: "#389e0d" }}
+                                            />
                                         </Tooltip>
                                         <Tooltip title="Descargar copia">
-                                            <CloudDownloadOutlined key="downloadCopia" onClick={() => download('copia - cliente')} style={{ color: '#e1a61b' }} />
+                                            <CloudDownloadOutlined
+                                                key="downloadCopia"
+                                                onClick={() =>
+                                                    download("copia - cliente")
+                                                }
+                                                style={{ color: "#e1a61b" }}
+                                            />
                                         </Tooltip>
                                     </Space>
-                                }
+                                )}
                             </Space>
                         }
-                        bodyStyle={{ height: 285, overflowY: 'scroll' }}
+                        bodyStyle={{ height: 285, overflowY: "scroll" }}
                     >
-
                         <List
                             dataSource={cuotas}
-                            renderItem={item => (
-                            <List.Item key={item.codigo}>
-                                <List.Item.Meta
-                                    title={<strong>{item.id} - {verFecha(item.fecha_pago)}</strong>}
-                                    description={item.codigo}
-                                />
-                                <div>
-                                    {
-                                    item.cancelado
-                                    ?
-                                        <span style={{ color: '#389e0d' }}>Cancelado</span>
-                                    :
-                                        <span style={{ color: '#f5222d' }}>Pendiente</span>
-                                    }
-                                </div>
-                            </List.Item>
+                            renderItem={(item) => (
+                                <List.Item key={item.codigo}>
+                                    <List.Item.Meta
+                                        title={
+                                            <strong>
+                                                {item.id} -{" "}
+                                                {verFecha(item.fecha_pago)}
+                                            </strong>
+                                        }
+                                        description={item.codigo}
+                                    />
+                                    <div>
+                                        {item.cancelado ? (
+                                            <span style={{ color: "#389e0d" }}>
+                                                Cancelado
+                                            </span>
+                                        ) : (
+                                            <span style={{ color: "#f5222d" }}>
+                                                Pendiente
+                                            </span>
+                                        )}
+                                    </div>
+                                </List.Item>
                             )}
-                        >
-                        </List>
+                        ></List>
                         {loadingCuotas && (
                             <div className="loading-container">
                                 <Spin />
@@ -176,7 +255,7 @@ const ModalDetalle = props => {
                 </Col>
             </Row>
         </Modal>
-    )
-}
+    );
+};
 
 export default ModalDetalle;

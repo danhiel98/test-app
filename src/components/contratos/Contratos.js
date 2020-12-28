@@ -236,7 +236,7 @@ class Contratos extends Component {
                 tempLink.href = csvURL;
                 tempLink.setAttribute(
                     "download",
-                    `Talonario ${record.codigo}.pdf`
+                    `Contrato ${record.codigo}.pdf`
                 );
                 tempLink.click();
             })
