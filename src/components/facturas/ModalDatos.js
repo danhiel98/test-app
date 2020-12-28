@@ -101,8 +101,6 @@ const ModalDatos = (props) => {
                     return;
                 }
 
-                console.log('Antes de factura');
-
                 let factura = {
                     fecha: new Date(val.fecha),
                     cantidad_pagos: pagos.length,
@@ -117,8 +115,6 @@ const ModalDatos = (props) => {
                     ref_cliente: contrato.ref_cliente,
                     fecha_creacion: firebase.firestore.FieldValue.serverTimestamp(),
                 };
-
-                console.log(factura);
 
                 // Agregar factura y actualizar estado de los pagos a 'facturado'
                 await refFacturas.add(factura)
@@ -137,7 +133,6 @@ const ModalDatos = (props) => {
             })
             .catch((error) => {
                 message.warning("¡Verifique la información ingresada!");
-                console.log(error);
             })
             .finally(() => {
                 setLoading(false);
@@ -243,7 +238,6 @@ const ModalDatos = (props) => {
                                                 });
                                         })
                                         .catch(error => {
-                                            console.log('Hay un error en los pagos');
                                             console.log(error);
                                         })
                                 }
@@ -253,7 +247,6 @@ const ModalDatos = (props) => {
                     }
                 })
                 .catch(error => {
-                    console.log('Hay un error, crack');
                     console.log(error);
                 })
         } else {

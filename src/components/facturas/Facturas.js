@@ -1,11 +1,24 @@
 import React, { Component } from "react";
-import { message, Row, Col, Popover, Tooltip, Space, PageHeader, Input, Button, InputNumber } from "antd";
+import {
+    message,
+    Modal,
+    Row,
+    Col,
+    Popover,
+    Tooltip,
+    Space,
+    PageHeader,
+    Input,
+    Button,
+    InputNumber,
+} from "antd";
 import {
     InfoCircleOutlined,
     EditOutlined,
     StopOutlined,
     CloudDownloadOutlined,
-    CheckCircleOutlined
+    CheckCircleOutlined,
+    ExclamationCircleOutlined
 } from "@ant-design/icons";
 import app from "../../firebaseConfig";
 import { connect } from "react-redux";
@@ -15,25 +28,26 @@ import Factura from "../reportes/Factura";
 import { pdf } from "@react-pdf/renderer";
 import DetalleCliente from "../clientes/ModalDetalle";
 import ModalDatos from "./ModalDatos";
-import ModalDetalle from './ModalDetalle';
+import ModalDetalle from "./ModalDetalle";
 
 const { Search } = Input;
+const { confirm } = Modal;
+
 let ref = app.firestore();
 
-const zeroPad = (num, places) => String(num).padStart(places, '0');
+const zeroPad = (num, places) => String(num).padStart(places, "0");
 
 const SelectNumero = (props) => {
     let { record } = props;
     let numero = 0;
 
     let cambiarNumero = () => {
-
         if (numero <= 0) {
-            message.error('Debe introducir un número mayor a cero');
+            message.error("Debe introducir un número mayor a cero");
             return;
         }
 
-        ref.collection('facturas')
+        ref.collection("facturas")
             .doc(record.key)
             .update({
                 numero: zeroPad(numero, 6),
@@ -49,7 +63,10 @@ const SelectNumero = (props) => {
                 size="small"
                 min={1}
                 max={100000}
-                onChange={(val) => {numero = val; console.log(numero)}}
+                onChange={(val) => {
+                    numero = val;
+                    console.log(numero);
+                }}
                 onPressEnter={(ev) => cambiarNumero()}
             />
             <CheckCircleOutlined
@@ -67,6 +84,7 @@ class Facturas extends Component {
         this.mainRef = app.firestore();
         this.refFacturas = this.mainRef.collection("facturas");
         this.refClientes = this.mainRef.collection("clientes");
+        this.refPagos = this.mainRef.collection("pagos");
         this.opcFecha = { year: "numeric", month: "numeric", day: "numeric" };
 
         this.unsubscribe = null;
@@ -267,7 +285,9 @@ class Facturas extends Component {
                 dataIndex: "fecha",
                 render: (fecha) => (
                     <strong>
-                        {fecha.toDate().toLocaleDateString("es-SV", this.opcFecha)}
+                        {fecha
+                            .toDate()
+                            .toLocaleDateString("es-SV", this.opcFecha)}
                     </strong>
                 ),
             },
@@ -327,7 +347,7 @@ class Facturas extends Component {
                         <Tooltip title="Cancelar">
                             <StopOutlined
                                 key="cancel"
-                                onClick={() => console.log("cancel")}
+                                onClick={() => this.eliminar(record)}
                                 style={{ color: "#f5222d" }}
                             />
                         </Tooltip>
@@ -352,6 +372,72 @@ class Facturas extends Component {
             })
             .catch((error) => {
                 console.log(error);
+            });
+    };
+
+    eliminar = async (record) => {
+        let ultimaCuota = record.cuotas[record.cuotas.length - 1];
+        let numUltimaCuota = Number.parseInt(ultimaCuota.num_cuota);
+        let siguienteFacturado = false;
+
+        await this.refPagos
+            .doc(`${record.codigo_contrato}-${zeroPad(numUltimaCuota + 1, 2)}`)
+            .get()
+            .then((doc) => {
+                if (doc.exists) {
+                    if (doc.data().facturado) siguienteFacturado = true;
+                }
+            })
+            .catch((error) => {
+                message.error("Ocurrió un error al eliminar la factura");
+                console.log(error);
+            });
+
+        if (siguienteFacturado) {
+            message.error(
+                "¡Hay facturas más recientes, debe eliminar esas primero!"
+            );
+            return;
+        }
+
+        let me = this;
+
+        confirm({
+            title: "¿Está seguro que desea eliminar este registro?",
+            icon: <ExclamationCircleOutlined />,
+            content: "Eliminar información de factura",
+            okText: "Sí",
+            cancelText: "No",
+            onOk() {
+                me.eliminarFactura(record);
+            },
+        });
+    };
+
+    eliminarFactura = async (record) => {
+        this.refFacturas
+            .doc(record.key)
+            .delete()
+            .then(async () => {
+
+                await record.cuotas.forEach(async cuota => {
+                    await this.refPagos
+                    .doc(`${record.codigo_contrato}-${cuota.num_cuota}`)
+                    .get()
+                    .then((doc) => {
+                        if (doc.exists) {
+                            doc.ref.update({ facturado: false }) // Cambiar estado a pago
+                        }
+                    })
+                    .catch((error) => {
+                        message.error("Ocurrió un error al eliminar la factura");
+                        console.log(error);
+                    });
+                })
+                message.success("¡Se eliminó la factura correctamente!");
+            })
+            .catch((error) => {
+                message.error("¡Ocurrió un error al eliminar la factura!");
             });
     };
 
@@ -381,14 +467,13 @@ class Facturas extends Component {
                         fireRef={this.refContratos}
                     />
                 )}
-                {
-                    modalDetalle &&
+                {modalDetalle && (
                     <ModalDetalle
                         visible={modalDetalle}
                         codigoFactura={registro.key}
                         handleCancel={this.handleCancel}
                     />
-                }
+                )}
                 {modalDetalleCliente && (
                     <DetalleCliente
                         visible={modalDetalleCliente}

@@ -492,6 +492,11 @@ class Pagos extends Component {
     eliminarPago = async (record) => {
         let siguienteCancelada = false;
 
+        if (record.facturado) {
+            message.error('¡Este pago ya fue facturado!')
+            return;
+        }
+
         await this.refContratos
             .doc(record.codigo_contrato)
             .get()
