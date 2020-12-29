@@ -461,7 +461,7 @@ class Pagos extends Component {
                                                     message.success("Pago registrado");
                                                 });
 
-                                            contrato.ref_cliente
+                                            d_contrato.ref
                                             .update({
                                                 ultimo_mes_pagado: cuota.fecha_pago
                                             });
@@ -561,7 +561,6 @@ class Pagos extends Component {
                     .get()
                     .then(async (d_contrato) => {
                         if (d_contrato.exists) {
-                            let contrato = d_contrato.data();
 
                             d_contrato.ref
                             .collection("cuotas")
@@ -588,7 +587,7 @@ class Pagos extends Component {
                                     .catch(error => console.log(error));
                             }
 
-                            contrato.ref_cliente
+                            d_contrato.ref
                             .update({
                                 ultimo_mes_pagado: ultimoMesPagado
                             })

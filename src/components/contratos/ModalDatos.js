@@ -104,13 +104,14 @@ const ModalDatos = (props) => {
 
                 let contrato = {
                     estado: 'activo',
+                    eliminado: false,
                     dui_cliente: cliente.dui,
                     cliente: `${cliente.nombre} ${cliente.apellido}`,
-                    eliminado: false,
                     cant_cuotas: val.cuotas,
                     precio_cuota: val.precio_cuota,
                     velocidad: val.velocidad,
                     ref_cliente: cliente.ref,
+                    ultimo_mes_pagado: null,
                 }
 
                 contrato.codigo = record ? record.codigo : `R${val.red}-${zeroPad(val.ip, 3)}-${fechaInicio.format('MMYY')}-${fechaFin.format('MMYY')}`;
@@ -124,7 +125,7 @@ const ModalDatos = (props) => {
                 }
 
                 if (record) {
-                    editarRegistro(contrato)
+                    editarRegistro(contrato, cliente, val)
                     .then(() => {
                         message.success('¡Registro editado correctamente!');
                         form.resetFields();
@@ -183,10 +184,18 @@ const ModalDatos = (props) => {
         });
     }
 
-    const editarRegistro = async (contrato) => {
+    const editarRegistro = async (contrato, cliente, val) => {
         const ref = fireRef.doc(contrato.codigo);
 
-        await ref.update(contrato).then(async (docRef) => {
+        await ref
+        .update({
+            dui_cliente: cliente.dui,
+            cliente: `${cliente.nombre} ${cliente.apellido}`,
+            precio_cuota: val.precio_cuota,
+            velocidad: val.velocidad,
+            ref_cliente: cliente.ref,
+        })
+        .then(async (docRef) => {
             if (contrato.codigo !== record.codigo) await fireRef.doc(record.codigo).delete();
 
             if (contrato.red !== record.red || contrato.ip !== record.ip) {
