@@ -405,12 +405,13 @@ class Pagos extends Component {
             this.refContratos
                 .doc(codContrato)
                 .get()
-                .then(async (contrato) => {
-                    if (contrato.exists) {
+                .then(async (d_contrato) => {
+                    if (d_contrato.exists) {
+                        let contrato = d_contrato.data();
                         let numCuota = Number.parseInt(_codContrato[4]);
 
                         if (numCuota > 1) { // Para validar si la anterior ya fue pagada
-                            await contrato.ref
+                            await d_contrato.ref
                                 .collection("cuotas")
                                 .doc(`${zeroPad(numCuota - 1, 2)}`)
                                 .get()
@@ -429,46 +430,44 @@ class Pagos extends Component {
                             }
                         }
 
-                        contrato.ref
+                        d_contrato.ref
                             .collection("cuotas")
                             .doc(`${zeroPad(numCuota, 2)}`)
                             .get()
-                            .then((cuota) => {
-                                if (cuota.exists) {
-                                    let d_cuota = cuota.data();
-                                    let d_contrato = contrato.data();
+                            .then((d_cuota) => {
+                                if (d_cuota.exists) {
+                                    let cuota = d_cuota.data();
 
                                     this.refPagos
-                                        .doc(d_cuota.codigo)
+                                        .doc(cuota.codigo)
                                         .set({
-                                            cantidad: d_cuota.cantidad,
-                                            codigo_contrato: contrato.id,
-                                            ref_cliente: d_contrato.ref_cliente,
-                                            nombre_cliente: d_contrato.cliente,
-                                            numero_cuota: cuota.id,
-                                            fecha_cuota: d_cuota.fecha_pago,
+                                            cantidad: cuota.cantidad,
+                                            codigo_contrato: d_contrato.id,
+                                            ref_cliente: contrato.ref_cliente,
+                                            nombre_cliente: contrato.cliente,
+                                            numero_cuota: d_cuota.id,
+                                            fecha_cuota: cuota.fecha_pago,
                                             fecha_pago: null,
                                             mora: 0,
                                             mora_exonerada: false,
                                             facturado: false,
-                                            fecha_creacion: firebase.firestore.FieldValue.serverTimestamp(),
+                                            fecha_creacion: firebase.firestore.FieldValue.serverTimestamp()
                                         })
                                         .then((doc) => {
-                                            cuota.ref
+                                            d_cuota.ref
                                                 .update({ cancelado: true })
                                                 .then(() => {
-                                                    this.setState({
-                                                        barcode: "",
-                                                    });
-                                                    message.success(
-                                                        "Pago registrado"
-                                                    );
+                                                    this.setState({ barcode: "" });
+                                                    message.success("Pago registrado");
                                                 });
+
+                                            contrato.ref_cliente
+                                            .update({
+                                                ultimo_mes_pagado: cuota.fecha_pago
+                                            });
                                         })
                                         .catch((error) => {
-                                            message.error(
-                                                "Ocurrió un error, contacte con el administrador"
-                                            );
+                                            message.error("Ocurrió un error, contacte con el administrador");
                                             console.log(error);
                                         });
                                 }
@@ -550,6 +549,9 @@ class Pagos extends Component {
     };
 
     eliminarPago = async (record) => {
+        let numeroCuota = Number.parseInt(record.numero_cuota);
+        let ultimoMesPagado = null;
+
         await this.refPagos
             .doc(`${record.key}`)
             .delete()
@@ -557,23 +559,39 @@ class Pagos extends Component {
                 this.refContratos
                     .doc(record.codigo_contrato)
                     .get()
-                    .then((contrato) => {
-                        if (contrato.exists) {
-                            contrato.ref
-                                .collection("cuotas")
-                                .doc(record.numero_cuota)
-                                .get()
-                                .then((cuota) => {
-                                    if (cuota.exists) {
-                                        cuota.ref
-                                            .update({ cancelado: false })
-                                            .then(() => {
-                                                message.success(
-                                                    "Pago eliminado"
-                                                );
-                                            });
-                                    }
-                                });
+                    .then(async (d_contrato) => {
+                        if (d_contrato.exists) {
+                            let contrato = d_contrato.data();
+
+                            d_contrato.ref
+                            .collection("cuotas")
+                            .doc(record.numero_cuota)
+                            .get()
+                            .then((cuota) => {
+                                if (cuota.exists) {
+                                    cuota.ref
+                                        .update({ cancelado: false })
+                                        .then(() => {
+                                            message.success("Pago eliminado");
+                                        });
+                                }
+                            });
+
+                            if (numeroCuota > 1) {
+                                await d_contrato.ref
+                                    .collection("cuotas")
+                                    .doc(zeroPad(numeroCuota - 1, 2))
+                                    .get()
+                                    .then((cuota) => {
+                                        ultimoMesPagado = cuota.data().fecha_pago
+                                    })
+                                    .catch(error => console.log(error));
+                            }
+
+                            contrato.ref_cliente
+                            .update({
+                                ultimo_mes_pagado: ultimoMesPagado
+                            })
                         } else {
                             message.error("La cuota NO existe");
                         }

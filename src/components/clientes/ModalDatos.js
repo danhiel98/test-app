@@ -75,7 +75,8 @@ const ModalDatos = (props) => {
             telefono: val.telefono,
             direccion: val.direccion,
             eliminado: false,
-            fecha_creacion: firebase.firestore.Timestamp.now()
+            fecha_creacion: firebase.firestore.Timestamp.now(),
+            ultimo_mes_pagado: null,
         })
         .then((docRef) => {
             message.success('¡Registro insertado correctamente!');

@@ -415,6 +415,11 @@ class Facturas extends Component {
     };
 
     eliminarFactura = async (record) => {
+        let _codContrato = record.codigo_contrato.split('-');
+        let _red = Number.parseInt(_codContrato[0].substr(1));
+        let _ip = Number.parseInt(_codContrato[1]);
+        let codContrato = `${zeroPad(_red, 4)}-${zeroPad(_ip, 4)}-${_codContrato[2]}-${_codContrato[3]}`;
+
         this.refFacturas
             .doc(record.key)
             .delete()
@@ -422,7 +427,7 @@ class Facturas extends Component {
 
                 await record.cuotas.forEach(async cuota => {
                     await this.refPagos
-                    .doc(`${record.codigo_contrato}-${cuota.num_cuota}`)
+                    .doc(`${codContrato}-${zeroPad(Number.parseInt(cuota.num_cuota), 4)}`)
                     .get()
                     .then((doc) => {
                         if (doc.exists) {
