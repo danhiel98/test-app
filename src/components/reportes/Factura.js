@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
         // border: 1,
         // borderColor: 'red',
         position: 'absolute',
-        marginTop: 430,
+        marginTop: 440,
         marginLeft: 10,
         display: 'flex',
         flexDirection: 'row',
@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
         // borderColor: 'red',
         marginLeft: 104,
         width: 50,
-        height: 15,
+        height: 16,
         textAlign: 'center'
     }
 });

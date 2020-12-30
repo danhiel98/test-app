@@ -65,7 +65,6 @@ const SelectNumero = (props) => {
                 max={100000}
                 onChange={(val) => {
                     numero = val;
-                    console.log(numero);
                 }}
                 onPressEnter={(ev) => cambiarNumero()}
             />
