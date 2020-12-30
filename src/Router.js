@@ -49,7 +49,8 @@ class Router extends Component
                     <App>
                         <Route exact path="/" component={Dashboard} />
                         <Route exact path="/clientes" component={Clientes} />
-                        <Route exact path="/contratos" component={Contratos} />
+                        {/* <Route exact path="/contratos" component={Contratos} /> */}
+                        <Route exact path="/contratos" render={() => <Contratos xd='Hola' />} />
                         <Route exact path="/pagos" component={Pagos} />
                         <Route exact path="/facturas" component={Facturas} />
                         <Route exact path="/mantenimientos" component={Mantenimientos} />

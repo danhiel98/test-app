@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 
-import { Card, Row, Col } from 'antd';
+import { Row, Col } from 'antd';
 import DashboardNavigation from '../components/navigation/DashboardNavigation';
+import ContratosMora from '../components/contratos/ContratosMora';
 
 class Dashboard extends Component
 {
@@ -12,13 +13,7 @@ class Dashboard extends Component
                 <DashboardNavigation />
                 <Row style={ { marginTop: "10px" } } gutter={24}>
                     <Col lg={24}>
-                        <Card
-                            bordered={false}
-                            bodyStyle={{
-                                padding: '45px 40px',
-                            }}
-                        >
-                        </Card>
+                        <ContratosMora atrasados={true} />
                     </Col>
                 </Row>
             </>

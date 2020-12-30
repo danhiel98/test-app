@@ -24,6 +24,7 @@ import ModalDetalle from "./ModalDetalle";
 import ModalDetalleCliente from "../clientes/ModalDetalle";
 import Contrato from "../reportes/Contrato";
 import { pdf } from "@react-pdf/renderer";
+import firebase from 'firebase';
 
 const { confirm } = Modal;
 const { Search } = Input;
@@ -35,7 +36,6 @@ class Contratos extends Component {
         this.refContratos = app.firestore().collection("contratos");
         this.refClientes = app.firestore().collection("clientes");
         this.refRedes = app.firestore().collection("redes");
-        this.refIPs = app.firestore().collection('ips');
         this.refPagos = app.firestore().collection("pagos");
         this.refMantenimientos = app.firestore().collection("mantenimientos");
         this.opcFecha = { year: "numeric", month: "short" };
@@ -43,11 +43,10 @@ class Contratos extends Component {
         this.unsubscribe = null;
         this.state = {
             loading: true,
+            registro: null,
             contratos: [],
             clientes: [],
             redes: [],
-            visible: false,
-            registro: null,
             modalDetalle: false,
             modalDetalleCliente: false,
             codigoCliente: null,
@@ -78,7 +77,8 @@ class Contratos extends Component {
                 red,
                 ip,
                 ref_cliente,
-                fecha_ingreso
+                fecha_ingreso,
+                ultimo_mes_pagado
             } = doc.data();
 
             fecha_inicio = this.verFecha(fecha_inicio);
@@ -107,7 +107,8 @@ class Contratos extends Component {
                 red,
                 ip,
                 ref_cliente,
-                fecha_ingreso
+                fecha_ingreso,
+                ultimo_mes_pagado
             });
         });
         this.setState({
@@ -154,12 +155,13 @@ class Contratos extends Component {
 
     componentDidMount() {
         this.unsubscribe = this.refContratos
-            .orderBy("fecha_ingreso", "desc")
+            .where('ultimo_mes_pagado', '<', firebase.firestore.Timestamp.now())
+            .orderBy('ultimo_mes_pagado', 'desc')
             .onSnapshot(this.obtenerContratos);
         this.refClientes
-            .orderBy("fecha_creacion", "desc")
+            .orderBy('fecha_creacion', 'desc')
             .onSnapshot(this.obtenerClientes);
-        this.refRedes.orderBy("numero").onSnapshot(this.obtenerRedes);
+        this.refRedes.orderBy('numero').onSnapshot(this.obtenerRedes);
     }
 
     componentDidUpdate(prevState, newState) {}
@@ -174,19 +176,10 @@ class Contratos extends Component {
         }
     }
 
-    modalData = (record) => {
-        this.setState({
-            visible: true,
-            registro: record,
-        });
-    };
-
     handleCancel = () => {
         this.setState({
-            registro: null,
             modalDetalle: false,
             modalDetalleCliente: false,
-            visible: false,
         });
     };
 
@@ -251,8 +244,8 @@ class Contratos extends Component {
     asignarColumnas() {
         return [
             {
-                title: "Código",
-                key: "codigo",
+                title: "Contrato",
+                key: "contrato",
                 sorter: {
                     compare: (a, b) => a.codigo - b.codigo,
                     multiple: 2,
@@ -309,12 +302,11 @@ class Contratos extends Component {
                 ),
             },
             {
-                title: "Fecha inicio",
-                dataIndex: "fecha_inicio",
-            },
-            {
-                title: "Fecha fin",
-                dataIndex: "fecha_fin",
+                title: "Última cuota cancelada",
+                key: "ultimo_mes_pagado",
+                render: (record) => (
+                    <strong>{this.verFecha(record.ultimo_mes_pagado)}</strong>
+                )
             },
             {
                 title: "Estado",
@@ -337,12 +329,6 @@ class Contratos extends Component {
                                 key="download"
                                 onClick={() => this.download(record)}
                                 style={{ color: "#389e0d" }}
-                            />
-                        </Tooltip>
-                        <Tooltip title="Editar">
-                            <EditOutlined
-                                onClick={() => this.modalData(record)}
-                                style={{ color: "#fa8c16" }}
                             />
                         </Tooltip>
                         <Tooltip title="Eliminar">
@@ -400,17 +386,7 @@ class Contratos extends Component {
         this.refContratos
             .doc(contrato.key)
             .delete()
-            .then(() => {
-
-                this.refIPs
-                .doc(`${contrato.red}-${contrato.ip}`)
-                .get()
-                .then(d_ip => {
-                    d_ip.ref
-                    .update({ libre: true })
-                })
-                message.success("Se eliminó el registro")
-            })
+            .then(() => message.success("Se eliminó el registro"))
             .catch((err) => message.error("Ocurrió un error"));
     };
 
@@ -431,7 +407,6 @@ class Contratos extends Component {
         const {
             contratos,
             loading,
-            visible,
             registro,
             clientes,
             redes,
@@ -442,19 +417,6 @@ class Contratos extends Component {
 
         return (
             <div>
-                {visible && (
-                    <ModalDatos
-                        visible={visible}
-                        title={
-                            registro ? "Editar información" : "Nuevo contrato"
-                        }
-                        clientes={clientes}
-                        redes={redes}
-                        handleCancel={this.handleCancel}
-                        record={registro}
-                        fireRef={this.refContratos}
-                    />
-                )}
                 {modalDetalle && (
                     <ModalDetalle
                         visible={modalDetalle}
@@ -472,7 +434,7 @@ class Contratos extends Component {
                 <PageHeader
                     className="site-page-header"
                     title="Contratos"
-                    subTitle="Lista de contratos"
+                    subTitle="Contratos con pagos pendientes"
                     extra={[
                         <Search
                             key="1"
@@ -480,14 +442,6 @@ class Contratos extends Component {
                             onSearch={(value) => this.buscar(value)}
                             style={{ width: 200 }}
                         />,
-                        <Button
-                            key="2"
-                            type="primary"
-                            ghost
-                            onClick={() => this.modalData()}
-                        >
-                            Nuevo
-                        </Button>,
                     ]}
                 />
                 {!this.columnas[0].filters.length && // eslint-disable-next-line
