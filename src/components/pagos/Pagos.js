@@ -374,21 +374,17 @@ class Pagos extends Component {
     }
 
     agregarPago = async (codigo) => {
-        let code = codigo.replace('\'','-');
-        if (
-            /(\d{4})(-|')(\d{4})(-|')(\d{4})(-|')(\d{4})(-|')\d{4}/.test(
-                code
-            )
-        ) {
+        let code = codigo.replace(/ /g, '');
+
+        if (/(\d{20})/.test(code)) {
             let exist = false;
             let anteriorCancelado = false;
-            let _codContrato = code.split('-');
-            let _red = Number.parseInt(_codContrato[0]);
-            let _ip = _codContrato[1].substr(1);
-            let codContrato = `R${_red}-${_ip}-${_codContrato[2]}-${_codContrato[3]}`;
+            let _red = Number.parseInt(code.substr(0, 4));
+            let _ip = code.substr(5, 3);
+            let codContrato = `R${_red}-${_ip}-${code.substr(8, 4)}-${code.substr(12, 4)}`;
 
             await this.refPagos
-                .doc(codigo)
+                .doc(code)
                 .get()
                 .then((pago) => {
                     if (pago.exists) {
@@ -408,7 +404,7 @@ class Pagos extends Component {
                 .then(async (d_contrato) => {
                     if (d_contrato.exists) {
                         let contrato = d_contrato.data();
-                        let numCuota = Number.parseInt(_codContrato[4]);
+                        let numCuota = Number.parseInt(code.substr(17, 4));
 
                         if (numCuota > 1) { // Para validar si la anterior ya fue pagada
                             await d_contrato.ref
@@ -417,21 +413,18 @@ class Pagos extends Component {
                                 .get()
                                 .then((doc) => {
                                     let cuota = doc.data();
-                                    if (cuota.cancelado)
-                                        anteriorCancelado = true;
+                                    if (cuota.cancelado) anteriorCancelado = true;
                                 });
 
                             // Si la cuota anterior a esta no ha sido cancelada, entonces no se puede agregar el pago
                             if (!anteriorCancelado) {
-                                message.error(
-                                    "La cuota anterior no ha sido cancelada aún"
-                                );
+                                message.error("La cuota anterior no ha sido cancelada aún");
                                 return;
                             }
                         }
 
                         d_contrato.ref
-                            .collection("cuotas")
+                            .collection('cuotas')
                             .doc(`${zeroPad(numCuota, 2)}`)
                             .get()
                             .then((d_cuota) => {
@@ -519,11 +512,7 @@ class Pagos extends Component {
                         .doc(zeroPad(numCuota + 1, 2))
                         .get()
                         .then((d_cuota) => {
-                            if (d_cuota.exists) {
-                                if (d_cuota.data().cancelado) {
-                                    siguienteCancelada = true;
-                                }
-                            }
+                            if (d_cuota.exists && d_cuota.data().cancelado) siguienteCancelada = true;
                         });
                 }
             });

@@ -35,8 +35,8 @@ class Seed extends Component
 
     makeData = () => {
         // this.seedRedes();
-        this.seedIps();
-        // this.seedCientes();
+        // this.seedIps();
+        this.seedCientes();
         // this.seedContratos();
         // this.seedMantenimientos();
         // this.seedFacturas();

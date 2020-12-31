@@ -166,7 +166,7 @@ const ModalDatos = (props) => {
 
             for (let i = 1; i <= cantCuotas; i++) {
                 let cuota = {
-                    codigo: `${zeroPad(_red, 4)}-0${_codContrato[1]}-${contrato.codigo.substr(8)}-${zeroPad(i, 4)}`,
+                    codigo: `${zeroPad(_red, 4)}0${_codContrato[1]}${contrato.codigo.substr(8, 4)}${contrato.codigo.substr(13, 4)}${zeroPad(i, 4)}`,
                     cantidad: contrato.precio_cuota,
                     fecha_pago: new Date(fechaPago.setMonth(fechaPago.getMonth() + 1)),
                     cancelado: false

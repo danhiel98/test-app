@@ -19,6 +19,10 @@ const months = [
     'diciembre'
 ]
 
+const verCodigoCuota = code => {
+    return `${code.substr(0, 4)} ${code.substr(4, 4)} ${code.substr(8, 4)} ${code.substr(12, 4)} ${code.substr(16, 4)}`;
+}
+
 const verFecha = fecha => {
     fecha = fecha.toDate();
     return `${fecha.getDate()}-${months[fecha.getMonth()]}-${fecha.getFullYear()}`;
@@ -97,8 +101,8 @@ const styles = StyleSheet.create({
     },
     barcodeText: {
         fontSize: 10,
-        marginLeft: 50,
-        width: 100,
+        marginLeft: 35,
+        width: 140,
         marginTop: 58,
         position: 'absolute'
     },
@@ -264,7 +268,7 @@ const Entry = props => {
                                     style={styles.barcode}
                                     src={`https://bwipjs-api.metafloor.com/?bcid=code128&text=${cuota.codigo}&scale=2`}
                                 />
-                                <Text style={styles.barcodeText}>{cuota.codigo}</Text>
+                                <Text style={styles.barcodeText}>{verCodigoCuota(cuota.codigo)}</Text>
                             </View>
                             <View style={styles.customerContainer}>
                                 <Text style={{ fontSize: 8.2, marginTop: 20 }}>

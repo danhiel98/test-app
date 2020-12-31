@@ -46,13 +46,22 @@ const obtenerContrato = async (ref) => {
     return auxRecord;
 };
 
+const verCodigoCuota = code => {
+    return `${code.substr(0, 4)} ${code.substr(4, 4)} ${code.substr(8, 4)} ${code.substr(12, 4)} ${code.substr(16, 4)}`;
+}
+
 const obtenerCuotas = async (ref) => {
     let auxCuotas = [];
+    let cuota = null;
+    let codigo = '';
+
     await ref.get().then((snapshot) => {
         snapshot.forEach((doc) => {
+            cuota = doc.data();
+
             auxCuotas.push({
                 id: doc.id,
-                ...doc.data(), // Well
+                ...doc.data()
             });
         });
     });
@@ -230,7 +239,7 @@ const ModalDetalle = (props) => {
                                                 {verFecha(item.fecha_pago)}
                                             </strong>
                                         }
-                                        description={item.codigo}
+                                        description={verCodigoCuota(item.codigo)}
                                     />
                                     <div>
                                         {item.cancelado ? (
