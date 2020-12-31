@@ -187,6 +187,11 @@ const ModalDatos = (props) => {
                                 message.error("La cuota anterior no ha sido cancelada aún");
                                 return;
                             }
+
+                            if (numCuota === cont.cant_cuotas) { // Cambiar estado de contrato a finalizado si cancela todas las cuotas
+                                await d_contrato.ref
+                                    .update({ estado: 'finalizado' });
+                            }
                         }
 
                         d_contrato.ref

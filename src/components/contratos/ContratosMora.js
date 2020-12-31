@@ -11,7 +11,6 @@ import {
 } from "antd";
 import {
     ExclamationCircleOutlined,
-    EditOutlined,
     DeleteOutlined,
     CloudDownloadOutlined,
 } from "@ant-design/icons";
@@ -19,7 +18,6 @@ import app from "../../firebaseConfig";
 import { connect } from "react-redux";
 import { push } from "connected-react-router";
 import Tabla from "../Tabla";
-import ModalDatos from "./ModalDatos";
 import ModalDetalle from "./ModalDetalle";
 import ModalDetalleCliente from "../clientes/ModalDetalle";
 import Contrato from "../reportes/Contrato";
@@ -247,8 +245,7 @@ class Contratos extends Component {
                 title: "Contrato",
                 key: "contrato",
                 sorter: {
-                    compare: (a, b) => a.codigo - b.codigo,
-                    multiple: 2,
+                    compare: (a, b) => a.red.toString().localeCompare(b.red.toString())
                 },
                 filters: [],
                 onFilter: (value, record) => record.codigo.indexOf(value) === 0,
@@ -262,8 +259,7 @@ class Contratos extends Component {
                 title: "Cliente",
                 key: "cliente",
                 sorter: {
-                    compare: (a, b) => a.cliente - b.cliente,
-                    multiple: 1,
+                    compare: (a, b) => a.cliente.localeCompare(b.cliente),
                 },
                 render: (record) => (
                     <Button
@@ -276,14 +272,16 @@ class Contratos extends Component {
             },
             {
                 title: "Velocidad",
-                dataIndex: "velocidad",
-                sorter: true,
+                key: "velocidad",
+                sorter: {
+                    compare: (a, b) => a.velocidad.toString().localeCompare(b.velocidad.toString())
+                },
                 filters: [],
                 onFilter: (value, record) => record.velocidad === value,
-                render: (velocidad) => (
+                render: (record) => (
                     <>
                         <Badge
-                            count={`${velocidad} Mb`}
+                            count={`${record.velocidad} Mb`}
                             style={{ backgroundColor: "#52c41a" }}
                         />
                     </>
@@ -291,12 +289,14 @@ class Contratos extends Component {
             },
             {
                 title: "Precio",
-                dataIndex: "precio_cuota",
-                sorter: true,
-                render: (precio_cuota) => (
+                key: "precio_cuota",
+                sorter: {
+                    compare: (a, b) => a.precio_cuota.toString().localeCompare(b.precio_cuota.toString())
+                },
+                render: (record) => (
                     <strong>
                         <span style={{ color: "#089D6C", fontSize: "1.2em" }}>
-                            {this.formatoDinero(precio_cuota)}
+                            {this.formatoDinero(record.precio_cuota)}
                         </span>
                     </strong>
                 ),
@@ -304,6 +304,9 @@ class Contratos extends Component {
             {
                 title: "Última cuota cancelada",
                 key: "ultimo_mes_pagado",
+                sorter: {
+                    compare: (a, b) => this.verFecha(a.ultimo_mes_pagado).localeCompare(this.verFecha(b.ultimo_mes_pagado))
+                },
                 render: (record) => (
                     <strong>{this.verFecha(record.ultimo_mes_pagado)}</strong>
                 )
@@ -408,7 +411,6 @@ class Contratos extends Component {
             contratos,
             loading,
             registro,
-            clientes,
             redes,
             codigoCliente,
             modalDetalle,

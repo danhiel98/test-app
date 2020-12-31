@@ -52,13 +52,9 @@ const verCodigoCuota = code => {
 
 const obtenerCuotas = async (ref) => {
     let auxCuotas = [];
-    let cuota = null;
-    let codigo = '';
 
     await ref.get().then((snapshot) => {
         snapshot.forEach((doc) => {
-            cuota = doc.data();
-
             auxCuotas.push({
                 id: doc.id,
                 ...doc.data()

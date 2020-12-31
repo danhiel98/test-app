@@ -268,6 +268,7 @@ class Facturas extends Component {
             {
                 title: "Cliente",
                 key: "cliente",
+                sorter: (a, b) => a.nombre_cliente.localeCompare(b.nombre_cliente),
                 render: (record) => (
                     <Button
                         type="link"
@@ -280,10 +281,7 @@ class Facturas extends Component {
             {
                 title: "Contrato",
                 key: "codigo_contrato",
-                sorter: {
-                    compare: (a, b) => a.codigo - b.codigo,
-                    multiple: 2,
-                },
+                sorter: (a, b) => a.codigo_contrato.substr(1).localeCompare(b.codigo_contrato.substr(1)),
                 filters: [],
                 onFilter: (value, record) => record.codigo_contrato.indexOf(value) === 0,
                 render: (record) => (
@@ -328,15 +326,16 @@ class Facturas extends Component {
             },
             {
                 title: "Cant. cuotas",
-                dataIndex: "cantidad_pagos",
-                sorter: true,
+                key: "cantidad_pagos",
+                sorter: (a, b) => a.cantidad_pagos.toString().localeCompare(b.cantidad_pagos.toString()),
                 align: "center",
-                render: (cantidad_pagos) => <strong>{cantidad_pagos}</strong>,
+                render: (record) => <strong>{record.cantidad_pagos}</strong>,
             },
             {
                 title: "Sumas",
-                dataIndex: "sumas",
-                render: (sumas) => <strong>{this.formatoDinero(sumas)}</strong>,
+                key: "sumas",
+                sorter: (a, b) => a.sumas.toString().localeCompare(b.sumas.toString()),
+                render: (record) => <strong>{this.formatoDinero(record.sumas)}</strong>,
             },
             {
                 title: "Mora",
@@ -349,12 +348,12 @@ class Facturas extends Component {
             },
             {
                 title: "Total",
-                dataIndex: "total",
-                sorter: true,
-                render: (total) => (
+                key: "total",
+                sorter: (a, b) => a.total.toString().localeCompare(b.total.toString()),
+                render: (record) => (
                     <strong>
                         <span style={{ color: "#089D6C", fontSize: "1.2em" }}>
-                            {this.formatoDinero(total)}
+                            {this.formatoDinero(record.total)}
                         </span>
                     </strong>
                 ),

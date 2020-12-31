@@ -101,7 +101,7 @@ class Clientes extends Component {
             {
                 title: "DUI",
                 key: "dui",
-                sorter: (a, b) => a.dui.length - b.dui.length,
+                sorter: (a, b) => a.dui.localeCompare(b.dui),
                 render: (record) => (
                     <Button type="link" onClick={() => this.verDetalle(record)}>
                         <strong>{record.dui}</strong>
@@ -110,22 +110,27 @@ class Clientes extends Component {
             },
             {
                 title: "NIT",
-                dataIndex: "nit",
-                render: (nit) => <strong>{nit}</strong>,
+                key: "nit",
+                sorter: (a, b) => a.nit.localeCompare(b.nit),
+                render: (record) => <strong>{record.nit}</strong>,
             },
             {
                 title: "Nombre",
-                dataIndex: "nombre",
+                key: "nombre",
+                sorter: (a, b) => a.nombre.localeCompare(b.nombre),
+                render: (record) => <span>{record.nombre}</span>,
             },
             {
                 title: "Teléfono",
-                dataIndex: "telefono",
-                sorter: true,
+                key: "telefono",
+                sorter: (a, b) => a.telefono.localeCompare(b.telefono),
+                render: (record) => <span>{record.telefono}</span>,
             },
             {
                 title: "Dirección",
-                dataIndex: "direccion",
-                sorter: true,
+                key: "direccion",
+                sorter: (a, b) => a.direccion.localeCompare(b.direccion),
+                render: (record) => <span>{record.direccion}</span>,
             },
             {
                 title: "Opciones",

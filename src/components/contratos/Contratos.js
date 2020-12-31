@@ -254,8 +254,7 @@ class Contratos extends Component {
                 title: "Código",
                 key: "codigo",
                 sorter: {
-                    compare: (a, b) => a.codigo - b.codigo,
-                    multiple: 2,
+                    compare: (a, b) => a.red.toString().localeCompare(b.red.toString()),
                 },
                 filters: [],
                 onFilter: (value, record) => record.codigo.indexOf(value) === 0,
@@ -268,10 +267,7 @@ class Contratos extends Component {
             {
                 title: "Cliente",
                 key: "cliente",
-                sorter: {
-                    compare: (a, b) => a.cliente - b.cliente,
-                    multiple: 1,
-                },
+                sorter: (a, b) => a.cliente.localeCompare(b.cliente),
                 render: (record) => (
                     <Button
                         type="link"
@@ -283,14 +279,14 @@ class Contratos extends Component {
             },
             {
                 title: "Velocidad",
-                dataIndex: "velocidad",
-                sorter: true,
+                key: "velocidad",
+                sorter: (a, b) => a.velocidad.toString().localeCompare(b.velocidad.toString()),
                 filters: [],
                 onFilter: (value, record) => record.velocidad === value,
-                render: (velocidad) => (
+                render: (record) => (
                     <>
                         <Badge
-                            count={`${velocidad} Mb`}
+                            count={`${record.velocidad} Mb`}
                             style={{ backgroundColor: "#52c41a" }}
                         />
                     </>
@@ -298,23 +294,41 @@ class Contratos extends Component {
             },
             {
                 title: "Precio",
-                dataIndex: "precio_cuota",
-                sorter: true,
-                render: (precio_cuota) => (
+                key: "precio_cuota",
+                sorter: {
+                    compare: (a, b) => a.precio_cuota.toString().localeCompare(b.precio_cuota.toString())
+                },
+                render: (record) => (
                     <strong>
                         <span style={{ color: "#089D6C", fontSize: "1.2em" }}>
-                            {this.formatoDinero(precio_cuota)}
+                            {this.formatoDinero(record.precio_cuota)}
                         </span>
                     </strong>
                 ),
             },
             {
                 title: "Fecha inicio",
-                dataIndex: "fecha_inicio",
+                key: "fecha_inicio",
+                sorter: {
+                    compare: (a, b) => a.fecha_inicio.localeCompare(b.fecha_inicio)
+                },
+                render: (record) => (
+                    <span>
+                        {record.fecha_inicio}
+                    </span>
+                )
             },
             {
                 title: "Fecha fin",
-                dataIndex: "fecha_fin",
+                key: "fecha_fin",
+                sorter: {
+                    compare: (a, b) => a.fecha_fin.localeCompare(b.fecha_fin)
+                },
+                render: (record) => (
+                    <span>
+                        {record.fecha_fin}
+                    </span>
+                )
             },
             {
                 title: "Estado",

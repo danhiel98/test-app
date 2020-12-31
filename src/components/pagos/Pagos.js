@@ -255,10 +255,7 @@ class Pagos extends Component {
             {
                 title: "Contrato",
                 key: "codigo_contrato",
-                sorter: {
-                    compare: (a, b) => a.codigo - b.codigo,
-                    multiple: 2,
-                },
+                sorter: (a, b) => a.codigo_contrato.substr(1).localeCompare(b.codigo_contrato.substr(1)),
                 filters: [],
                 onFilter: (value, record) => record.codigo_contrato.indexOf(value) === 0,
                 render: (record) => (
@@ -275,6 +272,9 @@ class Pagos extends Component {
             {
                 title: "Cliente",
                 key: "nombre_cliente",
+                sorter: {
+                    compare: (a, b) => a.nombre_cliente.localeCompare(b.nombre_cliente),
+                },
                 render: (record) => (
                     <Button
                         type="link"
@@ -288,14 +288,20 @@ class Pagos extends Component {
             },
             {
                 title: "Cantidad",
-                dataIndex: "cantidad",
-                render: (cantidad) => (
-                    <strong>{formatoDinero(cantidad)}</strong>
+                key: "cantidad",
+                sorter: {
+                    compare: (a, b) => a.cantidad.toString().localeCompare(b.cantidad.toString())
+                },
+                render: (record) => (
+                    <strong>{formatoDinero(record.cantidad)}</strong>
                 ),
             },
             {
                 title: "Cuota",
                 key: "numero_cuota",
+                sorter: {
+                    compare: (a, b) => a.numero_cuota.localeCompare(b.numero_cuota)
+                },
                 render: (record) => (
                     <Space>
                         {`${record.numero_cuota} - ${verFecha(record.fecha_cuota)}`}
@@ -439,6 +445,10 @@ class Pagos extends Component {
                             if (!anteriorCancelado) {
                                 message.error("La cuota anterior no ha sido cancelada aún");
                                 return;
+                            }
+
+                            if (numCuota === contrato.cant_cuotas) { // Cambiar estado de contrato a finalizado si cancela todas las cuotas
+                                await d_contrato.ref.update({ estado: 'finalizado' });
                             }
                         }
 
