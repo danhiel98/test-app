@@ -120,12 +120,15 @@ class Pagos extends Component {
         super(props);
 
         this.refPagos = ref.collection("pagos");
+        this.refRedes = app.firestore().collection("redes");
         this.refContratos = ref.collection("contratos");
         this.unsubscribe = null;
+
         this.state = {
             busqueda: "",
             loading: true,
             pagos: [],
+            redes: [],
             barcode: "",
             codigoContrato: "",
             codigoCliente: "",
@@ -136,15 +139,27 @@ class Pagos extends Component {
     }
 
     hide = () => {
-        this.setState({
-            selectFechaVisible: false,
-        });
+        this.setState({ selectFechaVisible: false });
     };
 
     handleVisibleChange = (selectFechaVisible) => {
         this.setState({ selectFechaVisible });
     };
 
+    obtenerRedes = (qs) => {
+        const redes = [];
+
+        qs.forEach((doc) => {
+            let { numero } = doc.data();
+
+            redes.push({
+                key: doc.id,
+                numero: numero,
+            });
+        });
+
+        this.setState({redes});
+    };
 
     obtenerPagos = (querySnapshot) => {
         const pagos = [];
@@ -169,7 +184,9 @@ class Pagos extends Component {
             if (
                 busqueda &&
                 codigo_contrato.toLowerCase().indexOf(busqueda) === -1 &&
-                nombre_cliente.toLowerCase().indexOf(busqueda) === -1
+                nombre_cliente.toLowerCase().indexOf(busqueda) === -1 &&
+                verFecha(fecha_cuota).toLowerCase().indexOf(busqueda) === -1 &&
+                cantidad.toString().indexOf(busqueda) === -1
             ) {
                 return;
             }
@@ -200,11 +217,13 @@ class Pagos extends Component {
         this.refPagos
             .orderBy("fecha_creacion", "desc")
             .onSnapshot(this.obtenerPagos);
+
+        this.refRedes.orderBy("numero").onSnapshot(this.obtenerRedes);
     }
 
     buscar(valor) {
-        if (valor !== this.state.busqueda) {
-            this.setState({ busqueda: valor });
+        if (valor.toLowerCase() !== this.state.busqueda) {
+            this.setState({ busqueda: valor.toLowerCase() });
             this.refPagos
                 .get()
                 .then((querySnapshot) => this.obtenerPagos(querySnapshot));
@@ -241,7 +260,7 @@ class Pagos extends Component {
                     multiple: 2,
                 },
                 filters: [],
-                onFilter: (value, record) => record.codigo.indexOf(value) === 0,
+                onFilter: (value, record) => record.codigo_contrato.indexOf(value) === 0,
                 render: (record) => (
                     <Button
                         type="link"
@@ -590,6 +609,7 @@ class Pagos extends Component {
     render() {
         const {
             pagos,
+            redes,
             loading,
             detalleContrato,
             detalleCliente,
@@ -639,6 +659,17 @@ class Pagos extends Component {
                         handleCancel={this.handleCancel}
                     />
                 )}
+
+                {
+                    !this.columnas[0].filters.length && // eslint-disable-next-line
+                    redes.map((red) => {
+                        this.columnas[0].filters.push({
+                            text: `Red ${red.numero}`,
+                            value: `R${red.numero}`,
+                        });
+                    })
+                }
+
                 <Tabla
                     titulo={
                         <>

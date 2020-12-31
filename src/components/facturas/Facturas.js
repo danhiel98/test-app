@@ -29,6 +29,7 @@ import { pdf } from "@react-pdf/renderer";
 import DetalleCliente from "../clientes/ModalDetalle";
 import ModalDatos from "./ModalDatos";
 import ModalDetalle from "./ModalDetalle";
+import DetalleContrato from "../contratos/ModalDetalle";
 
 const { Search } = Input;
 const { confirm } = Modal;
@@ -83,6 +84,7 @@ class Facturas extends Component {
         this.mainRef = app.firestore();
         this.refFacturas = this.mainRef.collection("facturas");
         this.refClientes = this.mainRef.collection("clientes");
+        this.refRedes = this.mainRef.collection("redes");
         this.refPagos = this.mainRef.collection("pagos");
         this.opcFecha = { year: "numeric", month: "numeric", day: "numeric" };
 
@@ -90,11 +92,14 @@ class Facturas extends Component {
         this.state = {
             loading: true,
             facturas: [],
+            redes: [],
             clientes: [],
             visible: false,
             registro: null,
             modalDetalle: false,
             modalDetalleCliente: false,
+            modalDetalleContrato: false,
+            codigoContrato: null,
             codigoCliente: null,
         };
     }
@@ -104,6 +109,7 @@ class Facturas extends Component {
             style: "currency",
             currency: "USD",
         }).format(num);
+
 
     obtenerFacturas = (qs) => {
         const facturas = [];
@@ -196,9 +202,12 @@ class Facturas extends Component {
         this.unsubscribe = this.refFacturas
             .orderBy("fecha_creacion", "desc")
             .onSnapshot(this.obtenerFacturas);
+
         this.refClientes
             .orderBy("fecha_creacion", "desc")
             .onSnapshot(this.obtenerClientes);
+
+        this.refRedes.orderBy("numero").onSnapshot(this.obtenerRedes);
     }
 
     buscar(valor) {
@@ -221,6 +230,8 @@ class Facturas extends Component {
             registro: null,
             modalDetalle: false,
             modalDetalleCliente: false,
+            modalDetalleContrato: false,
+            codigoContrato: null,
             visible: false,
         });
     };
@@ -238,6 +249,11 @@ class Facturas extends Component {
     verDetalle = (record) => {
         this.setState({ registro: record });
         this.setState({ modalDetalle: true });
+    };
+
+    verDetalleContrato = (codigo) => {
+        this.setState({ codigoContrato: codigo });
+        this.setState({ modalDetalleContrato: true });
     };
 
     verDetalleCliente = (record) => {
@@ -258,6 +274,26 @@ class Facturas extends Component {
                         onClick={() => this.verDetalleCliente(record)}
                     >
                         <strong>{record.nombre_cliente}</strong>
+                    </Button>
+                ),
+            },
+            {
+                title: "Contrato",
+                key: "codigo_contrato",
+                sorter: {
+                    compare: (a, b) => a.codigo - b.codigo,
+                    multiple: 2,
+                },
+                filters: [],
+                onFilter: (value, record) => record.codigo_contrato.indexOf(value) === 0,
+                render: (record) => (
+                    <Button
+                        type="link"
+                        onClick={() =>
+                            this.verDetalleContrato(record.codigo_contrato)
+                        }
+                    >
+                        <strong>{record.codigo_contrato}</strong>
                     </Button>
                 ),
             },
@@ -448,6 +484,7 @@ class Facturas extends Component {
     render() {
         const {
             facturas,
+            redes,
             loading,
             visible,
             registro,
@@ -455,6 +492,8 @@ class Facturas extends Component {
             codigoCliente,
             modalDetalle,
             modalDetalleCliente,
+            modalDetalleContrato,
+            codigoContrato,
         } = this.state;
 
         return (
@@ -485,6 +524,13 @@ class Facturas extends Component {
                         handleCancel={this.handleCancel}
                     />
                 )}
+                {modalDetalleContrato && (
+                    <DetalleContrato
+                        visible={modalDetalleContrato}
+                        codigoContrato={codigoContrato}
+                        handleCancel={this.handleCancel}
+                    />
+                )}
                 <PageHeader
                     className="site-page-header"
                     title="Facturas"
@@ -506,10 +552,10 @@ class Facturas extends Component {
                         </Button>,
                     ]}
                 />
-                {/* {
-                    !this.columnas[0].filters.length && // eslint-disable-next-line
+                {
+                    !this.columnas[1].filters.length && // eslint-disable-next-line
                     redes.map(red => {
-                        this.columnas[0].filters.push(
+                        this.columnas[1].filters.push(
                             {
                                 text: `Red ${red.numero}`,
                                 value: `R${red.numero}`,
@@ -517,18 +563,6 @@ class Facturas extends Component {
                         );
                     })
                 }
-                {
-                    !this.columnas[2].filters.length &&
-                    facturas.map(contrato => contrato.velocidad)
-                    .filter((value, index, self) => self.indexOf(value) === index)
-                    .sort((a, b) => a - b) // eslint-disable-next-line
-                    .map(velocidad => {
-                        this.columnas[2].filters.push({
-                            text: `${velocidad} Mb`,
-                            value: velocidad
-                        });
-                    })
-                } */}
                 <Tabla
                     columnas={this.columnas}
                     data={facturas}
