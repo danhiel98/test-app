@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import { connect } from "react-redux";
 import Tabla from "../Tabla";
 import DetalleContrato from "../contratos/ModalDetalle";
 import DetalleCliente from "../clientes/ModalDetalle";
@@ -125,6 +126,7 @@ class Pagos extends Component {
         this.unsubscribe = null;
 
         this.state = {
+            user: props.user.user,
             busqueda: "",
             loading: true,
             pagos: [],
@@ -471,7 +473,8 @@ class Pagos extends Component {
                                             mora: 0,
                                             mora_exonerada: false,
                                             facturado: false,
-                                            fecha_creacion: firebase.firestore.FieldValue.serverTimestamp()
+                                            fecha_creacion: firebase.firestore.FieldValue.serverTimestamp(),
+                                            usuario: this.state.user.email
                                         })
                                         .then((doc) => {
                                             d_cuota.ref
@@ -708,4 +711,10 @@ class Pagos extends Component {
     }
 }
 
-export default Pagos;
+function mapStateToProps(state, ownProps) {
+    return {
+        user: state.user,
+    };
+}
+
+export default connect(mapStateToProps)(Pagos);

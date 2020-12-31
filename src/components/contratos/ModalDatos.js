@@ -10,7 +10,7 @@ const { Option } = Select;
 
 const ModalDatos = (props) => {
     const [form] = Form.useForm();
-    const { fireRef, record, clientes } = props;
+    const { fireRef, record, clientes, user } = props;
 
     const [loading, setLoading] = useState(false);
     const [red, setRed] = useState(null);
@@ -112,6 +112,7 @@ const ModalDatos = (props) => {
                     velocidad: val.velocidad,
                     ref_cliente: cliente.ref,
                     ultimo_mes_pagado: null,
+                    usuario: user.email
                 }
 
                 contrato.codigo = record ? record.codigo : `R${val.red}-${zeroPad(val.ip, 3)}-${fechaInicio.format('MMYY')}-${fechaFin.format('MMYY')}`;

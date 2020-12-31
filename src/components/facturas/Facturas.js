@@ -90,6 +90,7 @@ class Facturas extends Component {
 
         this.unsubscribe = null;
         this.state = {
+            user: props.user.user,
             loading: true,
             facturas: [],
             redes: [],
@@ -493,6 +494,7 @@ class Facturas extends Component {
             modalDetalleCliente,
             modalDetalleContrato,
             codigoContrato,
+            user
         } = this.state;
 
         return (
@@ -503,6 +505,7 @@ class Facturas extends Component {
                         title={
                             registro ? "Editar información" : "Nueva factura"
                         }
+                        user={user}
                         clientes={clientes}
                         handleCancel={this.handleCancel}
                         record={registro}

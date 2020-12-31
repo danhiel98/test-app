@@ -66,7 +66,7 @@ const fechaMayor = (fecha, fechaComparacion) => {
 
 const ModalDatos = (props) => {
     const [form] = Form.useForm();
-    const { record, clientes } = props;
+    const { record, clientes, user } = props;
 
     const [loading, setLoading] = useState(false);
     const [contrato, setContrato] = useState(null);
@@ -114,6 +114,7 @@ const ModalDatos = (props) => {
                     nombre_cliente: contrato.cliente,
                     ref_cliente: contrato.ref_cliente,
                     fecha_creacion: firebase.firestore.FieldValue.serverTimestamp(),
+                    usuario: user.email
                 };
 
                 // Agregar factura y actualizar estado de los pagos a 'facturado'

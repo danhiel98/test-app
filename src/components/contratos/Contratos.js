@@ -42,6 +42,7 @@ class Contratos extends Component {
 
         this.unsubscribe = null;
         this.state = {
+            user: props.user.user,
             loading: true,
             contratos: [],
             clientes: [],
@@ -452,6 +453,7 @@ class Contratos extends Component {
             codigoCliente,
             modalDetalle,
             modalDetalleCliente,
+            user
         } = this.state;
 
         return (
@@ -462,6 +464,7 @@ class Contratos extends Component {
                         title={
                             registro ? "Editar información" : "Nuevo contrato"
                         }
+                        user={user}
                         clientes={clientes}
                         redes={redes}
                         handleCancel={this.handleCancel}
