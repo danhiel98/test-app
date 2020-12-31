@@ -91,6 +91,7 @@ class Mantenimientos extends Component
             {
                 title: 'Contrato',
                 key: 'codigo_contrato',
+                sorter: (a, b) => a.codigo_contrato.substr(1).localeCompare(b.codigo_contrato.substr(1)),
                 render: record => (
                     <Button type="link" onClick={() => this.verDetalleContrato(record.codigo_contrato)}>
                         <strong>{ record.codigo_contrato }</strong>
@@ -100,6 +101,7 @@ class Mantenimientos extends Component
             {
                 title: 'Cliente',
                 key: 'nombre_cliente',
+                sorter: (a, b) => a.nombre_cliente.localeCompare(b.nombre_cliente),
                 render: record => (
                     <Button type="link" onClick={() => this.verDetalleCliente(record.ref_cliente.id)}>
                         <strong>{ record.nombre_cliente }</strong>
@@ -115,12 +117,16 @@ class Mantenimientos extends Component
             },
             {
                 title: 'Dirección',
-                dataIndex: 'direccion',
-                sorter: true
+                key: 'direccion',
+                sorter: (a, b) => a.direccion.localeCompare(b.direccion),
+                render: (record) => (
+                    <span>{record.direccion}</span>
+                )
             },
             {
                 title: 'Motivo',
                 key: 'motivo',
+                sorter: (a, b) => a.motivo.localeCompare(b.motivo),
                 render: record => (
                     <Popover content={<div style={{ width: 400 }}>{record.descripcion}</div>} title="Detalle">
                         {record.motivo}

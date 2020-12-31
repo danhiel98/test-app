@@ -164,7 +164,7 @@ const ModalDatos = (props) => {
             if (!ip) throw new Error('Introduzca la direccion IP')
             if (ip <= 0 || ip >= 255 || isNaN(ip)) throw new Error('La IP ingresada no es válida')
 
-            await refContrato.where('red', '==', red).where('ip', '==', ip).where('activo', '==', true)
+            await refContrato.where('red', '==', red).where('ip', '==', ip).where('eliminado', '==', false)
             .get()
             .then(qs => {
                 setContrato(null);

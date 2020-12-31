@@ -272,9 +272,7 @@ class Pagos extends Component {
             {
                 title: "Cliente",
                 key: "nombre_cliente",
-                sorter: {
-                    compare: (a, b) => a.nombre_cliente.localeCompare(b.nombre_cliente),
-                },
+                sorter: (a, b) => a.nombre_cliente.localeCompare(b.nombre_cliente),
                 render: (record) => (
                     <Button
                         type="link"
