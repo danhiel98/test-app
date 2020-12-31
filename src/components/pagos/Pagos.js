@@ -327,7 +327,7 @@ class Pagos extends Component {
                         <Space size="small">
                             <strong style={style}>{formatoDinero(record.mora)}</strong>
                             {
-                                record.mora > 0 &&
+                                (record.mora > 0 && !record.facturado) &&
                                 <Tooltip title="Alternar exoneración">
                                     <ExceptionOutlined
                                         disabled={record.mora === 0}

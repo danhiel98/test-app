@@ -35,9 +35,9 @@ class Seed extends Component
 
     makeData = () => {
         // this.seedRedes();
-        // this.seedIps();
+        this.seedIps();
         // this.seedCientes();
-        this.seedContratos();
+        // this.seedContratos();
         // this.seedMantenimientos();
         // this.seedFacturas();
     }
@@ -104,7 +104,7 @@ class Seed extends Component
                     this.refIps.doc(`${redes[i].numero}-${j}`).set({
                         red: redes[i].numero,
                         numero: j,
-                        libre: faker.random.boolean()
+                        libre: true
                     })
                     .then(doc => {
                         if (redes.length === 2) {

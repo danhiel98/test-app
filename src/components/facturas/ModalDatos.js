@@ -224,17 +224,11 @@ const ModalDatos = (props) => {
                                                 .update({ cancelado: true })
                                                 .then(async () => {
                                                     setBarcode("");
-                                                    form.setFieldsValue({
-                                                        id_cliente:
-                                                            cont.ref_cliente.id,
-                                                    });
-                                                    await cargarContratos(
-                                                        cont.ref_cliente.id
-                                                    );
-                                                    form.setFieldsValue({
-                                                        id_contrato:
-                                                            cont.codigo,
-                                                    });
+                                                    form.setFieldsValue({ id_cliente: cont.ref_cliente.id });
+                                                    await cargarContratos(cont.ref_cliente.id);
+                                                    form.setFieldsValue({ id_contrato: cont.codigo });
+                                                    d_contrato.ref
+                                                    .update({ ultimo_mes_pagado: cuota.fecha_pago })
                                                     cargarPagos(cont.codigo);
                                                     message.success(
                                                         "Pago registrado"
@@ -279,17 +273,18 @@ const ModalDatos = (props) => {
 
     const eliminarPago = async (record) => {
         let siguienteCancelada = false;
+        let numeroCuota = Number.parseInt(record.numero_cuota);
+        let ultimoMesPagado = null;
 
-        await refContratos
+        await refContratos // Validar si la siguiente cuota ya fue cancelada
             .doc(record.codigo_contrato)
             .get()
             .then(async (d_contrato) => {
                 if (d_contrato.exists) {
-                    let numCuota = Number.parseInt(record.numero_cuota);
 
                     await d_contrato.ref
                         .collection("cuotas")
-                        .doc(zeroPad(numCuota + 1, 2))
+                        .doc(zeroPad(numeroCuota + 1, 2))
                         .get()
                         .then((d_cuota) => {
                             if (d_cuota.exists) {
@@ -314,7 +309,7 @@ const ModalDatos = (props) => {
                 refContratos
                     .doc(record.codigo_contrato)
                     .get()
-                    .then((contrato) => {
+                    .then(async (contrato) => {
                         if (contrato.exists) {
                             contrato.ref
                                 .collection("cuotas")
@@ -334,6 +329,22 @@ const ModalDatos = (props) => {
                                             });
                                     }
                                 });
+
+                            if (numeroCuota > 1) {
+                                await contrato.ref
+                                    .collection("cuotas")
+                                    .doc(zeroPad(numeroCuota - 1, 2))
+                                    .get()
+                                    .then((cuota) => {
+                                        ultimoMesPagado = cuota.data().fecha_pago
+                                    })
+                                    .catch(error => console.log(error));
+                            }
+
+                            contrato.ref
+                            .update({
+                                ultimo_mes_pagado: ultimoMesPagado
+                            })
                         } else {
                             message.error("La cuota NO existe");
                         }
