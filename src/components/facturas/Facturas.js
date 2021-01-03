@@ -30,6 +30,7 @@ import DetalleCliente from "../clientes/ModalDetalle";
 import ModalDatos from "./ModalDatos";
 import ModalDetalle from "./ModalDetalle";
 import DetalleContrato from "../contratos/ModalDetalle";
+import moment from 'moment';
 
 const { Search } = Input;
 const { confirm } = Modal;
@@ -37,6 +38,11 @@ const { confirm } = Modal;
 let ref = app.firestore();
 
 const zeroPad = (num, places) => String(num).padStart(places, "0");
+
+const cFecha = (fecha) => {
+    if (fecha) return fecha.toDate();
+    else return new Date();
+}
 
 const SelectNumero = (props) => {
     let { record } = props;
@@ -317,10 +323,10 @@ class Facturas extends Component {
             {
                 title: "Fecha",
                 dataIndex: "fecha",
+                sorter: (a, b) => moment(cFecha(a.fecha)).unix() - moment(cFecha(b.fecha)).unix(),
                 render: (fecha) => (
                     <strong>
-                        {fecha
-                            .toDate()
+                        {cFecha(fecha)
                             .toLocaleDateString("es-SV", this.opcFecha)}
                     </strong>
                 ),

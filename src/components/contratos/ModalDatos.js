@@ -178,7 +178,6 @@ const ModalDatos = (props) => {
         })
         .then(doc => {
             statusIP(`${contrato.red}-${contrato.ip}`, false);
-            console.log('Todo bien');
         })
         .catch((error) => {
             console.log(error);

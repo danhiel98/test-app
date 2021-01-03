@@ -6,11 +6,17 @@ import DetalleCliente from '../clientes/ModalDetalle';
 import DetalleContrato from '../contratos/ModalDetalle';
 import ModalDatos from './ModalDatos';
 import app from '../../firebaseConfig';
+import moment from 'moment';
 
 const { confirm } = Modal;
 const { Search } = Input;
 
 let opcFecha = { year: 'numeric', month: 'numeric', day: 'numeric' };
+
+const cFecha = (fecha) => {
+    if (fecha) return fecha.toDate();
+    else return new Date();
+}
 
 class Mantenimientos extends Component
 {
@@ -59,7 +65,7 @@ class Mantenimientos extends Component
                 direccion,
                 motivo,
                 descripcion,
-                fecha: fecha.toDate(),
+                fecha,
                 ref_cliente
             });
         });
@@ -111,8 +117,9 @@ class Mantenimientos extends Component
             {
                 title: 'Fecha',
                 key: 'fecha',
+                sorter: (a, b) => moment(cFecha(a.fecha)).unix() - moment(cFecha(b.fecha)).unix(),
                 render: record => (
-                    <strong>{ record.fecha.toLocaleString('es-SV', opcFecha) }</strong>
+                    <strong>{ cFecha(record.fecha).toLocaleString('es-SV', opcFecha) }</strong>
                 )
             },
             {

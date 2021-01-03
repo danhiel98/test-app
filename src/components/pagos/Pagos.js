@@ -27,11 +27,16 @@ import {
 import locale from "antd/es/date-picker/locale/es_ES";
 import app from "../../firebaseConfig";
 import firebase from "firebase";
+import moment from 'moment';
 
 const { Search } = Input;
 const { confirm } = Modal;
 
 let ref = app.firestore();
+
+const meses = [
+    'ene.', 'feb.', 'mar.', 'abr.', 'may.', 'jun.', 'jul.', 'ago.', 'sep.', 'oct.', 'nov.', 'dic.'
+];
 
 const zeroPad = (num, places) => String(num).padStart(places, "0");
 
@@ -108,13 +113,20 @@ const capitalize = (s) => {
 };
 
 const verFecha = (fecha) => {
-    return capitalize(
-        new Date(fecha.seconds * 1000).toLocaleDateString("es-SV", {
-            year: "numeric",
-            month: "short",
-        })
-    );
+    return capitalize(fecha.toDate().toLocaleDateString("es-SV", {year: "numeric", month: "short", }));
 };
+
+const cFecha = (fecha) => {
+    if (fecha) return fecha.toDate();
+    else return new Date();
+}
+
+const fechaCuota = (fecha) => {
+    let f = fecha.toDate();
+    return `${f.getFullYear()}-${zeroPad(f.getMonth() + 1, 2)}`;
+}
+
+const mesCuota = (fecha) => meses[fecha.toDate().getMonth()];
 
 class Pagos extends Component {
     constructor(props) {
@@ -299,24 +311,22 @@ class Pagos extends Component {
             {
                 title: "Cuota",
                 key: "numero_cuota",
-                sorter: {
-                    compare: (a, b) => a.numero_cuota.localeCompare(b.numero_cuota)
-                },
+                sorter: (a, b) => a.numero_cuota.localeCompare(b.numero_cuota),
                 render: (record) => (
                     <Space>
-                        {`${record.numero_cuota} - ${verFecha(record.fecha_cuota)}`}
+                        {`${fechaCuota(record.fecha_cuota)}-${record.numero_cuota} (${mesCuota(record.fecha_cuota)})`}
                     </Space>
                 ),
             },
             {
                 title: "Fecha de pago",
                 key: "fecha_pago",
+                sorter: (a, b) => moment(cFecha(a.fecha_pago)).unix() - moment(cFecha(b.fecha_pago)).unix(),
                 render: (record) => (
                     <Row justify="center">
                         <Col>
                             {record.fecha_pago
-                                ? ` ${record.fecha_pago
-                                      .toDate()
+                                ? ` ${cFecha(record.fecha_pago)
                                       .toLocaleDateString("es-SV", opcFecha)} `
                                 : "-"
                             }

@@ -24,9 +24,26 @@ import ModalDetalle from "./ModalDetalle";
 import ModalDetalleCliente from "../clientes/ModalDetalle";
 import Contrato from "../reportes/Contrato";
 import { pdf } from "@react-pdf/renderer";
+import moment from 'moment';
 
 const { confirm } = Modal;
 const { Search } = Input;
+
+const opcFecha = { year: "numeric", month: "short" };
+
+const capitalize = (s) => {
+    if (typeof s !== "string") return s;
+    return s.charAt(0).toUpperCase() + s.slice(1);
+};
+
+const verFecha = (fecha) => {
+    return capitalize(fecha.toDate().toLocaleDateString("es-SV", opcFecha));
+};
+
+const cFecha = (fecha) => {
+    if (fecha) return fecha.toDate();
+    else return new Date();
+}
 
 class Contratos extends Component {
     constructor(props) {
@@ -38,7 +55,6 @@ class Contratos extends Component {
         this.refIPs = app.firestore().collection('ips');
         this.refPagos = app.firestore().collection("pagos");
         this.refMantenimientos = app.firestore().collection("mantenimientos");
-        this.opcFecha = { year: "numeric", month: "short" };
 
         this.unsubscribe = null;
         this.state = {
@@ -82,15 +98,12 @@ class Contratos extends Component {
                 fecha_ingreso
             } = doc.data();
 
-            fecha_inicio = this.verFecha(fecha_inicio);
-            fecha_fin = this.verFecha(fecha_fin);
-
             if (
                 busqueda &&
                 cliente.toLowerCase().indexOf(busqueda) === -1 &&
                 codigo.toLowerCase().indexOf(busqueda) === -1 &&
-                fecha_inicio.toLowerCase().indexOf(busqueda) === -1 &&
-                fecha_fin.toLowerCase().indexOf(busqueda) === -1
+                verFecha(fecha_inicio).toLowerCase().indexOf(busqueda) === -1 &&
+                verFecha(fecha_fin).toLowerCase().indexOf(busqueda) === -1
             )
                 return;
 
@@ -189,20 +202,6 @@ class Contratos extends Component {
             modalDetalleCliente: false,
             visible: false,
         });
-    };
-
-    capitalize = (s) => {
-        if (typeof s !== "string") return s;
-        return s.charAt(0).toUpperCase() + s.slice(1);
-    };
-
-    verFecha = (fecha) => {
-        return this.capitalize(
-            new Date(fecha.seconds * 1000).toLocaleDateString(
-                "es-SV",
-                this.opcFecha
-            )
-        );
     };
 
     irA = (ruta) => {
@@ -310,24 +309,20 @@ class Contratos extends Component {
             {
                 title: "Fecha inicio",
                 key: "fecha_inicio",
-                sorter: {
-                    compare: (a, b) => a.fecha_inicio.localeCompare(b.fecha_inicio)
-                },
+                sorter: (a, b) => moment(cFecha(a.fecha_inicio)).unix() - moment(cFecha(b.fecha_inicio)).unix(),
                 render: (record) => (
                     <span>
-                        {record.fecha_inicio}
+                        {verFecha(record.fecha_inicio)}
                     </span>
                 )
             },
             {
                 title: "Fecha fin",
                 key: "fecha_fin",
-                sorter: {
-                    compare: (a, b) => a.fecha_fin.localeCompare(b.fecha_fin)
-                },
+                sorter: (a, b) => moment(cFecha(a.fecha_fin)).unix() - moment(cFecha(b.fecha_fin)).unix(),
                 render: (record) => (
                     <span>
-                        {record.fecha_fin}
+                        {verFecha(record.fecha_fin)}
                     </span>
                 )
             },
