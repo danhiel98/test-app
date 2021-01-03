@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
 import Tabla from "../Tabla";
+import ModalDetalle from "./ModalDetalle";
 import DetalleContrato from "../contratos/ModalDetalle";
 import DetalleCliente from "../clientes/ModalDetalle";
 import {
@@ -22,7 +23,8 @@ import {
     BarcodeOutlined,
     CalendarOutlined,
     CheckCircleOutlined,
-    ExclamationCircleOutlined
+    ExclamationCircleOutlined,
+    InfoCircleOutlined
 } from "@ant-design/icons";
 import locale from "antd/es/date-picker/locale/es_ES";
 import app from "../../firebaseConfig";
@@ -76,16 +78,6 @@ const SelectFecha = (props) => {
                 }
                 message.success("¡Fecha establecida correctamente!")
             });
-
-        // ref.collection("pagos")
-        //     .doc(codigo)
-        //     .update({
-        //         fecha_pago: fecha,
-        //         mora,
-        //     })
-        //     .then(() => {
-        //         message.success("¡Fecha establecida correctamente!")
-        //     });
     };
 
     return (
@@ -158,11 +150,20 @@ class Pagos extends Component {
             barcode: "",
             codigoContrato: "",
             codigoCliente: "",
+            registro: null,
+            modalDetalle: false,
             detalleContrato: false,
             detalleCliente: false,
             selectFechaVisible: false,
         };
     }
+
+    verDetalle = (record) => {
+        this.setState({
+            registro: record,
+            modalDetalle: true
+        });
+    };
 
     hide = () => {
         this.setState({ selectFechaVisible: false });
@@ -205,6 +206,7 @@ class Pagos extends Component {
                 fecha_pago,
                 mora,
                 mora_exonerada,
+                usuario
             } = doc.data();
 
             if (
@@ -212,7 +214,8 @@ class Pagos extends Component {
                 codigo_contrato.toLowerCase().indexOf(busqueda) === -1 &&
                 nombre_cliente.toLowerCase().indexOf(busqueda) === -1 &&
                 verFecha(fecha_cuota).toLowerCase().indexOf(busqueda) === -1 &&
-                cantidad.toString().indexOf(busqueda) === -1
+                cantidad.toString().indexOf(busqueda) === -1 &&
+                usuario.toLowerCase().indexOf(busqueda) === -1
             ) {
                 return;
             }
@@ -230,6 +233,7 @@ class Pagos extends Component {
                 mora_exonerada,
                 facturado,
                 ref_cliente,
+                usuario
             });
         });
 
@@ -259,20 +263,24 @@ class Pagos extends Component {
     columnas = this.asignarColumnas();
 
     verDetalleContrato = (codigo) => {
-        this.setState({ codigoContrato: codigo });
-        this.setState({ detalleContrato: true });
+        this.setState({
+            codigoContrato: codigo,
+            detalleContrato: true
+        });
     };
 
     verDetalleCliente = (codigo) => {
-        this.setState({ codigoCliente: codigo });
-        this.setState({ detalleCliente: true });
+        this.setState({
+            codigoCliente: codigo,
+            detalleCliente: true
+        });
     };
 
     handleCancel = () => {
         this.setState({
-            codigoContrato: "",
-            detalleContrato: false,
+            modalDetalle: false,
             detalleCliente: false,
+            detalleContrato: false,
         });
     };
 
@@ -405,6 +413,13 @@ class Pagos extends Component {
                 key: "opciones",
                 render: (record) => (
                     <Space size="middle">
+                        <Tooltip title="Detalles">
+                            <InfoCircleOutlined
+                                key="info"
+                                onClick={() => this.verDetalle(record)}
+                                style={{ color: "#0d9e8a" }}
+                            />
+                        </Tooltip>
                         <Tooltip title="Cancelar">
                             <StopOutlined
                                 key="cancel"
@@ -629,15 +644,6 @@ class Pagos extends Component {
                                     .catch(error => {
                                         console.log(error);
                                     })
-
-                                // await d_contrato.ref
-                                //     .collection("cuotas")
-                                //     .doc(zeroPad(numeroCuota - 1, 2))
-                                //     .get()
-                                //     .then((cuota) => {
-                                //         ultimoMesPagado = cuota.data().fecha_pago
-                                //     })
-                                //     .catch(error => console.log(error));
                             }
 
                             d_contrato.ref
@@ -657,6 +663,8 @@ class Pagos extends Component {
             pagos,
             redes,
             loading,
+            registro,
+            modalDetalle,
             detalleContrato,
             detalleCliente,
             codigoContrato,
@@ -665,6 +673,14 @@ class Pagos extends Component {
 
         return (
             <div>
+                {modalDetalle && (
+                    <ModalDetalle
+                        visible={modalDetalle}
+                        codigoPago={registro.key}
+                        handleCancel={this.handleCancel}
+                    />
+                )}
+
                 <PageHeader
                     className="site-page-header"
                     title="Pagos"

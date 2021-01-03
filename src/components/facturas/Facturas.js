@@ -136,13 +136,15 @@ class Facturas extends Component {
                 total_letras,
                 ref_cliente,
                 cuotas,
+                usuario
             } = doc.data();
 
             if (
                 busqueda &&
                 nombre_cliente.toLowerCase().indexOf(busqueda) === -1 &&
                 codigo_contrato.toLowerCase().indexOf(busqueda) === -1 &&
-                total_letras.toLowerCase().indexOf(busqueda) === -1
+                total_letras.toLowerCase().indexOf(busqueda) === -1 &&
+                usuario.toLowerCase().indexOf(busqueda) === -1
             )
                 return;
 
@@ -160,6 +162,7 @@ class Facturas extends Component {
                 mora,
                 mora_exonerada,
                 numero,
+                usuario
             });
         });
         this.setState({
@@ -254,18 +257,24 @@ class Facturas extends Component {
     };
 
     verDetalle = (record) => {
-        this.setState({ registro: record });
-        this.setState({ modalDetalle: true });
+        this.setState({
+            registro: record,
+            modalDetalle: true
+        });
     };
 
     verDetalleContrato = (codigo) => {
-        this.setState({ codigoContrato: codigo });
-        this.setState({ modalDetalleContrato: true });
+        this.setState({
+            codigoContrato: codigo,
+            modalDetalleContrato: true
+        });
     };
 
     verDetalleCliente = (record) => {
-        this.setState({ codigoCliente: record.ref_cliente.id });
-        this.setState({ modalDetalleCliente: true });
+        this.setState({
+            codigoCliente: record.ref_cliente.id,
+            modalDetalleCliente: true
+        });
     };
 
     columnas = this.asignarColumnas();

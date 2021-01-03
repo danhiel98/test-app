@@ -95,7 +95,8 @@ class Contratos extends Component {
                 red,
                 ip,
                 ref_cliente,
-                fecha_ingreso
+                fecha_ingreso,
+                usuario
             } = doc.data();
 
             if (
@@ -103,7 +104,8 @@ class Contratos extends Component {
                 cliente.toLowerCase().indexOf(busqueda) === -1 &&
                 codigo.toLowerCase().indexOf(busqueda) === -1 &&
                 verFecha(fecha_inicio).toLowerCase().indexOf(busqueda) === -1 &&
-                verFecha(fecha_fin).toLowerCase().indexOf(busqueda) === -1
+                verFecha(fecha_fin).toLowerCase().indexOf(busqueda) === -1 &&
+                usuario.toLowerCase().indexOf(busqueda) === -1
             )
                 return;
 
@@ -121,7 +123,8 @@ class Contratos extends Component {
                 red,
                 ip,
                 ref_cliente,
-                fecha_ingreso
+                fecha_ingreso,
+                usuario
             });
         });
         this.setState({

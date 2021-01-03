@@ -13,6 +13,8 @@ const capitalize = (s) => {
     return s.charAt(0).toUpperCase() + s.slice(1);
 };
 
+const verUsuario = (usr) => capitalize(usr.split('@')[0]);
+
 const formatoDinero = (num) =>
     new Intl.NumberFormat("es-SV", {
         style: "currency",
@@ -96,7 +98,7 @@ const ModalDetalle = (props) => {
                                 </Tooltip>
                             </Space>
                         }
-                        bodyStyle={{ height: 290 }}
+                        bodyStyle={{ height: 325 }}
                     >
                         {!loadingRecord && (
                             <div>
@@ -123,6 +125,8 @@ const ModalDetalle = (props) => {
                                 Total:&nbsp;
                                 <strong>{formatoDinero(record.total)}</strong>
                                 <br />
+                                Registrado por:&nbsp;
+                                <strong>{verUsuario(record.usuario)}</strong>
                             </div>
                         )}
                     </Card>
@@ -130,7 +134,7 @@ const ModalDetalle = (props) => {
                 <Col flex={16} offset={1}>
                     <Card
                         title={<strong>Cuotas ({record.cantidad_pagos})</strong>}
-                        bodyStyle={{ height: 290, overflowY: "scroll" }}
+                        bodyStyle={{ height: 325, overflowY: "scroll" }}
                     >
                         <List
                             dataSource={record.cuotas}
