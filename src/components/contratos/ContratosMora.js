@@ -23,9 +23,21 @@ import ModalDetalleCliente from "../clientes/ModalDetalle";
 import Contrato from "../reportes/Contrato";
 import { pdf } from "@react-pdf/renderer";
 import firebase from 'firebase';
+import moment from 'moment';
 
 const { confirm } = Modal;
 const { Search } = Input;
+
+const cFecha = (fecha) => {
+    if (fecha) return fecha.toDate();
+    else return new Date();
+}
+
+const formatoDinero = (num) =>
+        new Intl.NumberFormat("es-SV", {
+            style: "currency",
+            currency: "USD",
+        }).format(num);
 
 class Contratos extends Component {
     constructor(props) {
@@ -50,12 +62,6 @@ class Contratos extends Component {
             codigoCliente: null,
         };
     }
-
-    formatoDinero = (num) =>
-        new Intl.NumberFormat("es-SV", {
-            style: "currency",
-            currency: "USD",
-        }).format(num);
 
     obtenerContratos = (querySnapshot) => {
         const contratos = [];
@@ -296,7 +302,7 @@ class Contratos extends Component {
                 render: (record) => (
                     <strong>
                         <span style={{ color: "#089D6C", fontSize: "1.2em" }}>
-                            {this.formatoDinero(record.precio_cuota)}
+                            {formatoDinero(record.precio_cuota)}
                         </span>
                     </strong>
                 ),
@@ -304,9 +310,7 @@ class Contratos extends Component {
             {
                 title: "Última cuota cancelada",
                 key: "ultimo_mes_pagado",
-                sorter: {
-                    compare: (a, b) => this.verFecha(a.ultimo_mes_pagado).localeCompare(this.verFecha(b.ultimo_mes_pagado))
-                },
+                sorter: (a, b) => moment(cFecha(a.ultimo_mes_pagado)).unix() - moment(cFecha(b.ultimo_mes_pagado)).unix(),
                 render: (record) => (
                     <strong>{this.verFecha(record.ultimo_mes_pagado)}</strong>
                 )
