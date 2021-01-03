@@ -9,7 +9,7 @@ const { Option } = Select;
 
 const ModalDatos = (props) => {
     const [form] = Form.useForm();
-    const { mainRef, record, redes } = props;
+    const { mainRef, record, redes, user } = props;
 
     const refContrato = mainRef.collection('contratos');
     const refMantenimiento = mainRef.collection('mantenimientos');
@@ -105,7 +105,8 @@ const ModalDatos = (props) => {
             direccion: val.direccion,
             motivo: val.motivo,
             descripcion: val.descripcion,
-            fecha_creacion: firebase.firestore.Timestamp.now()
+            fecha_creacion: firebase.firestore.Timestamp.now(),
+            usuario: user.email
         })
         .then((docRef) => {
             message.success('¡Registro insertado correctamente!');
