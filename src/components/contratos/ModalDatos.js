@@ -112,6 +112,7 @@ const ModalDatos = (props) => {
                     velocidad: val.velocidad,
                     ref_cliente: cliente.ref,
                     ultimo_mes_pagado: null,
+                    fecha_ultimo_mes_pagado: null,
                     usuario: user.email
                 }
 

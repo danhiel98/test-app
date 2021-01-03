@@ -50,19 +50,42 @@ const SelectFecha = (props) => {
     let fecha = null;
     let mora = 0;
 
-    let selecFechaPago = (codigo) => {
+    let selecFechaPago = async (codigo) => {
 
         if (fecha && fechaMayor(fecha, record.fecha_cuota)) mora = 3;
 
         ref.collection("pagos")
             .doc(codigo)
-            .update({
-                fecha_pago: fecha,
-                mora,
-            })
-            .then(() => {
-                message.success("¡Fecha establecida correctamente!");
+            .get()
+            .then(async (d_pago) => {
+                if (d_pago.exists) {
+                    let pago = d_pago.data();
+                    d_pago.ref.update({
+                        fecha_pago: fecha,
+                        mora,
+                    });
+
+                    await ref.collection('contratos')
+                    .doc(pago.codigo_contrato)
+                    .update({
+                        fecha_ultimo_mes_pagado: fecha
+                    })
+                    .catch(error => {
+                        console.log(error);
+                    })
+                }
+                message.success("¡Fecha establecida correctamente!")
             });
+
+        // ref.collection("pagos")
+        //     .doc(codigo)
+        //     .update({
+        //         fecha_pago: fecha,
+        //         mora,
+        //     })
+        //     .then(() => {
+        //         message.success("¡Fecha establecida correctamente!")
+        //     });
     };
 
     return (
@@ -483,7 +506,8 @@ class Pagos extends Component {
 
                                             d_contrato.ref
                                             .update({
-                                                ultimo_mes_pagado: cuota.fecha_pago
+                                                ultimo_mes_pagado: cuota.fecha_pago,
+                                                fecha_ultimo_mes_pagado: null
                                             });
                                         })
                                         .catch((error) => {
@@ -567,6 +591,7 @@ class Pagos extends Component {
     eliminarPago = async (record) => {
         let numeroCuota = Number.parseInt(record.numero_cuota);
         let ultimoMesPagado = null;
+        let fechaUltimoMesPagado = null;
 
         await this.refPagos
             .doc(`${record.key}`)
@@ -593,19 +618,32 @@ class Pagos extends Component {
                             });
 
                             if (numeroCuota > 1) {
-                                await d_contrato.ref
-                                    .collection("cuotas")
-                                    .doc(zeroPad(numeroCuota - 1, 2))
+                                await this.refPagos
+                                    .doc(`${record.key.substr(0, 16)}${zeroPad(numeroCuota - 1, 4)}`)
                                     .get()
-                                    .then((cuota) => {
-                                        ultimoMesPagado = cuota.data().fecha_pago
+                                    .then(d_pago => {
+                                        let pago = d_pago.data();
+                                        ultimoMesPagado = pago.fecha_cuota;
+                                        fechaUltimoMesPagado = pago.fecha_pago;
                                     })
-                                    .catch(error => console.log(error));
+                                    .catch(error => {
+                                        console.log(error);
+                                    })
+
+                                // await d_contrato.ref
+                                //     .collection("cuotas")
+                                //     .doc(zeroPad(numeroCuota - 1, 2))
+                                //     .get()
+                                //     .then((cuota) => {
+                                //         ultimoMesPagado = cuota.data().fecha_pago
+                                //     })
+                                //     .catch(error => console.log(error));
                             }
 
                             d_contrato.ref
                             .update({
-                                ultimo_mes_pagado: ultimoMesPagado
+                                ultimo_mes_pagado: ultimoMesPagado,
+                                fecha_ultimo_mes_pagado: fechaUltimoMesPagado,
                             })
                         } else {
                             message.error("La cuota NO existe");

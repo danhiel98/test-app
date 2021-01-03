@@ -28,7 +28,8 @@ import moment from 'moment';
 const { confirm } = Modal;
 const { Search } = Input;
 
-const opcFecha = { year: "numeric", month: "short" };
+const opcFecha = { year: 'numeric', month: 'short' };
+const opcFechaC = { year: 'numeric', month: 'numeric', day: 'numeric' };
 
 const cFecha = (fecha) => {
     if (fecha) return fecha.toDate();
@@ -42,8 +43,10 @@ const capitalize = (s) => {
     return s.charAt(0).toUpperCase() + s.slice(1);
 };
 
-const verFecha = (fecha) => {
-    return capitalize(fecha.toDate().toLocaleDateString("es-SV", opcFecha));
+const verFecha = (fecha, c = false) => {
+    let opc = c ? opcFechaC : opcFecha;
+
+    return capitalize(fecha.toDate().toLocaleDateString("es-SV", opc));
 };
 
 class Contratos extends Component {
@@ -89,7 +92,8 @@ class Contratos extends Component {
                 ip,
                 ref_cliente,
                 fecha_ingreso,
-                ultimo_mes_pagado
+                ultimo_mes_pagado,
+                fecha_ultimo_mes_pagado
             } = doc.data();
 
             fecha_inicio = verFecha(fecha_inicio);
@@ -101,7 +105,8 @@ class Contratos extends Component {
                 codigo.toLowerCase().indexOf(busqueda) === -1 &&
                 fecha_inicio.toLowerCase().indexOf(busqueda) === -1 &&
                 fecha_fin.toLowerCase().indexOf(busqueda) === -1 &&
-                verFecha(ultimo_mes_pagado).toLowerCase().indexOf(busqueda) === -1
+                verFecha(ultimo_mes_pagado).toLowerCase().indexOf(busqueda) === -1 &&
+                verFecha(fecha_ultimo_mes_pagado, true).toLowerCase().indexOf(busqueda) === -1
             )
                 return;
 
@@ -120,7 +125,8 @@ class Contratos extends Component {
                 ip,
                 ref_cliente,
                 fecha_ingreso,
-                ultimo_mes_pagado
+                ultimo_mes_pagado,
+                fecha_ultimo_mes_pagado
             });
         });
         this.setState({
@@ -304,11 +310,23 @@ class Contratos extends Component {
                 ),
             },
             {
-                title: "Última cuota cancelada",
+                title: "Últ. cuota pagada",
                 key: "ultimo_mes_pagado",
                 sorter: (a, b) => moment(cFecha(a.ultimo_mes_pagado)).unix() - moment(cFecha(b.ultimo_mes_pagado)).unix(),
                 render: (record) => (
                     <strong>{verFecha(record.ultimo_mes_pagado)}</strong>
+                )
+            },
+            {
+                title: "Fecha pago/cuota",
+                key: "fecha_ultimo_mes_pagado",
+                sorter: (a, b) => moment(cFecha(a.fecha_ultimo_mes_pagado)).unix() - moment(cFecha(b.fecha_ultimo_mes_pagado)).unix(),
+                render: (record) => (
+                    record.fecha_ultimo_mes_pagado
+                    ?
+                    <strong>{verFecha(record.fecha_ultimo_mes_pagado, true)}</strong>
+                    :
+                    '-'
                 )
             },
             {

@@ -228,7 +228,10 @@ const ModalDatos = (props) => {
                                                     await cargarContratos(cont.ref_cliente.id);
                                                     form.setFieldsValue({ id_contrato: cont.codigo });
                                                     d_contrato.ref
-                                                    .update({ ultimo_mes_pagado: cuota.fecha_pago })
+                                                    .update({
+                                                        ultimo_mes_pagado: cuota.fecha_pago,
+                                                        fecha_ultimo_mes_pagado: fechaPago
+                                                    })
                                                     cargarPagos(cont.codigo);
                                                     message.success("Pago registrado");
                                                 });
@@ -273,6 +276,7 @@ const ModalDatos = (props) => {
         let siguienteCancelada = false;
         let numeroCuota = Number.parseInt(record.numero_cuota);
         let ultimoMesPagado = null;
+        let fechaUltimoMesPagado = null;
 
         await refContratos // Validar si la siguiente cuota ya fue cancelada
             .doc(record.codigo_contrato)
@@ -285,11 +289,7 @@ const ModalDatos = (props) => {
                         .doc(zeroPad(numeroCuota + 1, 2))
                         .get()
                         .then((d_cuota) => {
-                            if (d_cuota.exists) {
-                                if (d_cuota.data().cancelado) {
-                                    siguienteCancelada = true;
-                                }
-                            }
+                            if (d_cuota.exists && d_cuota.data().cancelado) siguienteCancelada = true;
                         });
                 }
             });
@@ -302,46 +302,46 @@ const ModalDatos = (props) => {
 
         await refPagos
             .doc(`${record.key}`)
-            .delete()
+            .delete() // Elimino el pago
             .then(() => {
                 refContratos
                     .doc(record.codigo_contrato)
-                    .get()
+                    .get() // Obtengo el contrato
                     .then(async (contrato) => {
                         if (contrato.exists) {
                             contrato.ref
                                 .collection("cuotas")
-                                .doc(record.numero_cuota)
+                                .doc(record.numero_cuota) // Obtengo la cuota del pago
                                 .get()
                                 .then((cuota) => {
                                     if (cuota.exists) {
                                         cuota.ref
-                                            .update({ cancelado: false })
+                                            .update({ cancelado: false }) // Actualizo el estado cancelado de la cuota
                                             .then(() => {
-                                                cargarPagos(
-                                                    contrato.data().codigo
-                                                );
-                                                message.success(
-                                                    "Pago eliminado"
-                                                );
+                                                cargarPagos(contrato.data().codigo);
+                                                message.success("Pago eliminado");
                                             });
                                     }
                                 });
 
-                            if (numeroCuota > 1) {
-                                await contrato.ref
-                                    .collection("cuotas")
-                                    .doc(zeroPad(numeroCuota - 1, 2))
+                            if (numeroCuota > 1) { // Pendiente
+                                await refPagos
+                                    .doc(`${record.key.substr(0, 16)}${zeroPad(numeroCuota - 1, 4)}`)
                                     .get()
-                                    .then((cuota) => {
-                                        ultimoMesPagado = cuota.data().fecha_pago
+                                    .then(d_pago => {
+                                        let pago = d_pago.data();
+                                        ultimoMesPagado = pago.fecha_cuota;
+                                        fechaUltimoMesPagado = pago.fecha_pago;
                                     })
-                                    .catch(error => console.log(error));
+                                    .catch(error => {
+                                        console.log(error);
+                                    })
                             }
 
                             contrato.ref
                             .update({
-                                ultimo_mes_pagado: ultimoMesPagado
+                                ultimo_mes_pagado: ultimoMesPagado,
+                                fecha_ultimo_mes_pagado: fechaUltimoMesPagado,
                             })
                         } else {
                             message.error("La cuota NO existe");
