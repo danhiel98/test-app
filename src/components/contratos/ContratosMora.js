@@ -28,27 +28,34 @@ import moment from 'moment';
 const { confirm } = Modal;
 const { Search } = Input;
 
+const opcFecha = { year: "numeric", month: "short" };
+
 const cFecha = (fecha) => {
     if (fecha) return fecha.toDate();
     else return new Date();
 }
 
-const formatoDinero = (num) =>
-        new Intl.NumberFormat("es-SV", {
-            style: "currency",
-            currency: "USD",
-        }).format(num);
+const formatoDinero = (num) => new Intl.NumberFormat("es-SV", {style: "currency", currency: "USD",}).format(num);
+
+const capitalize = (s) => {
+    if (typeof s !== "string") return s;
+    return s.charAt(0).toUpperCase() + s.slice(1);
+};
+
+const verFecha = (fecha) => {
+    return capitalize(fecha.toDate().toLocaleDateString("es-SV", opcFecha));
+};
 
 class Contratos extends Component {
     constructor(props) {
         super(props);
 
-        this.refContratos = app.firestore().collection("contratos");
-        this.refClientes = app.firestore().collection("clientes");
-        this.refRedes = app.firestore().collection("redes");
-        this.refPagos = app.firestore().collection("pagos");
-        this.refMantenimientos = app.firestore().collection("mantenimientos");
-        this.opcFecha = { year: "numeric", month: "short" };
+        this.mainRef = app.firestore();
+        this.refContratos = this.mainRef.collection("contratos");
+        this.refClientes = this.mainRef.collection("clientes");
+        this.refRedes = this.mainRef.collection("redes");
+        this.refPagos = this.mainRef.collection("pagos");
+        this.refMantenimientos = this.mainRef.collection("mantenimientos");
 
         this.unsubscribe = null;
         this.state = {
@@ -85,15 +92,16 @@ class Contratos extends Component {
                 ultimo_mes_pagado
             } = doc.data();
 
-            fecha_inicio = this.verFecha(fecha_inicio);
-            fecha_fin = this.verFecha(fecha_fin);
+            fecha_inicio = verFecha(fecha_inicio);
+            fecha_fin = verFecha(fecha_fin);
 
             if (
                 busqueda &&
                 cliente.toLowerCase().indexOf(busqueda) === -1 &&
                 codigo.toLowerCase().indexOf(busqueda) === -1 &&
                 fecha_inicio.toLowerCase().indexOf(busqueda) === -1 &&
-                fecha_fin.toLowerCase().indexOf(busqueda) === -1
+                fecha_fin.toLowerCase().indexOf(busqueda) === -1 &&
+                verFecha(ultimo_mes_pagado).toLowerCase().indexOf(busqueda) === -1
             )
                 return;
 
@@ -175,6 +183,8 @@ class Contratos extends Component {
             this.setState({ loading: true });
             this.setState({ busqueda: valor.toLowerCase() });
             this.refContratos
+                .where('ultimo_mes_pagado', '<', firebase.firestore.Timestamp.now())
+                .orderBy('ultimo_mes_pagado', 'desc')
                 .get()
                 .then((querySnapshot) => this.obtenerContratos(querySnapshot));
         }
@@ -185,20 +195,6 @@ class Contratos extends Component {
             modalDetalle: false,
             modalDetalleCliente: false,
         });
-    };
-
-    capitalize = (s) => {
-        if (typeof s !== "string") return s;
-        return s.charAt(0).toUpperCase() + s.slice(1);
-    };
-
-    verFecha = (fecha) => {
-        return this.capitalize(
-            new Date(fecha.seconds * 1000).toLocaleDateString(
-                "es-SV",
-                this.opcFecha
-            )
-        );
     };
 
     irA = (ruta) => {
@@ -312,7 +308,7 @@ class Contratos extends Component {
                 key: "ultimo_mes_pagado",
                 sorter: (a, b) => moment(cFecha(a.ultimo_mes_pagado)).unix() - moment(cFecha(b.ultimo_mes_pagado)).unix(),
                 render: (record) => (
-                    <strong>{this.verFecha(record.ultimo_mes_pagado)}</strong>
+                    <strong>{verFecha(record.ultimo_mes_pagado)}</strong>
                 )
             },
             {

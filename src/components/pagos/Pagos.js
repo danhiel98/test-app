@@ -34,10 +34,6 @@ const { confirm } = Modal;
 
 let ref = app.firestore();
 
-const meses = [
-    'ene.', 'feb.', 'mar.', 'abr.', 'may.', 'jun.', 'jul.', 'ago.', 'sep.', 'oct.', 'nov.', 'dic.'
-];
-
 const zeroPad = (num, places) => String(num).padStart(places, "0");
 
 let opcFecha = { year: "numeric", month: "numeric", day: "numeric" };
@@ -120,13 +116,6 @@ const cFecha = (fecha) => {
     if (fecha) return fecha.toDate();
     else return new Date();
 }
-
-const fechaCuota = (fecha) => {
-    let f = fecha.toDate();
-    return `${f.getFullYear()}-${zeroPad(f.getMonth() + 1, 2)}`;
-}
-
-const mesCuota = (fecha) => meses[fecha.toDate().getMonth()];
 
 class Pagos extends Component {
     constructor(props) {
