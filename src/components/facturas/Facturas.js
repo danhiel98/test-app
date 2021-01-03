@@ -414,14 +414,15 @@ class Facturas extends Component {
         let ultimaCuota = record.cuotas[record.cuotas.length - 1];
         let numUltimaCuota = Number.parseInt(ultimaCuota.num_cuota);
         let siguienteFacturado = false;
+        let _codContrato = record.codigo_contrato.split('-');
+        let _red = Number.parseInt(_codContrato[0].substr(1));
+        let codigoContrato = `${zeroPad(_red, 4)}0${_codContrato[1]}${record.codigo_contrato.substr(8, 4)}${record.codigo_contrato.substr(13, 4)}`;
 
         await this.refPagos
-            .doc(`${record.codigo_contrato}-${zeroPad(numUltimaCuota + 1, 2)}`)
+            .doc(`${codigoContrato}-${zeroPad(numUltimaCuota + 1, 4)}`)
             .get()
             .then((doc) => {
-                if (doc.exists) {
-                    if (doc.data().facturado) siguienteFacturado = true;
-                }
+                if (doc.exists && doc.data().facturado) siguienteFacturado = true;
             })
             .catch((error) => {
                 message.error("Ocurrió un error al eliminar la factura");
@@ -453,7 +454,7 @@ class Facturas extends Component {
         let _codContrato = record.codigo_contrato.split('-');
         let _red = Number.parseInt(_codContrato[0].substr(1));
         let _ip = Number.parseInt(_codContrato[1]);
-        let codContrato = `${zeroPad(_red, 4)}-${zeroPad(_ip, 4)}-${_codContrato[2]}-${_codContrato[3]}`;
+        let codigoContrato = `${zeroPad(_red, 4)}${zeroPad(_ip, 4)}${record.codigo_contrato.substr(8, 4)}${record.codigo_contrato.substr(13, 4)}`;
 
         this.refFacturas
             .doc(record.key)
@@ -462,7 +463,7 @@ class Facturas extends Component {
 
                 await record.cuotas.forEach(async cuota => {
                     await this.refPagos
-                    .doc(`${codContrato}-${zeroPad(Number.parseInt(cuota.num_cuota), 4)}`)
+                    .doc(`${codigoContrato}${zeroPad(Number.parseInt(cuota.num_cuota), 4)}`)
                     .get()
                     .then((doc) => {
                         if (doc.exists) {
