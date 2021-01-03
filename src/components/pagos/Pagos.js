@@ -301,9 +301,7 @@ class Pagos extends Component {
             {
                 title: "Cantidad",
                 key: "cantidad",
-                sorter: {
-                    compare: (a, b) => a.cantidad.toString().localeCompare(b.cantidad.toString())
-                },
+                sorter: (a, b) => a.cantidad.toString().localeCompare(b.cantidad.toString()),
                 render: (record) => (
                     <strong>{formatoDinero(record.cantidad)}</strong>
                 ),
@@ -314,7 +312,7 @@ class Pagos extends Component {
                 sorter: (a, b) => a.numero_cuota.localeCompare(b.numero_cuota),
                 render: (record) => (
                     <Space>
-                        {`${fechaCuota(record.fecha_cuota)}-${record.numero_cuota} (${mesCuota(record.fecha_cuota)})`}
+                        {`${record.numero_cuota} - ${verFecha(record.fecha_cuota)}`}
                     </Space>
                 ),
             },
