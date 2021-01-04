@@ -40,6 +40,13 @@ const zeroPad = (num, places) => String(num).padStart(places, "0");
 
 let opcFecha = { year: "numeric", month: "numeric", day: "numeric" };
 
+const capitalize = (s) => {
+    if (typeof s !== "string") return s;
+    return s.charAt(0).toUpperCase() + s.slice(1);
+};
+
+const verUsuario = (usr) => capitalize(usr.split('@')[0]);
+
 const formatoDinero = (num) =>
     new Intl.NumberFormat("es-SV", {
         style: "currency",
@@ -116,11 +123,6 @@ const fechaMayor = (fecha, fechaComparacion) => {
     if (f1.getDate() > f2.getDate()) return true; // Verdadero si el día es mayor
 
     return false; // Falso si es el mismo día o si es menor
-};
-
-const capitalize = (s) => {
-    if (typeof s !== "string") return s;
-    return s.charAt(0).toUpperCase() + s.slice(1);
 };
 
 const verFecha = (fecha) => {
@@ -409,6 +411,14 @@ class Pagos extends Component {
                 ),
             },
             {
+                title: "Usuario",
+                key: "usuario",
+                align: "center",
+                render: (record) => (
+                    <strong>{verUsuario(record.usuario)}</strong>
+                ),
+            },
+            {
                 title: "Opciones",
                 key: "opciones",
                 render: (record) => (
@@ -521,6 +531,7 @@ class Pagos extends Component {
 
                                             d_contrato.ref
                                             .update({
+                                                ultima_cuota_pagada: d_cuota.id,
                                                 ultimo_mes_pagado: cuota.fecha_pago,
                                                 fecha_ultimo_mes_pagado: null
                                             });
@@ -605,6 +616,7 @@ class Pagos extends Component {
 
     eliminarPago = async (record) => {
         let numeroCuota = Number.parseInt(record.numero_cuota);
+        let ultimaCuotaPagada = null;
         let ultimoMesPagado = null;
         let fechaUltimoMesPagado = null;
 
@@ -640,6 +652,7 @@ class Pagos extends Component {
                                         let pago = d_pago.data();
                                         ultimoMesPagado = pago.fecha_cuota;
                                         fechaUltimoMesPagado = pago.fecha_pago;
+                                        ultimaCuotaPagada = pago.numero_cuota;
                                     })
                                     .catch(error => {
                                         console.log(error);
@@ -648,6 +661,7 @@ class Pagos extends Component {
 
                             d_contrato.ref
                             .update({
+                                ultima_cuota_pagada: ultimaCuotaPagada,
                                 ultimo_mes_pagado: ultimoMesPagado,
                                 fecha_ultimo_mes_pagado: fechaUltimoMesPagado,
                             })

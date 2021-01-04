@@ -229,6 +229,7 @@ const ModalDatos = (props) => {
                                                     form.setFieldsValue({ id_contrato: cont.codigo });
                                                     d_contrato.ref
                                                     .update({
+                                                        ultima_cuota_pagada: cuota.numero_cuota,
                                                         ultimo_mes_pagado: cuota.fecha_pago,
                                                         fecha_ultimo_mes_pagado: fechaPago
                                                     })
@@ -275,6 +276,7 @@ const ModalDatos = (props) => {
     const eliminarPago = async (record) => {
         let siguienteCancelada = false;
         let numeroCuota = Number.parseInt(record.numero_cuota);
+        let ultimaCuotaPagada = null;
         let ultimoMesPagado = null;
         let fechaUltimoMesPagado = null;
 
@@ -330,6 +332,7 @@ const ModalDatos = (props) => {
                                     .get()
                                     .then(d_pago => {
                                         let pago = d_pago.data();
+                                        ultimaCuotaPagada = pago.numero_cuota;
                                         ultimoMesPagado = pago.fecha_cuota;
                                         fechaUltimoMesPagado = pago.fecha_pago;
                                     })
@@ -340,6 +343,7 @@ const ModalDatos = (props) => {
 
                             contrato.ref
                             .update({
+                                ultima_cuota_pagada: ultimaCuotaPagada,
                                 ultimo_mes_pagado: ultimoMesPagado,
                                 fecha_ultimo_mes_pagado: fechaUltimoMesPagado,
                             })

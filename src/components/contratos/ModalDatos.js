@@ -111,6 +111,7 @@ const ModalDatos = (props) => {
                     precio_cuota: val.precio_cuota,
                     velocidad: val.velocidad,
                     ref_cliente: cliente.ref,
+                    ultima_cuota_pagada: null,
                     ultimo_mes_pagado: null,
                     fecha_ultimo_mes_pagado: null,
                     usuario: user.email

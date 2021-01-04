@@ -92,6 +92,7 @@ class Contratos extends Component {
                 ip,
                 ref_cliente,
                 fecha_ingreso,
+                ultima_cuota_pagada,
                 ultimo_mes_pagado,
                 fecha_ultimo_mes_pagado
             } = doc.data();
@@ -105,6 +106,7 @@ class Contratos extends Component {
                 codigo.toLowerCase().indexOf(busqueda) === -1 &&
                 fecha_inicio.toLowerCase().indexOf(busqueda) === -1 &&
                 fecha_fin.toLowerCase().indexOf(busqueda) === -1 &&
+                ultima_cuota_pagada.toLowerCase().indexOf(busqueda) === -1 &&
                 verFecha(ultimo_mes_pagado).toLowerCase().indexOf(busqueda) === -1 &&
                 verFecha(fecha_ultimo_mes_pagado, true).toLowerCase().indexOf(busqueda) === -1
             )
@@ -125,6 +127,7 @@ class Contratos extends Component {
                 ip,
                 ref_cliente,
                 fecha_ingreso,
+                ultima_cuota_pagada,
                 ultimo_mes_pagado,
                 fecha_ultimo_mes_pagado
             });
@@ -315,6 +318,14 @@ class Contratos extends Component {
                 sorter: (a, b) => moment(cFecha(a.ultimo_mes_pagado)).unix() - moment(cFecha(b.ultimo_mes_pagado)).unix(),
                 render: (record) => (
                     <strong>{verFecha(record.ultimo_mes_pagado)}</strong>
+                )
+            },
+            {
+                title: "# últim. cuota",
+                key: "ultima_cuota_pagada",
+                sorter: (a, b) => a.ultima_cuota_pagada.localeCompare(b.ultima_cuota_pagada),
+                render: (record) => (
+                    <strong>{record.ultima_cuota_pagada}</strong>
                 )
             },
             {

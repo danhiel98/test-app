@@ -95,7 +95,7 @@ const ModalDetalle = (props) => {
                                 </strong>
                                 <br />
                                 Fecha de pago:&nbsp;
-                                <strong>{verFecha(record.fecha_pago, true)}</strong>
+                                <strong>{record.fecha_pago ? verFecha(record.fecha_pago, true) : ''}</strong>
                                 <br />
                                 Facturado:&nbsp;
                                 {record.facturado
