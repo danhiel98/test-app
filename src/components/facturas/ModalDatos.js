@@ -230,7 +230,7 @@ const ModalDatos = (props) => {
                                                     form.setFieldsValue({ id_contrato: cont.codigo });
                                                     d_contrato.ref
                                                     .update({
-                                                        ultima_cuota_pagada: cuota.numero_cuota,
+                                                        ultima_cuota_pagada: d_cuota.id,
                                                         ultimo_mes_pagado: cuota.fecha_pago,
                                                         fecha_ultimo_mes_pagado: fechaPago
                                                     })
