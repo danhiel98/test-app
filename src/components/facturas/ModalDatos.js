@@ -218,6 +218,7 @@ const ModalDatos = (props) => {
                                             mora_exonerada: false,
                                             facturado: false,
                                             fecha_creacion: firebase.firestore.FieldValue.serverTimestamp(),
+                                            usuario: user.email
                                         })
                                         .then((doc) => {
                                             d_cuota.ref
