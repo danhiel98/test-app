@@ -44,9 +44,10 @@ class Tabla extends React.Component
         return (
             <Table
                 { ...this.state }
-                pagination={{ position: ['none', 'topRight'] }}
+                pagination={{ size: 'small', total: 20, position: ['none', 'topRight'] }}
                 columns={ tableColumns }
                 dataSource={ state.data }
+                size="small"
             />
         );
     }
