@@ -370,6 +370,7 @@ class Pagos extends Component {
             {
                 title: "Mora",
                 key: "mora",
+                sorter: (a, b) => a.mora.toString().localeCompare(b.mora.toString()),
                 render: (record) => {
                     let style = {
                         textDecoration: "none",
@@ -399,6 +400,7 @@ class Pagos extends Component {
             {
                 title: "Facturado",
                 key: "facturado",
+                sorter: (a, b) => a.facturado.toString().localeCompare(b.facturado.toString()),
                 align: "center",
                 render: (record) => (
                     <Space>
@@ -413,6 +415,7 @@ class Pagos extends Component {
             {
                 title: "Usuario",
                 key: "usuario",
+                sorter: (a, b) => verUsuario(a.usuario).localeCompare(verUsuario(b.usuario)),
                 align: "center",
                 render: (record) => (
                     <strong>{verUsuario(record.usuario)}</strong>

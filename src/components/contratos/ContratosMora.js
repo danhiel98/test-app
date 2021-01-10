@@ -11,7 +11,6 @@ import {
 } from "antd";
 import {
     ExclamationCircleOutlined,
-    DeleteOutlined,
     CloudDownloadOutlined,
 } from "@ant-design/icons";
 import app from "../../firebaseConfig";
@@ -361,12 +360,6 @@ class Contratos extends Component {
                                 key="download"
                                 onClick={() => this.download(record)}
                                 style={{ color: "#389e0d" }}
-                            />
-                        </Tooltip>
-                        <Tooltip title="Eliminar">
-                            <DeleteOutlined
-                                onClick={() => this.eliminar(record)}
-                                style={{ color: "#f5222d" }}
                             />
                         </Tooltip>
                     </Space>

@@ -3,7 +3,7 @@ import { connect } from 'react-redux'; /** Sirve para transferir state de redux 
 import app from "../firebaseConfig";
 import * as actions from '../actions/userActions';
 
-import { Form, Input, Button, Checkbox, Row, Col, Card, Layout, Typography } from 'antd';
+import { message, Form, Input, Button, Checkbox, Row, Col, Card, Layout, Typography } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { push } from 'connected-react-router';
 
@@ -28,6 +28,7 @@ class Login extends Component
                 this.props.dispatch(push('/'));
             })
             .catch(error => {
+                message.error(`Los datos ingresados son inválidos`);
                 console.log(error.message);
             });
     }
