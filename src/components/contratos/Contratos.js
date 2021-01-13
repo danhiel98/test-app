@@ -59,6 +59,8 @@ const colorEstado = (estado) => {
         case 'finalizado':
             ret.color = '#3388f5';
             break;
+        default:
+            break;
     }
 
     return ret;
@@ -84,6 +86,7 @@ class Contratos extends Component {
             redes: [],
             visible: false,
             registro: null,
+            modalDesactivar: false,
             modalDetalle: false,
             modalDetalleCliente: false,
             codigoCliente: null,
@@ -473,8 +476,8 @@ class Contratos extends Component {
     };
 
     desactivar = async (record) => {
-        if (record.estado != 'activo') {
-            message.error('¡Este contrato no se puede desacivar!');
+        if (record.estado !== 'activo') {
+            message.error('¡Este contrato no se puede desactivar!');
             return;
         }
 

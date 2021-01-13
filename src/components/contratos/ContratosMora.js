@@ -20,6 +20,7 @@ import { push } from "connected-react-router";
 import Tabla from "../Tabla";
 import ModalDetalle from "./ModalDetalle";
 import ModalDetalleCliente from "../clientes/ModalDetalle";
+import ModalDesactivar from "./ModalDesactivar";
 import Contrato from "../reportes/Contrato";
 import { pdf } from "@react-pdf/renderer";
 import firebase from 'firebase';
@@ -49,6 +50,25 @@ const verFecha = (fecha, c = false) => {
     return capitalize(fecha.toDate().toLocaleDateString("es-SV", opc));
 };
 
+const colorEstado = (estado) => {
+    let ret = { color: '#000' };
+    switch (estado) {
+        case 'activo':
+            ret.color = '#15d733';
+            break;
+        case 'inactivo':
+            ret.color = '#f67a2c';
+            break;
+        case 'finalizado':
+            ret.color = '#3388f5';
+            break;
+        default:
+            break;
+    }
+
+    return ret;
+}
+
 class Contratos extends Component {
     constructor(props) {
         super(props);
@@ -69,6 +89,7 @@ class Contratos extends Component {
             redes: [],
             modalDetalle: false,
             modalDetalleCliente: false,
+            modalDesactivar: false,
             codigoCliente: null,
         };
     }
@@ -176,6 +197,7 @@ class Contratos extends Component {
 
     componentDidMount() {
         this.unsubscribe = this.refContratos
+            .where('estado', '==', 'activo')
             .where('ultimo_mes_pagado', '<', firebase.firestore.Timestamp.now())
             .orderBy('ultimo_mes_pagado', 'desc')
             .onSnapshot(this.obtenerContratos);
@@ -199,10 +221,18 @@ class Contratos extends Component {
         }
     }
 
+    modalDesactivarContrato = (record) => {
+        this.setState({
+            modalDesactivar: true,
+            registro: record,
+        });
+    }
+
     handleCancel = () => {
         this.setState({
             modalDetalle: false,
             modalDetalleCliente: false,
+            modalDesactivar: false,
         });
     };
 
@@ -340,17 +370,17 @@ class Contratos extends Component {
                     '-'
                 )
             },
-            {
-                title: "Estado",
-                key: "estado",
-                render: (record) => (
-                    <strong>
-                        <span style={{ color: "#089D6C", fontSize: "1em" }}>
-                            {record.estado}
-                        </span>
-                    </strong>
-                ),
-            },
+            // {
+            //     title: "Estado",
+            //     key: "estado",
+            //     render: (record) => (
+            //         <strong>
+            //             <span style={colorEstado(record.estado)}>
+            //                 {record.estado}
+            //             </span>
+            //         </strong>
+            //     ),
+            // },
             {
                 title: "Opciones",
                 key: "opciones",
@@ -365,8 +395,8 @@ class Contratos extends Component {
                         </Tooltip>
                         <Tooltip title="Dar de baja">
                             <StopOutlined
-                                //onClick={() => this.desactivar(record)}
-                                style={{ color: "#f5222d" }}
+                                onClick={() => this.desactivar(record)}
+                                style={{ color: "#203acc" }}
                             />
                         </Tooltip>
                     </Space>
@@ -375,65 +405,24 @@ class Contratos extends Component {
         ];
     }
 
-    //
-    confirmEliminar = (contrato) => {
+    desactivar = async (record) => {
+        if (record.estado !== 'activo') {
+            message.error('¡Este contrato no se puede desactivar!');
+            return;
+        }
+
         let me = this;
         confirm({
-            title: "¿Está seguro que desea eliminar este registro?",
+            title: "¿Está seguro que desea dar de baja a este contrato?",
             icon: <ExclamationCircleOutlined />,
-            content: "Eliminar contrato",
+            content: "Desactivar contrato",
             okText: "Sí",
             cancelText: "No",
             onOk() {
-                me.eliminarContrato(contrato);
+                me.modalDesactivarContrato(record);
             },
         });
     };
-
-    pagosMantenimientosContrato = async (contrato) => {
-        return new Promise((resolve, reject) => {
-            this.refPagos
-                .where("codigo_contrato", "==", contrato.codigo)
-                .limit(1)
-                .get()
-                .then((qs) => {
-                    if (qs.size === 0) {
-                        this.refMantenimientos
-                            .where("codigo_contrato", "==", contrato.codigo)
-                            .limit(1)
-                            .get()
-                            .then((qs) => {
-                                resolve(qs.size);
-                            });
-                    } else {
-                        resolve(qs.size);
-                    }
-                })
-                .catch((err) => reject(err));
-        });
-    };
-
-    // Se eliminan los contratos, pero no las cuotas
-    eliminarContrato = (contrato) => {
-        this.refContratos
-            .doc(contrato.key)
-            .delete()
-            .then(() => message.success("Se eliminó el registro"))
-            .catch((err) => message.error("Ocurrió un error"));
-    };
-
-    eliminar = async (record) => {
-        message.loading("Verificando...");
-        this.pagosMantenimientosContrato(record).then((size) => {
-            message.destroy();
-            if (size === 0) this.confirmEliminar(record);
-            else if (size >= 1)
-                message.error(
-                    "No se puede eliminar este contrato porque ya se registraron pagos o mantenimientos"
-                );
-        });
-    };
-    //
 
     render() {
         const {
@@ -444,6 +433,7 @@ class Contratos extends Component {
             codigoCliente,
             modalDetalle,
             modalDetalleCliente,
+            modalDesactivar
         } = this.state;
 
         return (
@@ -459,6 +449,13 @@ class Contratos extends Component {
                     <ModalDetalleCliente
                         visible={modalDetalleCliente}
                         codigoCliente={codigoCliente}
+                        handleCancel={this.handleCancel}
+                    />
+                )}
+                {modalDesactivar && (
+                    <ModalDesactivar
+                        visible={modalDesactivar}
+                        codigoContrato={registro.key}
                         handleCancel={this.handleCancel}
                     />
                 )}

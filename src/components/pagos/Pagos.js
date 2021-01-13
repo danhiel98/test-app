@@ -479,7 +479,7 @@ class Pagos extends Component {
                         let contrato = d_contrato.data();
                         let numCuota = Number.parseInt(code.substr(17, 4));
 
-                        if (contrato.estado != 'activo') {
+                        if (contrato.estado !== 'activo') {
                             message.error('No se pueden agregar pagos a este contrato');
                             return;
                         }
@@ -639,8 +639,8 @@ class Pagos extends Component {
                         if (d_contrato.exists) {
                             let contrato = d_contrato.data();
 
-                            if (contrato.estado === 'finalizado') {
-                                message.error('No se puede eliminar este pago porque el contrato ya está finalizado');
+                            if (contrato.estado !== 'activo') {
+                                message.error('No se puede eliminar este pago porque el contrato no está activo');
                                 return;
                             }
 

@@ -2,15 +2,11 @@ import React, { useEffect, useState } from "react";
 import {
     message,
     Modal,
-    Row,
     Form,
-    Input,
-    Space,
     Button
 } from "antd";
 import TextArea from 'antd/lib/input/TextArea';
 
-import Contrato from "../reportes/Contrato";
 import app from "../../firebaseConfig";
 
 const obtenerContrato = async (ref) => {
@@ -39,6 +35,7 @@ const ModalDesactivar = (props) => {
         obtenerContrato(refContrato)
             .then((res) => setRecord(res))
             .finally(() => setLoadingRecord(false));
+        // eslint-disable-next-line
     }, [codigoContrato]);
 
     const handleOk = () => {

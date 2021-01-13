@@ -35,6 +35,8 @@ const colorEstado = (estado) => {
         case 'finalizado':
             ret.color = '#3388f5';
             break;
+        default:
+            break;
     }
 
     return ret;
