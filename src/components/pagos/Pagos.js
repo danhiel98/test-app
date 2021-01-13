@@ -479,6 +479,11 @@ class Pagos extends Component {
                         let contrato = d_contrato.data();
                         let numCuota = Number.parseInt(code.substr(17, 4));
 
+                        if (contrato.estado != 'activo') {
+                            message.error('No se pueden agregar pagos a este contrato');
+                            return;
+                        }
+
                         if (numCuota > 1) { // Para validar si la anterior ya fue pagada
                             await d_contrato.ref
                                 .collection("cuotas")
@@ -632,8 +637,14 @@ class Pagos extends Component {
                     .get()
                     .then(async (d_contrato) => {
                         if (d_contrato.exists) {
+                            let contrato = d_contrato.data();
 
-                            d_contrato.ref
+                            if (contrato.estado === 'finalizado') {
+                                message.error('No se puede eliminar este pago porque el contrato ya está finalizado');
+                                return;
+                            }
+
+                            await d_contrato.ref
                             .collection("cuotas")
                             .doc(record.numero_cuota)
                             .get()

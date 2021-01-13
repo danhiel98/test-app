@@ -173,6 +173,11 @@ const ModalDatos = (props) => {
                         let cont = d_contrato.data();
                         let numCuota = Number.parseInt(code.substr(17, 4));
 
+                        if (cont.estado != 'activo') {
+                            message.error('No se pueden agregar pagos a este contrato');
+                            return;
+                        }
+
                         if (numCuota > 1) { // Para validar si la anterior ya fue pagada
                             await d_contrato.ref
                                 .collection("cuotas")
@@ -287,6 +292,11 @@ const ModalDatos = (props) => {
             .get()
             .then(async (d_contrato) => {
                 if (d_contrato.exists) {
+
+                    if (d_contrato.data().estado === 'finalizado') {
+                        message.error('No se puede eliminar este pago porque el contrato ya está finalizado');
+                        return;
+                    }
 
                     await d_contrato.ref
                         .collection("cuotas")

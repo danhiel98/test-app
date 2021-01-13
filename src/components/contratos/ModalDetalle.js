@@ -23,6 +23,23 @@ const capitalize = (s) => {
 
 const verUsuario = (usr) => capitalize(usr.split('@')[0]);
 
+const colorEstado = (estado) => {
+    let ret = { color: '#000' };
+    switch (estado) {
+        case 'activo':
+            ret.color = '#15d733';
+            break;
+        case 'inactivo':
+            ret.color = '#f67a2c';
+            break;
+        case 'finalizado':
+            ret.color = '#3388f5';
+            break;
+    }
+
+    return ret;
+}
+
 const formatoDinero = (num) =>
     new Intl.NumberFormat("es-SV", {
         style: "currency",
@@ -142,7 +159,17 @@ const ModalDetalle = (props) => {
             visible={props.visible}
             onCancel={props.handleCancel}
             width={800}
-            title={<div>Detalle de Contrato</div>}
+            title={
+                <div>
+                    Detalle de Contrato&nbsp;
+                    {
+                        !loadingRecord &&
+                        <span style={colorEstado(record.estado)}>
+                            ({record.estado})
+                        </span>
+                    }
+                </div>
+            }
             footer={<></>}
         >
             <Row>
@@ -262,16 +289,22 @@ const ModalDetalle = (props) => {
                         )}
                     </Card>
                 </Col>
-                {
-                    (!loadingRecord && record.estado === 'inactivo') &&
-                    <Col flex={24}>
-                        <strong>Motivo de inactividad:</strong>
-                        <span>
-                            {record.motivo_inactivo}
-                        </span>
-                    </Col>
-                }
             </Row>
+            {
+                (!loadingRecord && record.estado === 'inactivo') &&
+                <div>
+                    <Row justify="center" style={{ marginTop: 10 }}>
+                        <Col flex={24} style={{ textAlign: 'center' }}>
+                            <strong>Motivo de inactividad:</strong>
+                        </Col>
+                    </Row>
+                    <Row justify="center">
+                        <Col flex={24} style={{ textAlign: 'center' }}>
+                            {record.motivo_inactivo}
+                        </Col>
+                    </Row>
+                </div>
+            }
         </Modal>
     );
 };

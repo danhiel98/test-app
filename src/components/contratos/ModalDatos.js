@@ -21,9 +21,11 @@ const ModalDatos = (props) => {
     const [fechaInicio, setFechaInicio] = useState(null);
     const [fechaFin, setFechaFin] = useState(null);
 
-    let refContratos = app.firestore().collection('contratos');
-    let refCliente = app.firestore().collection('clientes');
-    let refIP = app.firestore().collection('ips');
+    let ref = app.firestore();
+    let refContratos = ref.collection('contratos');
+    let refPagos = ref.collection('pagos');
+    let refCliente = ref.collection('clientes');
+    let refIP = ref.collection('ips');
 
     useEffect(() => {
         if (!record) {
@@ -35,7 +37,27 @@ const ModalDatos = (props) => {
         ref.get().then(async (doc) => {
             if (doc.exists) {
                 let doc_cliente;
+                let cantPagos = 0;
                 const contrato = doc.data();
+
+                if (contrato.estado !== 'activo') {
+                    message.error('No se puede editar este contrato porque no está activo');
+                    props.handleCancel()
+                    return;
+                }
+
+                await refPagos.where('codigo_contrato', '==', contrato.codigo)
+                    .get()
+                    .then(qs => {
+                        cantPagos = qs.size;
+                    })
+                    .catch(error => console.log(error));
+
+                if (cantPagos > 0) {
+                    message.error('No se puede editar este contrato porque ya se realizaron pagos');
+                    props.handleCancel();
+                    return;
+                }
 
                 setRed(contrato.red);
                 setIP(contrato.ip);
@@ -61,6 +83,7 @@ const ModalDatos = (props) => {
                 console.log(`No se puede obtener el registro`);
             }
         });
+        // eslint-disable-next-line
     }, [record, clientes, form, fireRef]);
 
     const zeroPad = (num, places) => String(num).padStart(places, '0');
