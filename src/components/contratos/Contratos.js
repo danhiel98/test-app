@@ -12,6 +12,7 @@ import {
 import {
     ExclamationCircleOutlined,
     EditOutlined,
+    StopOutlined,
     DeleteOutlined,
     CloudDownloadOutlined,
 } from "@ant-design/icons";
@@ -21,6 +22,7 @@ import { push } from "connected-react-router";
 import Tabla from "../Tabla";
 import ModalDatos from "./ModalDatos";
 import ModalDetalle from "./ModalDetalle";
+import ModalDesactivar from "./ModalDesactivar";
 import ModalDetalleCliente from "../clientes/ModalDetalle";
 import Contrato from "../reportes/Contrato";
 import { pdf } from "@react-pdf/renderer";
@@ -43,6 +45,23 @@ const verFecha = (fecha) => {
 const cFecha = (fecha) => {
     if (fecha) return fecha.toDate();
     else return new Date();
+}
+
+const colorEstado = (estado) => {
+    let ret = { color: '#000' };
+    switch (estado) {
+        case 'activo':
+            ret.color = '#15d733';
+            break;
+        case 'inactivo':
+            ret.color = '#f67a2c';
+            break;
+        case 'finalizado':
+            ret.color = '#3388f5';
+            break;
+    }
+
+    return ret;
 }
 
 class Contratos extends Component {
@@ -198,12 +217,20 @@ class Contratos extends Component {
         });
     };
 
+    modalDesactivarContrato = (record) => {
+        this.setState({
+            modalDesactivar: true,
+            registro: record,
+        });
+    }
+
     handleCancel = () => {
         this.setState({
-            registro: null,
             modalDetalle: false,
             modalDetalleCliente: false,
+            modalDesactivar: false,
             visible: false,
+            registro: null,
         });
     };
 
@@ -298,9 +325,7 @@ class Contratos extends Component {
             {
                 title: "Precio",
                 key: "precio_cuota",
-                sorter: {
-                    compare: (a, b) => a.precio_cuota.toString().localeCompare(b.precio_cuota.toString())
-                },
+                sorter: (a, b) => a.precio_cuota.toString().localeCompare(b.precio_cuota.toString()),
                 render: (record) => (
                     <strong>
                         <span style={{ color: "#089D6C", fontSize: "1.2em" }}>
@@ -332,9 +357,25 @@ class Contratos extends Component {
             {
                 title: "Estado",
                 key: "estado",
+                filters: [
+                    {
+                        text: 'Activo',
+                        value: 'activo',
+                    },
+                    {
+                        text: 'Finalizado',
+                        value: 'finalizado',
+                    },
+                    {
+                        text: 'Inactivo',
+                        value: 'inactivo',
+                    }
+                ],
+                onFilter: (value, record) => record.estado.indexOf(value) === 0,
+                sorter: (a, b) => a.estado.toString().localeCompare(b.estado.toString()),
                 render: (record) => (
                     <strong>
-                        <span style={{ color: "#089D6C", fontSize: "1em" }}>
+                        <span style={colorEstado(record.estado)}>
                             {record.estado}
                         </span>
                     </strong>
@@ -358,6 +399,12 @@ class Contratos extends Component {
                                 style={{ color: "#fa8c16" }}
                             />
                         </Tooltip>
+                        <Tooltip title="Dar de baja">
+                            <StopOutlined
+                                onClick={() => this.desactivar(record)}
+                                style={{ color: "#203acc" }}
+                            />
+                        </Tooltip>
                         <Tooltip title="Eliminar">
                             <DeleteOutlined
                                 onClick={() => this.eliminar(record)}
@@ -370,7 +417,6 @@ class Contratos extends Component {
         ];
     }
 
-    //
     confirmEliminar = (contrato) => {
         let me = this;
         confirm({
@@ -419,12 +465,30 @@ class Contratos extends Component {
                 .doc(`${contrato.red}-${contrato.ip}`)
                 .get()
                 .then(d_ip => {
-                    d_ip.ref
-                    .update({ libre: true })
+                    d_ip.ref.update({ libre: true })
                 })
                 message.success("Se eliminó el registro")
             })
             .catch((err) => message.error("Ocurrió un error"));
+    };
+
+    desactivar = async (record) => {
+        if (record.estado != 'activo') {
+            message.error('¡Este contrato no se puede desacivar!');
+            return;
+        }
+
+        let me = this;
+        confirm({
+            title: "¿Está seguro que desea dar de baja a este contrato?",
+            icon: <ExclamationCircleOutlined />,
+            content: "Desactivar contrato",
+            okText: "Sí",
+            cancelText: "No",
+            onOk() {
+                me.modalDesactivarContrato(record);
+            },
+        });
     };
 
     eliminar = async (record) => {
@@ -432,13 +496,9 @@ class Contratos extends Component {
         this.pagosMantenimientosContrato(record).then((size) => {
             message.destroy();
             if (size === 0) this.confirmEliminar(record);
-            else if (size >= 1)
-                message.error(
-                    "No se puede eliminar este contrato porque ya se registraron pagos o mantenimientos"
-                );
+            else if (size >= 1) message.error("No se puede eliminar este contrato porque ya se registraron pagos o mantenimientos");
         });
     };
-    //
 
     render() {
         const {
@@ -451,6 +511,7 @@ class Contratos extends Component {
             codigoCliente,
             modalDetalle,
             modalDetalleCliente,
+            modalDesactivar,
             user
         } = this.state;
 
@@ -459,9 +520,7 @@ class Contratos extends Component {
                 {visible && (
                     <ModalDatos
                         visible={visible}
-                        title={
-                            registro ? "Editar información" : "Nuevo contrato"
-                        }
+                        title={ registro ? "Editar información" : "Nuevo contrato" }
                         user={user}
                         clientes={clientes}
                         redes={redes}
@@ -481,6 +540,13 @@ class Contratos extends Component {
                     <ModalDetalleCliente
                         visible={modalDetalleCliente}
                         codigoCliente={codigoCliente}
+                        handleCancel={this.handleCancel}
+                    />
+                )}
+                {modalDesactivar && (
+                    <ModalDesactivar
+                        visible={modalDesactivar}
+                        codigoContrato={registro.key}
                         handleCancel={this.handleCancel}
                     />
                 )}

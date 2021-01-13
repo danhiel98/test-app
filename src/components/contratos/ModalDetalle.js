@@ -262,6 +262,15 @@ const ModalDetalle = (props) => {
                         )}
                     </Card>
                 </Col>
+                {
+                    (!loadingRecord && record.estado === 'inactivo') &&
+                    <Col flex={24}>
+                        <strong>Motivo de inactividad:</strong>
+                        <span>
+                            {record.motivo_inactivo}
+                        </span>
+                    </Col>
+                }
             </Row>
         </Modal>
     );

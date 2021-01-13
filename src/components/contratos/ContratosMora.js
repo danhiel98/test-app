@@ -11,6 +11,7 @@ import {
 } from "antd";
 import {
     ExclamationCircleOutlined,
+    StopOutlined,
     CloudDownloadOutlined,
 } from "@ant-design/icons";
 import app from "../../firebaseConfig";
@@ -360,6 +361,12 @@ class Contratos extends Component {
                                 key="download"
                                 onClick={() => this.download(record)}
                                 style={{ color: "#389e0d" }}
+                            />
+                        </Tooltip>
+                        <Tooltip title="Dar de baja">
+                            <StopOutlined
+                                //onClick={() => this.desactivar(record)}
+                                style={{ color: "#f5222d" }}
                             />
                         </Tooltip>
                     </Space>
