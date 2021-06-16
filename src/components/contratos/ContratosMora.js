@@ -50,24 +50,24 @@ const verFecha = (fecha, c = false) => {
     return capitalize(fecha.toDate().toLocaleDateString("es-SV", opc));
 };
 
-const colorEstado = (estado) => {
-    let ret = { color: '#000' };
-    switch (estado) {
-        case 'activo':
-            ret.color = '#15d733';
-            break;
-        case 'inactivo':
-            ret.color = '#f67a2c';
-            break;
-        case 'finalizado':
-            ret.color = '#3388f5';
-            break;
-        default:
-            break;
-    }
+// const colorEstado = (estado) => {
+//     let ret = { color: '#000' };
+//     switch (estado) {
+//         case 'activo':
+//             ret.color = '#15d733';
+//             break;
+//         case 'inactivo':
+//             ret.color = '#f67a2c';
+//             break;
+//         case 'finalizado':
+//             ret.color = '#3388f5';
+//             break;
+//         default:
+//             break;
+//     }
 
-    return ret;
-}
+//     return ret;
+// }
 
 class Contratos extends Component {
     constructor(props) {

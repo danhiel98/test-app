@@ -222,10 +222,11 @@ const Entry = props => {
                 <View style={styles.absoluteVertical} />
                 <View style={styles.cardContainer}>
                     <View style={styles.leftColumn}>
-                        <Image
+                        <Text style={{ width: 90, height: 40 }}>Logo</Text>
+                        {/* <Image
                             src={process.env.PUBLIC_URL + '/turbo-mega-reporte.png'}
                             style={{ width: 90, height: 40 }}
-                        />
+                        /> */}
                         <View style={{ paddingLeft: 5 }}>
                             <Text style={styles.title}>Pago de Servicio de Internet Residencial</Text>
                             <View style={styles.flowFlex}>

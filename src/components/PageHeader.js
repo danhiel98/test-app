@@ -18,7 +18,8 @@ class PageHeader extends Component
                     <Row>
 
                         <Col span={7} style={ { cursor: 'pointer' } } onClick={ this.props.goHome }>
-                            <img src={ process.env.PUBLIC_URL + "/logo home.jpg" } alt="Logo" width="200px" />
+                            Logo
+                            {/* <img src={ process.env.PUBLIC_URL + "/logo home.jpg" } alt="Logo" width="200px" /> */}
                         </Col>
                         <Col span={5} offset={12}>
                             <Menu theme="light" style={ { textAlign: "right" } } mode="horizontal">

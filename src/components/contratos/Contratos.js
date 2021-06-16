@@ -477,7 +477,7 @@ class Contratos extends Component {
 
     desactivar = async (record) => {
         if (record.estado !== 'activo') {
-            message.error('¡Este contrato no se puede desactivar!');
+            message.error('¡Este contrato no se puede desactivar porque no está activo!');
             return;
         }
 

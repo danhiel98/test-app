@@ -122,10 +122,13 @@ const Contrato = props => {
         <Document>
             <Page size="LETTER" style={styles.body} wrap>
                 <View style={styles.header} fixed>
-                    <Image
+                    <Text>
+                        Logo de negocio
+                    </Text>
+                    {/* <Image
                         src={process.env.PUBLIC_URL + '/turbo-mega-reporte.png'}
                         style={styles.headerImage}
-                    />
+                    /> */}
                     <Text style={styles.headerText}>
                         Contrato de Servicios de Internet Inalámbrico
                     </Text>
@@ -138,13 +141,13 @@ const Contrato = props => {
                         Se hace constar por el presente Contrato,
                         la prestación de servicios de conexión a internet
                         via inalámbrica que suscriben por una parte a:&nbsp;
-                        <Text style={styles.textValue}>Fredy Ernesto Díaz Constanza</Text>
+                        <Text style={styles.textValue}>[Nombre]</Text>
                         , identificado con DUI: N°&nbsp;
-                        <Text style={styles.textValue}>03628626-0</Text>
+                        <Text style={styles.textValue}>[DUI]</Text>
                         , y N° DE REGISTRO TRIBUTARIO:&nbsp;
-                        <Text style={styles.textValue}>0821-261086-101-2</Text>
+                        <Text style={styles.textValue}>[NIT]</Text>
                         , inscrito en el Registro de Contribuyentes, con domicilio en&nbsp;
-                        <Text style={styles.textValue}>Av. Juan Manuel Rodriguez, Barrio el Centro #156, Zacatecoluca, La Paz.</Text>
+                        <Text style={styles.textValue}>[Dirección]</Text>
                         , a quien en adelante se llamará&nbsp;
                         <Text style={styles.textValue}>EL PROVEEDOR</Text>
                         , por la otra parte,&nbsp;
@@ -225,13 +228,13 @@ const Contrato = props => {
                     </View>
                     <Text style={styles.text}>
                         El presente contrato tendrá vigencia desde&nbsp;
-                        <Text style={styles.textValue}>Diciembre de 2020</Text>
+                        <Text style={styles.textValue}>{verFecha(contrato.fecha_inicio)}</Text>
                         &nbsp;hasta&nbsp;
-                        <Text style={styles.textValue}>Mayo de 2022</Text>
+                        <Text style={styles.textValue}>{verFecha(contrato.fecha_fin)}</Text>
                         , brindando el proveedor una velocidad de conexión inalámbrica de&nbsp;
                         <Text style={styles.textValue}>
                             {NumerosALetras.default(contrato.velocidad, false)}
-                            &nbsp;Megabytes ({contrato.velocidad}) Mbps.
+                            &nbsp;Megabits ({contrato.velocidad}) Mbps.
                         </Text>
                     </Text>
                     <Text style={styles.subtitle}>
@@ -561,10 +564,10 @@ const Contrato = props => {
                     <View style={styles.signItem}>
                         <Text>F.___________________________________________</Text>
                         <Text>
-                            Proveedor: <Text style={styles.textValue}>Fredy Ernesto Díaz Constanza</Text>
+                            Proveedor: <Text style={styles.textValue}>[Nombre]</Text>
                         </Text>
                         <Text>
-                            DUI: <Text style={styles.textValue}>03628626-0</Text>
+                            DUI: <Text style={styles.textValue}>[DUI]</Text>
                         </Text>
                     </View>
                     <View style={styles.signItem}>
