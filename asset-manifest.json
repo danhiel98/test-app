@@ -1,0 +1,25 @@
+{
+  "files": {
+    "main.css": "/test-app/static/css/main.29e27a99.chunk.css",
+    "main.js": "/test-app/static/js/main.9d87208c.chunk.js",
+    "main.js.map": "/test-app/static/js/main.9d87208c.chunk.js.map",
+    "runtime-main.js": "/test-app/static/js/runtime-main.4fa96680.js",
+    "runtime-main.js.map": "/test-app/static/js/runtime-main.4fa96680.js.map",
+    "static/css/2.066ede4e.chunk.css": "/test-app/static/css/2.066ede4e.chunk.css",
+    "static/js/2.14655267.chunk.js": "/test-app/static/js/2.14655267.chunk.js",
+    "static/js/2.14655267.chunk.js.map": "/test-app/static/js/2.14655267.chunk.js.map",
+    "index.html": "/test-app/index.html",
+    "static/css/2.066ede4e.chunk.css.map": "/test-app/static/css/2.066ede4e.chunk.css.map",
+    "static/css/main.29e27a99.chunk.css.map": "/test-app/static/css/main.29e27a99.chunk.css.map",
+    "static/js/2.14655267.chunk.js.LICENSE.txt": "/test-app/static/js/2.14655267.chunk.js.LICENSE.txt",
+    "static/media/custom.css": "/test-app/static/media/bg.c436c073.jpg",
+    "static/media/line-awesome.min.css": "/test-app/static/media/la-solid-900.89363487.woff"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.4fa96680.js",
+    "static/css/2.066ede4e.chunk.css",
+    "static/js/2.14655267.chunk.js",
+    "static/css/main.29e27a99.chunk.css",
+    "static/js/main.9d87208c.chunk.js"
+  ]
+}
